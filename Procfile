@@ -1,1 +1,1 @@
-web: cd estatecore_backend && gunicorn wsgi:app --bind 0.0.0.0:$PORT
+web: cd estatecore_backend && python -m gunicorn wsgi:app --bind 0.0.0.0:$PORT
