@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(..venvScriptsactivate)",
+      "Bash(.venvScriptspython -m pip install python-dotenv)",
+      "Bash(set SECRET_KEY=test_key_12345678)",
+      "Bash(set DATABASE_URL=postgresql://user:pass@localhost:5432/test)",
+      "Bash(find:*)",
+      "Bash(.venvScriptsactivate.bat)",
+      "Bash(.venvScriptsactivate)",
+      "Bash(..venvScriptsactivate.bat)",
+      "Bash(set FLASK_APP=wsgi.py)",
+      "Bash(.venv/Scripts/python:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(npx tsc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:17
+    container_name: estatecore-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: estatecore
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: estatecore-backend
+    restart: always
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/estatecore
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./estatecore-frontend
+      dockerfile: Dockerfile
+    container_name: estatecore-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

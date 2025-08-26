@@ -1,0 +1,12 @@
+node_modules
+.git
+.cache
+.venv
+__pycache__
+dist
+build
+.fly
+.netlify
+*.log
+Thumbs.db
+desktop.ini
