@@ -1,12 +1,21 @@
 [phases.setup]
-nixPkgs = ['python311', 'python311Packages.pip']
+nixPkgs = ['python311', 'python311Packages.pip', 'python311Packages.setuptools', 'python311Packages.wheel']
 
 [phases.install]
 dependsOn = ['setup']
-cmds = ['cd estatecore_backend && python -m pip install -r requirements.txt']
+cmds = [
+  'cd estatecore_backend',
+  'python -m pip install --upgrade pip setuptools wheel',
+  'python -m pip install -r requirements.txt --no-cache-dir'
+]
 
 [phases.build]
 dependsOn = ['install']
+cmds = [
+  'cd estatecore_backend',
+  'python -c "import flask; print(f\'Flask {flask.__version__} installed\')"',
+  'python -c "import wsgi; print(\'WSGI app imported successfully\')"'
+]
 
 [start]
-cmd = 'cd estatecore_backend && python -m gunicorn wsgi:app --bind 0.0.0.0:$PORT'
+cmd = 'cd estatecore_backend && python -m gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120'
