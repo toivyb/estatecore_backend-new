@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ['python311', 'pip']
+
+[phases.install]
+dependsOn = ['setup']
+cmds = ['cd estatecore_backend && pip install -r requirements.txt']
+
+[phases.build]
+dependsOn = ['install']
+
+[start]
+cmd = 'cd estatecore_backend && gunicorn wsgi:app --bind 0.0.0.0:$PORT'
