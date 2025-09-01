@@ -1,4 +1,6 @@
-import sys, os, re, io
+import sys
+import os
+import re
 
 REL_PROPERTY = """    tenants = db.relationship(
         'Tenant',

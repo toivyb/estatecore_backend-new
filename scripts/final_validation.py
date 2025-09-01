@@ -5,9 +5,7 @@ Performs comprehensive checks to ensure the system is ready for deployment
 """
 import os
 import sys
-import json
 import subprocess
-from pathlib import Path
 
 def run_command(cmd, description):
     """Run a command and return success status"""

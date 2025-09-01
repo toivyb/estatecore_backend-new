@@ -1,5 +1,5 @@
 from estatecore_backend import create_app
-from estatecore_backend.models import db, User, UserRole
+from estatecore_backend.models import db, User
 from werkzeug.security import generate_password_hash
 
 app = create_app()

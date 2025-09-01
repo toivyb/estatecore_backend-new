@@ -1,4 +1,5 @@
-import sys, os
+import sys
+import os
 
 try:
     from dotenv import load_dotenv
@@ -9,7 +10,6 @@ except ImportError:
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from flask import Flask, jsonify, request, send_file
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from estatecore_backend.models import db, LPREvent
 from io import StringIO

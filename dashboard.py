@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import requests
-from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
 API_URL = "http://127.0.0.1:5000/events"

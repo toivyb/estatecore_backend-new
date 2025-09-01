@@ -1,6 +1,4 @@
-import os
 from pathlib import Path
-from typing import Optional
 from datetime import datetime
 from .config import ESTATECORE_DATA_DIR, CLIENT_SUBFOLDERS, AUDIT_LOG_NAME
 

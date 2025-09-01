@@ -20,7 +20,20 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(where python)",
+      "Bash(robocopy:*)",
+      "Read(/C:\\Users\\toivybraun/**)",
+      "Bash(npm run preview:*)",
+      "Bash(where ngrok)",
+      "Bash(start cmd /k \"ngrok http 5000 --log=stdout\")",
+      "Bash(start cmd /k \"ngrok http 5173 --log=stdout\")",
+      "Bash(ngrok api tunnels:*)",
+      "Bash(ngrok config:*)",
+      "Bash(wmic:*)",
+      "Bash(npm run build:*)",
+      "Bash(cat:*)",
+      "Bash(where netlify)"
     ],
     "deny": [],
     "ask": []

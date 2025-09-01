@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
 from estatecore_backend.models import User
-from estatecore_backend import db
 import jwt
 from datetime import datetime, timedelta
 

@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify, g
-from estatecore_backend.models import db, InviteToken, User, Organization, RentInvoice, Payment, Property, MaintenanceRequest
-from werkzeug.security import generate_password_hash
+from estatecore_backend.models import db, InviteToken, User, Organization, RentInvoice, Payment, Property
 from datetime import datetime, timedelta
 import uuid
 from functools import wraps

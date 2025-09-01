@@ -27,7 +27,7 @@ services:
 
   frontend:
     build:
-      context: ./estatecore-frontend
+      context: ./estatecore_frontend
       dockerfile: Dockerfile
     container_name: estatecore-frontend
     restart: always

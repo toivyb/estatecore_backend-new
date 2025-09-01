@@ -1,7 +1,6 @@
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-import random
 
 ai_bp = Blueprint('ai_bp', __name__)
 

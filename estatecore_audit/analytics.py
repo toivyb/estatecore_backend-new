@@ -1,6 +1,5 @@
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
-from sqlalchemy import func
 from .models import db, AuditEvent, FeatureUsageDaily, UsageSummary
 
 # Consider these as app features to track (customize as needed)

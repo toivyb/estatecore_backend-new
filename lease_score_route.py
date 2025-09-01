@@ -1,7 +1,6 @@
 
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
-import random
 
 @app.route('/api/ai/lease-score', methods=['POST'])
 @jwt_required()

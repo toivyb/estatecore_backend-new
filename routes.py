@@ -1,14 +1,8 @@
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify
 from .extensions import db
-from estatecore_backend.models import User, RentRecord, AccessLog, InviteToken, MaintenanceRequest
+from estatecore_backend.models import User, RentRecord, AccessLog
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from io import BytesIO
-from reportlab.pdfgen import canvas
-from flask_jwt_extended import jwt_required, get_jwt_identity
-import uuid
-import csv
-import json
-from datetime import datetime, date
+from datetime import datetime
 
 api_bp = Blueprint("api", __name__)
 

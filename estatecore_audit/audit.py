@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Dict, Any
 from .models import db, AuditEvent
-from .folders import ensure_client_folder, _append_audit_log
+from .folders import _append_audit_log
 from .config import ESTATECORE_DATA_DIR
 from pathlib import Path
 

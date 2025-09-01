@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/mnt/c/Users/toivy/estatecore_project/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/models/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/models/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/models/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/app/routes/**)",
+      "Bash(curl:*)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/app/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/app/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/routes/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/routes/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/routes/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/routes/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/routes/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/routes/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_backend/**)",
+      "Bash(.venv/Scripts/python.exe -m flask:*)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_frontend/**)",
+      "Read(/mnt/c/Users/toivy/estatecore_project/estatecore_frontend/**)",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(grep:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
