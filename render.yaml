@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: estatecore-backend
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash -lc "alembic upgrade head && gunicorn estatecore_backend.app:app --workers 3 --timeout 120 --bind 0.0.0.0:\"
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: estatecore-db
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://app.myestatecore.com,http://localhost:5173
+databases:
+  - name: estatecore-db
+    plan: starter
