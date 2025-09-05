@@ -1,0 +1,88 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# CSV work files
+csv_work/
+
+# Instance folder
+instance/
+
+# Old backups and duplicated folders
+Old files back up/
+estatecore_backend/
+backend/
+estatecore_audit/
+payment_access_backend/
+
+# Deployment specific (should be configured in deployment)
+migrations/
+
+# Development files
+*_test.py
+*_diag.py
+_*.py
+
+# Docker
+*.dockerignore
+Dockerfile*
+
+# Specific large/unnecessary files
+lpr_*.py
+scheduler.py
+ai_modules/
