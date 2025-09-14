@@ -1,0 +1,13 @@
+{
+  "name": "dashboard-metrics",
+  "version": "1.0.0",
+  "description": "EstateCore Dashboard Metrics Function",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "node src/main.js"
+  },
+  "dependencies": {
+    "appwrite": "^19.0.0"
+  }
+}

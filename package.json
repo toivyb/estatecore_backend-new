@@ -1,0 +1,17 @@
+{
+  "name": "estatecore-deployment",
+  "version": "1.0.0",
+  "description": "EstateCore Property Management System Deployment Scripts",
+  "scripts": {
+    "setup-appwrite": "node setup-appwrite.js",
+    "deploy-functions": "bash deploy-functions.sh",
+    "deploy-netlify": "bash netlify-deploy.sh",
+    "setup-all": "npm run setup-appwrite && npm run deploy-functions"
+  },
+  "keywords": ["property-management", "appwrite", "netlify", "real-estate"],
+  "author": "EstateCore Team",
+  "license": "MIT",
+  "devDependencies": {
+    "appwrite-cli": "^4.1.0"
+  }
+}

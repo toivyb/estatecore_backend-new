@@ -1,0 +1,76 @@
+===============================================================================
+ESTATECORE - DEBUGGING BLANK PAGE ISSUE
+===============================================================================
+
+IMMEDIATE DEBUGGING STEPS:
+==========================
+
+1. CHECK BROWSER CONSOLE:
+   - Open browser developer tools (F12)
+   - Check Console tab for JavaScript errors
+   - Look for any red error messages
+
+2. CHECK NETWORK TAB:
+   - Look for failed HTTP requests
+   - Verify API calls are being made to http://localhost:5000
+
+3. VERIFY FRONTEND IS RUNNING:
+   - Frontend should be accessible at one of these URLs:
+     * http://localhost:5173
+     * http://localhost:5174  
+     * http://localhost:5175
+   - Look for the Vite development server port in the terminal
+
+4. CHECK CURRENT STATE:
+   - Are you seeing a completely white/blank page?
+   - Is there a login form visible?
+   - Are you logged in but seeing blank content?
+
+COMMON CAUSES & SOLUTIONS:
+=========================
+
+A) IF YOU SEE BLANK WHITE PAGE:
+   - Check browser console for JavaScript errors
+   - Verify the correct frontend port is being used
+   - Clear browser cache and localStorage
+
+B) IF YOU SEE LOGIN FORM BUT IT'S NOT WORKING:
+   - Use these credentials:
+     Email: admin@example.com
+     Password: SecureAdmin123!
+
+C) IF YOU'RE LOGGED IN BUT DASHBOARD IS BLANK:
+   - Check network tab for API failures
+   - Verify backend is still running on port 5000
+   - Check if JWT token is valid
+
+QUICK VERIFICATION COMMANDS:
+===========================
+
+1. Test Backend Health:
+   Open new browser tab: http://localhost:5000/api/health
+   Should show: {"ok": true}
+
+2. Get Login Credentials:
+   Open browser tab: http://localhost:5000/api/dev/credentials
+   Should show current login info
+
+3. Test API Connection:
+   In browser console, run:
+   fetch('http://localhost:5000/api/health').then(r => r.json()).then(console.log)
+
+FRONTEND STATUS CHECK:
+=====================
+   
+Current Status:
+- Backend: ✅ Running on port 5000
+- Frontend: ✅ Should be running on 5173/5174/5175
+- Authentication: ✅ Configured and working
+- Navigation: ✅ All routes configured
+
+If page is still blank, please check:
+1. Browser console errors
+2. Network tab in developer tools
+3. Which URL you're accessing
+
+===============================================================================

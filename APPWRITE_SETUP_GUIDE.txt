@@ -1,0 +1,717 @@
+================================================================================
+                    ESTATECORE APPWRITE SETUP COMPLETE GUIDE
+================================================================================
+
+Database ID: 68b72cd60024e95cea71
+
+This guide contains all the information needed to set up your complete EstateCore
+system in Appwrite. Follow these steps to create all 18 collections with proper
+attributes, indexes, and permissions.
+
+================================================================================
+                              SETUP INSTRUCTIONS
+================================================================================
+
+1. Log into your Appwrite Console
+2. Navigate to your EstateCore database (ID: 68b72cd60024e95cea71)
+3. Create collections in the recommended order below
+4. For each collection, add all attributes, indexes, and permissions as specified
+5. Test each collection after creation
+
+RECOMMENDED CREATION ORDER:
+1. USERS (core authentication)
+2. PROPERTIES (base entity)
+3. UNITS (references properties)
+4. TENANTS (references users)
+5. LEASES (references properties, units, tenants)
+6. WORKORDERS (references properties, units, tenants)
+7. PAYMENTS (references tenants, leases, properties)
+8. VENDORS
+9. VMS collections (CAMERAS, RECORDINGS, MOTION_EVENTS)
+10. Access Control collections (ACCESS_DOORS, ACCESS_EVENTS, VISITOR_PASSES)
+11. Additional collections (AUDIT_LOGS, RENT_RECORDS, NOTIFICATIONS, DOCUMENTS)
+
+================================================================================
+                                COLLECTION 1: USERS
+================================================================================
+
+Collection ID: users
+Collection Name: Users
+
+ATTRIBUTES:
+- name (string, 255, required)
+- email (string, 255, required)
+- role (string, 50, required, default: 'tenant') 
+  // Values: super_admin, admin, manager, tenant, vendor
+- phone (string, 20, optional)
+- status (string, 20, required, default: 'active')
+  // Values: active, inactive, suspended
+- profile_image (string, 500, optional)
+- last_login (datetime, optional)
+- created_by (string, 36, optional)
+- updated_by (string, 36, optional)
+
+INDEXES:
+- email_index (unique) -> email
+- role_index (key) -> role
+- status_index (key) -> status
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager
+Create: role:super_admin, role:admin
+Update: role:super_admin, role:admin, users
+Delete: role:super_admin
+
+================================================================================
+                              COLLECTION 2: PROPERTIES
+================================================================================
+
+Collection ID: properties
+Collection Name: Properties
+
+ATTRIBUTES:
+- name (string, 255, required)
+- address (string, 500, required)
+- city (string, 100, required)
+- state (string, 50, required)
+- zip_code (string, 10, required)
+- property_type (string, 50, required)
+  // Values: apartment, house, commercial, etc.
+- total_units (integer, required, default: 1)
+- year_built (integer, optional)
+- square_footage (integer, optional)
+- lot_size (float, optional)
+- amenities (string, 2000, optional) // JSON string of amenities
+- description (string, 2000, optional)
+- purchase_price (float, optional)
+- current_value (float, optional)
+- status (string, 20, required, default: 'active')
+  // Values: active, inactive, sold
+- manager_id (string, 36, optional)
+- images (string, 2000, optional) // JSON array of image URLs
+- created_by (string, 36, optional)
+
+INDEXES:
+- status_index (key) -> status
+- property_type_index (key) -> property_type
+- manager_id_index (key) -> manager_id
+- location_index (key) -> city, state
+- name_index (fulltext) -> name, address
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, role:tenant
+Create: role:super_admin, role:admin
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                                COLLECTION 3: UNITS
+================================================================================
+
+Collection ID: units
+Collection Name: Units
+
+ATTRIBUTES:
+- property_id (string, 36, required)
+- unit_number (string, 20, required)
+- apartment_number (string, 20, optional)
+- floor (integer, optional)
+- bedrooms (integer, required, default: 1)
+- bathrooms (float, required, default: 1.0)
+- square_footage (integer, optional)
+- rent_amount (float, required)
+- security_deposit (float, optional)
+- status (string, 20, required, default: 'vacant')
+  // Values: vacant, occupied, maintenance, unavailable
+- furnished (boolean, optional, default: false)
+- pet_friendly (boolean, optional, default: false)
+- amenities (string, 1000, optional) // JSON string
+- description (string, 1000, optional)
+- images (string, 1000, optional) // JSON array of image URLs
+- last_renovated (datetime, optional)
+
+INDEXES:
+- property_id_index (key) -> property_id
+- status_index (key) -> status
+- unit_number_index (key) -> unit_number
+- property_unit_index (unique) -> property_id, unit_number
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, role:tenant
+Create: role:super_admin, role:admin
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                               COLLECTION 4: TENANTS
+================================================================================
+
+Collection ID: tenants
+Collection Name: Tenants
+
+ATTRIBUTES:
+- user_id (string, 36, required)
+- first_name (string, 100, required)
+- last_name (string, 100, required)
+- email (string, 255, required)
+- phone (string, 20, optional)
+- emergency_contact_name (string, 255, optional)
+- emergency_contact_phone (string, 20, optional)
+- employment_info (string, 1000, optional)
+- monthly_income (float, optional)
+- credit_score (integer, optional)
+- background_check (string, 20, optional)
+  // Values: pending, approved, rejected
+- status (string, 20, required, default: 'active')
+  // Values: active, inactive, evicted
+- move_in_date (datetime, optional)
+- move_out_date (datetime, optional)
+- notes (string, 2000, optional)
+
+INDEXES:
+- user_id_index (key) -> user_id
+- email_index (key) -> email
+- status_index (key) -> status
+- name_index (fulltext) -> first_name, last_name
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, users
+Create: role:super_admin, role:admin
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                                COLLECTION 5: LEASES
+================================================================================
+
+Collection ID: leases
+Collection Name: Leases
+
+ATTRIBUTES:
+- property_id (string, 36, required)
+- unit_id (string, 36, optional)
+- tenant_id (string, 36, required)
+- lease_type (string, 20, required)
+  // Values: fixed, month-to-month
+- start_date (datetime, required)
+- end_date (datetime, optional)
+- monthly_rent (float, required)
+- security_deposit (float, optional)
+- pet_deposit (float, optional)
+- late_fee (float, optional)
+- grace_period (integer, optional, default: 5) // days
+- status (string, 20, required, default: 'active')
+  // Values: active, expired, terminated, pending
+- terms_and_conditions (string, 5000, optional)
+- special_conditions (string, 2000, optional)
+- auto_renew (boolean, optional, default: false)
+- lease_document_url (string, 500, optional)
+- signed_date (datetime, optional)
+- created_by (string, 36, optional)
+
+INDEXES:
+- property_id_index (key) -> property_id
+- tenant_id_index (key) -> tenant_id
+- status_index (key) -> status
+- date_range_index (key) -> start_date, end_date
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, users
+Create: role:super_admin, role:admin, role:manager
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                              COLLECTION 6: WORKORDERS
+================================================================================
+
+Collection ID: workorders
+Collection Name: Work Orders
+
+ATTRIBUTES:
+- property_id (string, 36, required)
+- unit_id (string, 36, optional)
+- tenant_id (string, 36, optional)
+- assigned_to (string, 36, optional) // vendor or staff user_id
+- title (string, 255, required)
+- description (string, 2000, required)
+- category (string, 50, required)
+  // Values: plumbing, electrical, hvac, etc.
+- priority (string, 20, required, default: 'medium')
+  // Values: low, medium, high, emergency
+- status (string, 20, required, default: 'open')
+  // Values: open, in_progress, completed, cancelled
+- estimated_cost (float, optional)
+- actual_cost (float, optional)
+- scheduled_date (datetime, optional)
+- completed_date (datetime, optional)
+- completion_notes (string, 2000, optional)
+- tenant_access_required (boolean, optional, default: false)
+- images (string, 1000, optional) // JSON array of image URLs
+- created_by (string, 36, optional)
+- updated_by (string, 36, optional)
+
+INDEXES:
+- property_id_index (key) -> property_id
+- status_index (key) -> status
+- priority_index (key) -> priority
+- assigned_to_index (key) -> assigned_to
+- category_index (key) -> category
+- tenant_id_index (key) -> tenant_id
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, role:tenant, role:vendor
+Create: role:super_admin, role:admin, role:manager, role:tenant
+Update: role:super_admin, role:admin, role:manager, role:vendor
+Delete: role:super_admin, role:admin
+
+================================================================================
+                               COLLECTION 7: PAYMENTS
+================================================================================
+
+Collection ID: payments
+Collection Name: Payments
+
+ATTRIBUTES:
+- tenant_id (string, 36, required)
+- lease_id (string, 36, optional)
+- property_id (string, 36, required)
+- amount (float, required)
+- payment_type (string, 20, required)
+  // Values: rent, deposit, fee, etc.
+- payment_method (string, 20, required)
+  // Values: cash, check, online, etc.
+- payment_date (datetime, required)
+- due_date (datetime, optional)
+- status (string, 20, required, default: 'pending')
+  // Values: pending, completed, failed, refunded
+- reference_number (string, 100, optional)
+- check_number (string, 50, optional)
+- notes (string, 1000, optional)
+- late_fee (float, optional, default: 0.0)
+- receipt_url (string, 500, optional)
+- processed_by (string, 36, optional)
+
+INDEXES:
+- tenant_id_index (key) -> tenant_id
+- property_id_index (key) -> property_id
+- status_index (key) -> status
+- payment_date_index (key) -> payment_date
+- payment_type_index (key) -> payment_type
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, users
+Create: role:super_admin, role:admin, role:manager, role:tenant
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                               COLLECTION 8: VENDORS
+================================================================================
+
+Collection ID: vendors
+Collection Name: Vendors
+
+ATTRIBUTES:
+- company_name (string, 255, required)
+- contact_name (string, 255, optional)
+- email (string, 255, optional)
+- phone (string, 20, optional)
+- address (string, 500, optional)
+- services (string, 1000, optional) // JSON array of services
+- hourly_rate (float, optional)
+- rating (float, optional) // 1-5 stars
+- status (string, 20, required, default: 'active')
+  // Values: active, inactive, blacklisted
+- license_number (string, 100, optional)
+- insurance_expiry (datetime, optional)
+- notes (string, 2000, optional)
+- created_by (string, 36, optional)
+
+INDEXES:
+- status_index (key) -> status
+- services_index (fulltext) -> services
+- company_name_index (fulltext) -> company_name
+- rating_index (key) -> rating
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager
+Create: role:super_admin, role:admin
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                               COLLECTION 9: CAMERAS
+================================================================================
+
+Collection ID: cameras
+Collection Name: Cameras
+
+ATTRIBUTES:
+- property_id (string, 36, required)
+- name (string, 255, required)
+- location (string, 255, required)
+- ip_address (string, 15, optional)
+- model (string, 100, optional)
+- serial_number (string, 100, optional)
+- status (string, 20, required, default: 'offline')
+  // Values: online, offline, maintenance
+- recording_enabled (boolean, optional, default: true)
+- motion_detection (boolean, optional, default: true)
+- night_vision (boolean, optional, default: false)
+- resolution (string, 20, optional) // 720p, 1080p, 4K
+- fps (integer, optional, default: 30)
+- stream_url (string, 500, optional)
+- last_ping (datetime, optional)
+- installation_date (datetime, optional)
+
+INDEXES:
+- property_id_index (key) -> property_id
+- status_index (key) -> status
+- location_index (fulltext) -> location
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager
+Create: role:super_admin, role:admin
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                              COLLECTION 10: RECORDINGS
+================================================================================
+
+Collection ID: recordings
+Collection Name: Recordings
+
+ATTRIBUTES:
+- camera_id (string, 36, required)
+- property_id (string, 36, required)
+- filename (string, 255, required)
+- file_path (string, 500, required)
+- file_size (integer, optional) // bytes
+- duration (integer, optional) // seconds
+- start_time (datetime, required)
+- end_time (datetime, required)
+- recording_type (string, 20, required)
+  // Values: continuous, motion, event
+- quality (string, 20, optional)
+- thumbnail_path (string, 500, optional)
+- archived (boolean, optional, default: false)
+- deleted (boolean, optional, default: false)
+
+INDEXES:
+- camera_id_index (key) -> camera_id
+- property_id_index (key) -> property_id
+- time_range_index (key) -> start_time, end_time
+- recording_type_index (key) -> recording_type
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager
+Create: role:super_admin, role:admin, role:manager
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                            COLLECTION 11: MOTION_EVENTS
+================================================================================
+
+Collection ID: motion_events
+Collection Name: Motion Events
+
+ATTRIBUTES:
+- camera_id (string, 36, required)
+- property_id (string, 36, required)
+- event_time (datetime, required)
+- confidence (float, optional) // 0-1 confidence score
+- recording_id (string, 36, optional)
+- snapshot_path (string, 500, optional)
+- processed (boolean, optional, default: false)
+- alert_sent (boolean, optional, default: false)
+
+INDEXES:
+- camera_id_index (key) -> camera_id
+- property_id_index (key) -> property_id
+- event_time_index (key) -> event_time
+- processed_index (key) -> processed
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager
+Create: role:super_admin, role:admin, role:manager
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                            COLLECTION 12: ACCESS_DOORS
+================================================================================
+
+Collection ID: access_doors
+Collection Name: Access Doors
+
+ATTRIBUTES:
+- property_id (string, 36, required)
+- name (string, 255, required)
+- location (string, 255, required)
+- door_type (string, 50, required)
+  // Values: main_entrance, unit_door, garage, etc.
+- controller_id (string, 100, optional)
+- ip_address (string, 15, optional)
+- status (string, 20, required, default: 'locked')
+  // Values: locked, unlocked, maintenance
+- lock_type (string, 50, optional)
+  // Values: keypad, card, biometric, etc.
+- auto_lock_delay (integer, optional, default: 5) // seconds
+- last_ping (datetime, optional)
+- installation_date (datetime, optional)
+
+INDEXES:
+- property_id_index (key) -> property_id
+- status_index (key) -> status
+- door_type_index (key) -> door_type
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager
+Create: role:super_admin, role:admin
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                           COLLECTION 13: ACCESS_EVENTS
+================================================================================
+
+Collection ID: access_events
+Collection Name: Access Events
+
+ATTRIBUTES:
+- door_id (string, 36, required)
+- property_id (string, 36, required)
+- user_id (string, 36, optional)
+- event_type (string, 20, required)
+  // Values: unlock, lock, denied, forced
+- event_time (datetime, required)
+- access_method (string, 20, optional)
+  // Values: keypad, card, mobile, etc.
+- success (boolean, required)
+- reason (string, 255, optional) // why access was denied
+- visitor_name (string, 255, optional)
+
+INDEXES:
+- door_id_index (key) -> door_id
+- property_id_index (key) -> property_id
+- user_id_index (key) -> user_id
+- event_time_index (key) -> event_time
+- event_type_index (key) -> event_type
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager
+Create: role:super_admin, role:admin, role:manager
+Update: role:super_admin, role:admin
+Delete: role:super_admin, role:admin
+
+================================================================================
+                           COLLECTION 14: VISITOR_PASSES
+================================================================================
+
+Collection ID: visitor_passes
+Collection Name: Visitor Passes
+
+ATTRIBUTES:
+- property_id (string, 36, required)
+- tenant_id (string, 36, required)
+- visitor_name (string, 255, required)
+- visitor_phone (string, 20, optional)
+- pin_code (string, 10, required)
+- valid_from (datetime, required)
+- valid_until (datetime, required)
+- access_doors (string, 500, optional) // JSON array of door IDs
+- status (string, 20, required, default: 'active')
+  // Values: active, expired, revoked
+- uses_remaining (integer, optional) // null = unlimited
+- purpose (string, 255, optional)
+- created_by (string, 36, optional)
+
+INDEXES:
+- property_id_index (key) -> property_id
+- tenant_id_index (key) -> tenant_id
+- status_index (key) -> status
+- valid_dates_index (key) -> valid_from, valid_until
+- pin_code_index (key) -> pin_code
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, users
+Create: role:super_admin, role:admin, role:manager, role:tenant
+Update: role:super_admin, role:admin, role:manager, users
+Delete: role:super_admin, role:admin, role:manager
+
+================================================================================
+                             COLLECTION 15: AUDIT_LOGS
+================================================================================
+
+Collection ID: audit_logs
+Collection Name: Audit Logs
+
+ATTRIBUTES:
+- user_id (string, 36, optional)
+- action (string, 100, required)
+  // Values: create, update, delete, login, etc.
+- resource_type (string, 50, required)
+  // Values: user, property, tenant, etc.
+- resource_id (string, 36, optional)
+- details (string, 2000, optional) // JSON string with change details
+- ip_address (string, 45, optional)
+- user_agent (string, 500, optional)
+- timestamp (datetime, required)
+
+INDEXES:
+- user_id_index (key) -> user_id
+- action_index (key) -> action
+- resource_index (key) -> resource_type, resource_id
+- timestamp_index (key) -> timestamp
+
+PERMISSIONS:
+Read: role:super_admin, role:admin
+Create: role:super_admin, role:admin, role:manager
+Update: role:super_admin
+Delete: role:super_admin
+
+================================================================================
+                            COLLECTION 16: RENT_RECORDS
+================================================================================
+
+Collection ID: rent_records
+Collection Name: Rent Records
+
+ATTRIBUTES:
+- lease_id (string, 36, required)
+- tenant_id (string, 36, required)
+- property_id (string, 36, required)
+- month_year (string, 7, required) // YYYY-MM format
+- amount_due (float, required)
+- amount_paid (float, optional, default: 0.0)
+- due_date (datetime, required)
+- paid_date (datetime, optional)
+- late_fee (float, optional, default: 0.0)
+- status (string, 20, required, default: 'pending')
+  // Values: pending, paid, late, partial
+- payment_method (string, 20, optional)
+- notes (string, 1000, optional)
+
+INDEXES:
+- lease_id_index (key) -> lease_id
+- tenant_id_index (key) -> tenant_id
+- property_id_index (key) -> property_id
+- status_index (key) -> status
+- month_year_index (key) -> month_year
+- due_date_index (key) -> due_date
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, users
+Create: role:super_admin, role:admin, role:manager
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                           COLLECTION 17: NOTIFICATIONS
+================================================================================
+
+Collection ID: notifications
+Collection Name: Notifications
+
+ATTRIBUTES:
+- user_id (string, 36, required)
+- title (string, 255, required)
+- message (string, 2000, required)
+- type (string, 50, required)
+  // Values: info, warning, error, maintenance, payment, etc.
+- priority (string, 20, required, default: 'normal')
+  // Values: low, normal, high, urgent
+- read (boolean, optional, default: false)
+- read_at (datetime, optional)
+- action_url (string, 500, optional)
+- expires_at (datetime, optional)
+- sent_via (string, 100, optional) // app, email, sms
+- related_resource_type (string, 50, optional)
+- related_resource_id (string, 36, optional)
+
+INDEXES:
+- user_id_index (key) -> user_id
+- type_index (key) -> type
+- priority_index (key) -> priority
+- read_index (key) -> read
+- created_at_index (key) -> $createdAt
+
+PERMISSIONS:
+Read: users
+Create: role:super_admin, role:admin, role:manager
+Update: users
+Delete: role:super_admin, role:admin, users
+
+================================================================================
+                             COLLECTION 18: DOCUMENTS
+================================================================================
+
+Collection ID: documents
+Collection Name: Documents
+
+ATTRIBUTES:
+- name (string, 255, required)
+- document_type (string, 50, required)
+  // Values: lease, invoice, receipt, maintenance, etc.
+- file_path (string, 500, required)
+- file_size (integer, optional)
+- mime_type (string, 100, optional)
+- property_id (string, 36, optional)
+- tenant_id (string, 36, optional)
+- lease_id (string, 36, optional)
+- workorder_id (string, 36, optional)
+- expires_on (datetime, optional)
+- tags (string, 500, optional) // JSON array of tags
+- description (string, 1000, optional)
+- uploaded_by (string, 36, optional)
+- is_public (boolean, optional, default: false)
+
+INDEXES:
+- document_type_index (key) -> document_type
+- property_id_index (key) -> property_id
+- tenant_id_index (key) -> tenant_id
+- lease_id_index (key) -> lease_id
+- workorder_id_index (key) -> workorder_id
+- expires_on_index (key) -> expires_on
+- name_index (fulltext) -> name
+
+PERMISSIONS:
+Read: role:super_admin, role:admin, role:manager, users
+Create: role:super_admin, role:admin, role:manager, role:tenant
+Update: role:super_admin, role:admin, role:manager
+Delete: role:super_admin, role:admin
+
+================================================================================
+                              FINAL CHECKLIST
+================================================================================
+
+After creating all collections:
+
+□ Verify all 18 collections are created
+□ Check all attributes are properly configured
+□ Confirm all indexes are created
+□ Test permissions for each role
+□ Verify relationships work correctly
+□ Test basic CRUD operations
+□ Check query performance
+□ Validate data integrity constraints
+
+================================================================================
+                               SUPPORT NOTES
+================================================================================
+
+- All collections support automatic timestamps ($createdAt, $updatedAt)
+- Use proper foreign key relationships for data integrity
+- JSON strings are used for complex data (arrays, objects)
+- Indexes are optimized for common query patterns
+- Permissions follow least-privilege principle
+- All sensitive operations require admin+ roles
+- Document storage should use Appwrite Storage service
+- Consider backup and disaster recovery procedures
+
+================================================================================
+                                END OF GUIDE
+================================================================================

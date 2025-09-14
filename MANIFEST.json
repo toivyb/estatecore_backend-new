@@ -1,0 +1,2632 @@
+﻿{
+    "files":  [
+                  {
+                      "path":  "estatecore-backend\\.env",
+                      "mtime":  "2025-08-07T19:29:12",
+                      "bytes":  92
+                  },
+                  {
+                      "path":  "estatecore-backend\\.env.example",
+                      "mtime":  "2025-08-07T20:19:18",
+                      "bytes":  201
+                  },
+                  {
+                      "path":  "estatecore-backend\\0.9",
+                      "mtime":  "2025-07-25T13:39:36",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\1.0",
+                      "mtime":  "2025-07-25T13:39:36",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\1.9.0",
+                      "mtime":  "2025-07-25T13:39:36",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\25.1.1",
+                      "mtime":  "2025-07-25T13:39:36",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\add_user_form.html",
+                      "mtime":  "2025-07-16T18:58:08",
+                      "bytes":  724
+                  },
+                  {
+                      "path":  "estatecore-backend\\add_user_form.html.txt",
+                      "mtime":  "2025-07-16T18:57:12",
+                      "bytes":  724
+                  },
+                  {
+                      "path":  "estatecore-backend\\app.py",
+                      "mtime":  "2025-08-04T20:07:49",
+                      "bytes":  746
+                  },
+                  {
+                      "path":  "estatecore-backend\\apply_fix.py",
+                      "mtime":  "2025-08-07T20:15:26",
+                      "bytes":  2993
+                  },
+                  {
+                      "path":  "estatecore-backend\\APPLY_STEPS.txt",
+                      "mtime":  "2025-08-07T19:58:16",
+                      "bytes":  605
+                  },
+                  {
+                      "path":  "estatecore-backend\\config.py",
+                      "mtime":  "2025-08-07T16:21:33",
+                      "bytes":  291
+                  },
+                  {
+                      "path":  "estatecore-backend\\dashboard.py",
+                      "mtime":  "2025-07-25T14:36:15",
+                      "bytes":  1466
+                  },
+                  {
+                      "path":  "estatecore-backend\\db.py",
+                      "mtime":  "2025-08-04T17:12:27",
+                      "bytes":  59
+                  },
+                  {
+                      "path":  "estatecore-backend\\db.sqlite3",
+                      "mtime":  "2025-07-28T15:14:39",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\export_folder_structure.py",
+                      "mtime":  "2025-07-24T20:08:58",
+                      "bytes":  1221
+                  },
+                  {
+                      "path":  "estatecore-backend\\flask-migrate)",
+                      "mtime":  "2025-07-25T13:39:36",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\gunicorn_start.sh",
+                      "mtime":  "2025-08-01T15:05:16",
+                      "bytes":  80
+                  },
+                  {
+                      "path":  "estatecore-backend\\lpr_stream_processor.py",
+                      "mtime":  "2025-07-24T20:34:30",
+                      "bytes":  2722
+                  },
+                  {
+                      "path":  "estatecore-backend\\main.py",
+                      "mtime":  "2025-07-25T14:59:43",
+                      "bytes":  2342
+                  },
+                  {
+                      "path":  "estatecore-backend\\models.py",
+                      "mtime":  "2025-07-30T18:39:45",
+                      "bytes":  1254
+                  },
+                  {
+                      "path":  "estatecore-backend\\New Text Document (2).txt",
+                      "mtime":  "2025-07-24T01:25:46",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\New Text Document (3).txt",
+                      "mtime":  "2025-07-29T03:10:34",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\New Text Document.txt",
+                      "mtime":  "2025-07-16T21:05:47",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\prefill_users.py",
+                      "mtime":  "2025-07-28T17:45:16",
+                      "bytes":  22
+                  },
+                  {
+                      "path":  "estatecore-backend\\python",
+                      "mtime":  "2025-07-25T13:35:28",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\README.md",
+                      "mtime":  "2025-08-08T02:54:28",
+                      "bytes":  598
+                  },
+                  {
+                      "path":  "estatecore-backend\\README.txt",
+                      "mtime":  "2025-08-07T20:15:29",
+                      "bytes":  1436
+                  },
+                  {
+                      "path":  "estatecore-backend\\requirements.txt",
+                      "mtime":  "2025-08-08T12:39:37",
+                      "bytes":  70
+                  },
+                  {
+                      "path":  "estatecore-backend\\requirements.txt.txt",
+                      "mtime":  "2025-07-28T16:33:15",
+                      "bytes":  20
+                  },
+                  {
+                      "path":  "estatecore-backend\\reset_db.py",
+                      "mtime":  "2025-07-16T21:06:13",
+                      "bytes":  162
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes.py",
+                      "mtime":  "2025-08-05T21:35:59",
+                      "bytes":  401
+                  },
+                  {
+                      "path":  "estatecore-backend\\run.py",
+                      "mtime":  "2025-08-07T19:29:12",
+                      "bytes":  126
+                  },
+                  {
+                      "path":  "estatecore-backend\\seed.py",
+                      "mtime":  "2025-07-28T02:42:31",
+                      "bytes":  1816
+                  },
+                  {
+                      "path":  "estatecore-backend\\structure.tree",
+                      "mtime":  "2025-07-24T20:09:08",
+                      "bytes":  2559131
+                  },
+                  {
+                      "path":  "estatecore-backend\\structure.txt",
+                      "mtime":  "2025-07-24T20:09:08",
+                      "bytes":  2559131
+                  },
+                  {
+                      "path":  "estatecore-backend\\wsgi.py",
+                      "mtime":  "2025-08-08T12:39:37",
+                      "bytes":  46
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\asset_health_score.py",
+                      "mtime":  "2025-08-07T02:51:29",
+                      "bytes":  255
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\lease_scoring.py",
+                      "mtime":  "2025-08-07T02:51:33",
+                      "bytes":  145
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\maintenance_forecaster.py",
+                      "mtime":  "2025-08-07T02:51:29",
+                      "bytes":  166
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\rent_delay_predictor.py",
+                      "mtime":  "2025-08-07T02:51:29",
+                      "bytes":  168
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\revenue_leakage.py",
+                      "mtime":  "2025-08-07T02:51:29",
+                      "bytes":  166
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\smart_renewal.py",
+                      "mtime":  "2025-08-07T02:51:29",
+                      "bytes":  227
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\utility_forecast.py",
+                      "mtime":  "2025-08-07T02:51:29",
+                      "bytes":  211
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\predict\\asset_health_score.py",
+                      "mtime":  "2025-08-07T03:37:45",
+                      "bytes":  302
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\predict\\lease_scoring.py",
+                      "mtime":  "2025-08-07T02:58:14",
+                      "bytes":  324
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\predict\\maintenance_forecaster.py",
+                      "mtime":  "2025-08-07T02:58:14",
+                      "bytes":  363
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\predict\\rent_delay_predictor.py",
+                      "mtime":  "2025-08-07T02:58:14",
+                      "bytes":  349
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\predict\\revenue_leakage.py",
+                      "mtime":  "2025-08-07T03:37:45",
+                      "bytes":  318
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\predict\\utility_forecast.py",
+                      "mtime":  "2025-08-07T03:37:45",
+                      "bytes":  309
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training\\health_train.py",
+                      "mtime":  "2025-08-07T03:38:07",
+                      "bytes":  392
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training\\lease_scoring_train.py",
+                      "mtime":  "2025-08-07T03:34:35",
+                      "bytes":  389
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training\\maintenance_train.py",
+                      "mtime":  "2025-08-07T03:34:32",
+                      "bytes":  421
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training\\rent_delay_train.py",
+                      "mtime":  "2025-08-07T03:34:32",
+                      "bytes":  422
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training\\revenue_train.py",
+                      "mtime":  "2025-08-07T03:38:07",
+                      "bytes":  388
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training\\utility_train.py",
+                      "mtime":  "2025-08-07T03:38:07",
+                      "bytes":  386
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training_data\\asset_health.csv",
+                      "mtime":  "2025-08-07T03:38:23",
+                      "bytes":  108
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training_data\\lease_history.csv",
+                      "mtime":  "2025-08-07T03:34:54",
+                      "bytes":  83
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training_data\\maintenance_data.csv",
+                      "mtime":  "2025-08-07T03:34:52",
+                      "bytes":  104
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training_data\\rent_history.csv",
+                      "mtime":  "2025-08-07T03:34:52",
+                      "bytes":  105
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training_data\\revenue_data.csv",
+                      "mtime":  "2025-08-07T03:38:23",
+                      "bytes":  116
+                  },
+                  {
+                      "path":  "estatecore-backend\\ai_modules\\training_data\\utility_data.csv",
+                      "mtime":  "2025-08-07T03:38:23",
+                      "bytes":  104
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\auth.py",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  733
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\cli.py",
+                      "mtime":  "2025-08-07T20:40:35",
+                      "bytes":  692
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\config.py",
+                      "mtime":  "2025-08-08T02:55:06",
+                      "bytes":  422
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\create_test_org.py",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  195
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\decorators.py",
+                      "mtime":  "2025-08-07T20:19:44",
+                      "bytes":  480
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\extensions.py",
+                      "mtime":  "2025-08-05T18:49:55",
+                      "bytes":  118
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\init_patch.py",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  528
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\lease_renewal_route.py",
+                      "mtime":  "2025-08-06T16:22:43",
+                      "bytes":  1318
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\lease_score_route.py",
+                      "mtime":  "2025-08-06T16:00:05",
+                      "bytes":  664
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\lpr_recognizer.py",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  674
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\lpr_stream_processor.py",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  2722
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\main.jsx",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  235
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models.py",
+                      "mtime":  "2025-08-07T19:29:38",
+                      "bytes":  1382
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models_user_patch.py",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  374
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\New Text Document (2).txt",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\New Text Document.txt",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\prefill_users.py",
+                      "mtime":  "2025-08-03T22:39:07",
+                      "bytes":  1011
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\README_RBAC.md",
+                      "mtime":  "2025-08-08T12:26:05",
+                      "bytes":  972
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes.py",
+                      "mtime":  "2025-08-06T15:14:41",
+                      "bytes":  3756
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\scheduler.py",
+                      "mtime":  "2025-08-07T14:18:06",
+                      "bytes":  1735
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\__init__.py",
+                      "mtime":  "2025-08-08T12:39:59",
+                      "bytes":  735
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\predict\\asset_health_score.py",
+                      "mtime":  "2025-08-07T14:05:44",
+                      "bytes":  85
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\predict\\lease_scoring.py",
+                      "mtime":  "2025-08-07T14:05:44",
+                      "bytes":  75
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\predict\\maintenance_forecast.py",
+                      "mtime":  "2025-08-07T14:05:44",
+                      "bytes":  98
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\predict\\rent_delay.py",
+                      "mtime":  "2025-08-07T14:05:44",
+                      "bytes":  90
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\predict\\revenue_leakage.py",
+                      "mtime":  "2025-08-07T14:05:44",
+                      "bytes":  101
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\predict\\utility_forecast.py",
+                      "mtime":  "2025-08-07T14:05:44",
+                      "bytes":  102
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\training\\train_asset_health_score.py",
+                      "mtime":  "2025-08-07T14:07:34",
+                      "bytes":  92
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\training\\train_lease_model.py",
+                      "mtime":  "2025-08-07T14:07:34",
+                      "bytes":  72
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\training\\train_maintenance_forecast.py",
+                      "mtime":  "2025-08-07T14:07:34",
+                      "bytes":  93
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\training\\train_rent_delay.py",
+                      "mtime":  "2025-08-07T14:07:34",
+                      "bytes":  82
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\training\\train_revenue_leakage.py",
+                      "mtime":  "2025-08-07T14:07:34",
+                      "bytes":  84
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\ai_models\\training\\train_utility_forecast.py",
+                      "mtime":  "2025-08-07T14:07:34",
+                      "bytes":  85
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\app\\__init__.py",
+                      "mtime":  "2025-08-06T22:17:42",
+                      "bytes":  473
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\app\\models\\user.py",
+                      "mtime":  "2025-08-06T22:17:42",
+                      "bytes":  501
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\app\\models\\__init__.py",
+                      "mtime":  "2025-08-06T22:17:42",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\app\\routes\\auth.py",
+                      "mtime":  "2025-08-06T22:17:42",
+                      "bytes":  673
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\app\\routes\\__init__.py",
+                      "mtime":  "2025-08-06T22:17:42",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\cli\\roles.py",
+                      "mtime":  "2025-08-08T12:40:23",
+                      "bytes":  165
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\access_log.py",
+                      "mtime":  "2025-08-07T00:34:55",
+                      "bytes":  437
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\ai_summary.py",
+                      "mtime":  "2025-08-07T14:27:23",
+                      "bytes":  249
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\invite_token.py",
+                      "mtime":  "2025-08-07T00:34:55",
+                      "bytes":  477
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\late_fee_rule.py",
+                      "mtime":  "2025-08-08T02:55:34",
+                      "bytes":  369
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\lease.py",
+                      "mtime":  "2025-08-08T02:55:34",
+                      "bytes":  1297
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\maintenance_request.py",
+                      "mtime":  "2025-08-07T00:34:55",
+                      "bytes":  480
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\message.py",
+                      "mtime":  "2025-08-08T02:55:34",
+                      "bytes":  987
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\New Text Document.txt",
+                      "mtime":  "2025-08-07T00:20:27",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\payments.py",
+                      "mtime":  "2025-08-08T03:05:14",
+                      "bytes":  841
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\payments_ext.py",
+                      "mtime":  "2025-08-08T02:41:41",
+                      "bytes":  65
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\property.py",
+                      "mtime":  "2025-08-08T02:55:35",
+                      "bytes":  314
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\property_manager.py",
+                      "mtime":  "2025-08-07T19:38:27",
+                      "bytes":  1107
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\property_patch.py",
+                      "mtime":  "2025-08-07T19:58:34",
+                      "bytes":  424
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\rent.py",
+                      "mtime":  "2025-08-08T02:55:35",
+                      "bytes":  872
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\rent_record.py",
+                      "mtime":  "2025-08-07T00:34:55",
+                      "bytes":  429
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\tenant.py",
+                      "mtime":  "2025-08-08T02:55:35",
+                      "bytes":  398
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\tenant_patch.py",
+                      "mtime":  "2025-08-07T19:58:34",
+                      "bytes":  498
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\training_log.py",
+                      "mtime":  "2025-08-07T14:18:29",
+                      "bytes":  395
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\user.py",
+                      "mtime":  "2025-08-08T02:55:35",
+                      "bytes":  990
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\video_inspection.py",
+                      "mtime":  "2025-08-07T00:34:55",
+                      "bytes":  403
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\workorder.py",
+                      "mtime":  "2025-08-08T02:55:34",
+                      "bytes":  2526
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\models\\__init__.py",
+                      "mtime":  "2025-08-08T02:55:34",
+                      "bytes":  387
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\access_routes.py",
+                      "mtime":  "2025-08-07T14:23:30",
+                      "bytes":  184
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\admin.py",
+                      "mtime":  "2025-08-07T20:20:30",
+                      "bytes":  373
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\admin_routes.py",
+                      "mtime":  "2025-08-07T14:23:30",
+                      "bytes":  179
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\admin_stats.py",
+                      "mtime":  "2025-08-06T22:52:13",
+                      "bytes":  235
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\ai_routes.py",
+                      "mtime":  "2025-08-07T15:35:22",
+                      "bytes":  2085
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\auth.py",
+                      "mtime":  "2025-08-07T20:20:24",
+                      "bytes":  785
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\auth_routes.py",
+                      "mtime":  "2025-08-07T19:29:58",
+                      "bytes":  937
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\cash_flow.py",
+                      "mtime":  "2025-08-06T22:52:13",
+                      "bytes":  278
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\health.py",
+                      "mtime":  "2025-08-08T12:40:48",
+                      "bytes":  117
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\invite_routes.py",
+                      "mtime":  "2025-08-07T14:23:30",
+                      "bytes":  184
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\leases.py",
+                      "mtime":  "2025-08-08T02:56:20",
+                      "bytes":  2121
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\maintenance_routes.py",
+                      "mtime":  "2025-08-07T14:23:30",
+                      "bytes":  209
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\messages.py",
+                      "mtime":  "2025-08-08T02:56:20",
+                      "bytes":  1188
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\New Text Document.txt",
+                      "mtime":  "2025-08-07T14:20:33",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\payments.py",
+                      "mtime":  "2025-08-08T03:16:33",
+                      "bytes":  4005
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\regulatory_docs.py",
+                      "mtime":  "2025-08-06T22:52:13",
+                      "bytes":  272
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\rent.py",
+                      "mtime":  "2025-08-08T02:56:20",
+                      "bytes":  2923
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\rent_routes.py",
+                      "mtime":  "2025-08-07T14:23:30",
+                      "bytes":  174
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\reporting.py",
+                      "mtime":  "2025-08-08T02:56:20",
+                      "bytes":  865
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\revenue_leakage.py",
+                      "mtime":  "2025-08-06T22:52:13",
+                      "bytes":  281
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\save_summary.py",
+                      "mtime":  "2025-08-07T14:23:32",
+                      "bytes":  182
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\super_admin.py",
+                      "mtime":  "2025-08-07T19:29:55",
+                      "bytes":  3494
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\super_admin_toggles.py",
+                      "mtime":  "2025-08-06T22:52:13",
+                      "bytes":  456
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\training_admin.py",
+                      "mtime":  "2025-08-07T14:23:32",
+                      "bytes":  917
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\train_routes.py",
+                      "mtime":  "2025-08-07T14:23:32",
+                      "bytes":  179
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\user_routes.py",
+                      "mtime":  "2025-08-07T14:23:30",
+                      "bytes":  174
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\video_inspections.py",
+                      "mtime":  "2025-08-06T22:52:13",
+                      "bytes":  259
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\workorders.py",
+                      "mtime":  "2025-08-08T02:56:20",
+                      "bytes":  4447
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\routes\\__init__.py",
+                      "mtime":  "2025-08-06T22:52:15",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\security\\rbac.py",
+                      "mtime":  "2025-08-08T12:41:28",
+                      "bytes":  1095
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\static\\openapi.yaml",
+                      "mtime":  "2025-08-07T12:28:54",
+                      "bytes":  1335
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\auth.py",
+                      "mtime":  "2025-08-06T18:43:06",
+                      "bytes":  464
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\email_sms.py",
+                      "mtime":  "2025-08-03T22:39:22",
+                      "bytes":  352
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\generate_rent_receipt.py",
+                      "mtime":  "2025-08-06T14:50:36",
+                      "bytes":  590
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\New Text Document.txt",
+                      "mtime":  "2025-08-03T22:39:22",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\pdf.py",
+                      "mtime":  "2025-08-08T02:56:48",
+                      "bytes":  602
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\pdf_utils.py",
+                      "mtime":  "2025-08-03T22:39:22",
+                      "bytes":  527
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\proration.py",
+                      "mtime":  "2025-08-08T02:56:48",
+                      "bytes":  219
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\rent_logic.py",
+                      "mtime":  "2025-08-03T22:39:22",
+                      "bytes":  1150
+                  },
+                  {
+                      "path":  "estatecore-backend\\app\\utils\\uploads.py",
+                      "mtime":  "2025-08-08T02:56:48",
+                      "bytes":  347
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\config.py",
+                      "mtime":  "2025-07-16T18:25:10",
+                      "bytes":  115
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\create_test_org.py",
+                      "mtime":  "2025-07-24T15:40:04",
+                      "bytes":  195
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\lpr_recognizer.py",
+                      "mtime":  "2025-07-10T18:59:27",
+                      "bytes":  674
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\lpr_stream_processor.py",
+                      "mtime":  "2025-07-10T19:09:26",
+                      "bytes":  2132
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\models.py",
+                      "mtime":  "2025-07-24T18:31:27",
+                      "bytes":  1759
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\New Text Document (2).txt",
+                      "mtime":  "2025-07-17T20:49:43",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\New Text Document.txt",
+                      "mtime":  "2025-07-10T19:01:24",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\routes.py",
+                      "mtime":  "2025-07-24T04:20:41",
+                      "bytes":  2013
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\utils.py",
+                      "mtime":  "2025-07-17T20:50:11",
+                      "bytes":  821
+                  },
+                  {
+                      "path":  "estatecore-backend\\appfolder back up\\__init__.py",
+                      "mtime":  "2025-07-24T16:13:16",
+                      "bytes":  399
+                  },
+                  {
+                      "path":  "estatecore-backend\\docs\\openapi.yaml",
+                      "mtime":  "2025-08-07T04:14:58",
+                      "bytes":  1335
+                  },
+                  {
+                      "path":  "estatecore-backend\\instance\\app.db",
+                      "mtime":  "2025-08-07T15:38:14",
+                      "bytes":  61440
+                  },
+                  {
+                      "path":  "estatecore-backend\\instance\\data.db",
+                      "mtime":  "2025-08-05T20:56:32",
+                      "bytes":  40960
+                  },
+                  {
+                      "path":  "estatecore-backend\\instance\\db.sqlite3",
+                      "mtime":  "2025-07-30T18:31:44",
+                      "bytes":  53248
+                  },
+                  {
+                      "path":  "estatecore-backend\\instance\\estatecore.db",
+                      "mtime":  "2025-08-08T03:08:09",
+                      "bytes":  102400
+                  },
+                  {
+                      "path":  "estatecore-backend\\instance\\instagate.db",
+                      "mtime":  "2025-07-24T16:14:48",
+                      "bytes":  40960
+                  },
+                  {
+                      "path":  "estatecore-backend\\instance\\requirements.txt",
+                      "mtime":  "2025-07-28T14:01:26",
+                      "bytes":  44
+                  },
+                  {
+                      "path":  "estatecore-backend\\instance\\your_db.db",
+                      "mtime":  "2025-07-24T01:16:47",
+                      "bytes":  36864
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\alembic.ini",
+                      "mtime":  "2025-08-06T18:49:23",
+                      "bytes":  857
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\env.py",
+                      "mtime":  "2025-08-06T18:49:24",
+                      "bytes":  3344
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\README",
+                      "mtime":  "2025-08-06T18:49:24",
+                      "bytes":  41
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\script.py.mako",
+                      "mtime":  "2025-08-06T18:49:24",
+                      "bytes":  494
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\versions\\08317a404e71_work_orders.py",
+                      "mtime":  "2025-08-08T02:34:29",
+                      "bytes":  6501
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\versions\\7318a3f0ee69_re_sync_after_stamp.py",
+                      "mtime":  "2025-08-06T18:55:08",
+                      "bytes":  2964
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\versions\\da19fad738b0_rent_models.py",
+                      "mtime":  "2025-08-08T02:19:33",
+                      "bytes":  6834
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\versions\\f9e5035be4fd_clean_migration_for_all_core_models.py",
+                      "mtime":  "2025-08-07T15:22:47",
+                      "bytes":  9378
+                  },
+                  {
+                      "path":  "estatecore-backend\\migrations\\versions\\fdbbd9bcbe68_initial.py",
+                      "mtime":  "2025-08-06T18:50:15",
+                      "bytes":  2930
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\access_attempt.py",
+                      "mtime":  "2025-08-06T17:57:54",
+                      "bytes":  515
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\asset_health.py",
+                      "mtime":  "2025-08-06T18:16:24",
+                      "bytes":  296
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\cash_flow.py",
+                      "mtime":  "2025-08-06T18:16:24",
+                      "bytes":  347
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\community_post.py",
+                      "mtime":  "2025-08-06T17:56:15",
+                      "bytes":  463
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\document.py",
+                      "mtime":  "2025-08-06T18:25:59",
+                      "bytes":  369
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\eviction_risk.py",
+                      "mtime":  "2025-08-06T18:16:24",
+                      "bytes":  336
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\incident_report.py",
+                      "mtime":  "2025-08-06T18:23:27",
+                      "bytes":  405
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\lease_renewal.py",
+                      "mtime":  "2025-08-06T18:16:24",
+                      "bytes":  422
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\lease_score.py",
+                      "mtime":  "2025-08-06T18:05:59",
+                      "bytes":  452
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\log.py",
+                      "mtime":  "2025-08-04T19:30:48",
+                      "bytes":  839
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\maintenance.py",
+                      "mtime":  "2025-08-04T19:24:03",
+                      "bytes":  1243
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\mobile_feedback.py",
+                      "mtime":  "2025-08-06T18:22:23",
+                      "bytes":  290
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\New Text Document.txt",
+                      "mtime":  "2025-08-04T19:10:07",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\notification.py",
+                      "mtime":  "2025-08-06T18:16:24",
+                      "bytes":  327
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\package_delivery.py",
+                      "mtime":  "2025-08-06T17:49:43",
+                      "bytes":  554
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\payment.py",
+                      "mtime":  "2025-08-06T18:19:57",
+                      "bytes":  323
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\regulatory_doc.py",
+                      "mtime":  "2025-08-06T18:16:24",
+                      "bytes":  341
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\rent.py",
+                      "mtime":  "2025-08-04T19:16:48",
+                      "bytes":  927
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\revenue_leak.py",
+                      "mtime":  "2025-08-06T18:16:24",
+                      "bytes":  336
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\user.py",
+                      "mtime":  "2025-08-06T22:18:54",
+                      "bytes":  501
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\video_inspection.py",
+                      "mtime":  "2025-08-06T17:42:02",
+                      "bytes":  448
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\visitor_pass.py",
+                      "mtime":  "2025-08-06T18:01:36",
+                      "bytes":  482
+                  },
+                  {
+                      "path":  "estatecore-backend\\models\\__init__.py",
+                      "mtime":  "2025-08-06T22:18:54",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\nginx\\instagate.conf",
+                      "mtime":  "2025-07-28T13:50:35",
+                      "bytes":  430
+                  },
+                  {
+                      "path":  "estatecore-backend\\nginx\\New Text Document.txt",
+                      "mtime":  "2025-07-28T13:48:16",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\dashboard.py",
+                      "mtime":  "2025-07-25T15:52:53",
+                      "bytes":  1466
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\run.py",
+                      "mtime":  "2025-07-25T15:48:33",
+                      "bytes":  446
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\app\\config.py",
+                      "mtime":  "2025-07-25T15:48:33",
+                      "bytes":  1213
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\app\\models.py",
+                      "mtime":  "2025-07-27T06:04:59",
+                      "bytes":  6325
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\app\\routes.py",
+                      "mtime":  "2025-07-28T14:21:13",
+                      "bytes":  4530
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\app\\utils.py",
+                      "mtime":  "2025-07-25T15:48:33",
+                      "bytes":  973
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\app\\__init__.py",
+                      "mtime":  "2025-07-25T15:48:33",
+                      "bytes":  908
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\.env",
+                      "mtime":  "2025-07-25T16:12:01",
+                      "bytes":  36
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\public\\index.html",
+                      "mtime":  "2025-07-25T16:09:24",
+                      "bytes":  187
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\src\\api.js",
+                      "mtime":  "2025-07-25T16:07:39",
+                      "bytes":  888
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\src\\App.jsx",
+                      "mtime":  "2025-07-27T06:47:22",
+                      "bytes":  1103
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\src\\main.jsx",
+                      "mtime":  "2025-07-25T16:07:11",
+                      "bytes":  222
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\src\\pages\\admin_panel.jsx",
+                      "mtime":  "2025-07-25T16:26:11",
+                      "bytes":  1589
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\src\\pages\\DashboardPage.jsx",
+                      "mtime":  "2025-07-25T16:08:50",
+                      "bytes":  1179
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\src\\pages\\frontend_scaffold.jsx",
+                      "mtime":  "2025-07-25T16:03:38",
+                      "bytes":  754
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\src\\pages\\LoginPage.jsx",
+                      "mtime":  "2025-07-25T16:08:10",
+                      "bytes":  1241
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\frontend\\src\\pages\\RegisterPage.jsx",
+                      "mtime":  "2025-07-25T16:08:33",
+                      "bytes":  1314
+                  },
+                  {
+                      "path":  "estatecore-backend\\payment_access_backend\\instance\\payment_access.db",
+                      "mtime":  "2025-07-25T15:37:22",
+                      "bytes":  40960
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\access.py",
+                      "mtime":  "2025-08-04T19:32:04",
+                      "bytes":  3381
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\access_log.py",
+                      "mtime":  "2025-08-06T17:57:42",
+                      "bytes":  1181
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\accounting.py",
+                      "mtime":  "2025-08-04T19:59:06",
+                      "bytes":  3353
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\ai_video_tagging.py",
+                      "mtime":  "2025-08-06T18:20:11",
+                      "bytes":  300
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\analytics.py",
+                      "mtime":  "2025-08-06T18:20:11",
+                      "bytes":  334
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\asset_health.py",
+                      "mtime":  "2025-08-06T18:16:34",
+                      "bytes":  544
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\auth.py",
+                      "mtime":  "2025-08-06T22:18:31",
+                      "bytes":  673
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\bulk_upload_users.py",
+                      "mtime":  "2025-08-06T18:22:13",
+                      "bytes":  625
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\cash_flow.py",
+                      "mtime":  "2025-08-06T18:16:36",
+                      "bytes":  590
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\community_post.py",
+                      "mtime":  "2025-08-06T18:44:21",
+                      "bytes":  1112
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\document_vault.py",
+                      "mtime":  "2025-08-06T18:26:09",
+                      "bytes":  949
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\eviction_risk.py",
+                      "mtime":  "2025-08-06T18:16:36",
+                      "bytes":  565
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\gate_control.py",
+                      "mtime":  "2025-08-06T18:00:06",
+                      "bytes":  918
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\geofence_unlock.py",
+                      "mtime":  "2025-08-06T18:22:13",
+                      "bytes":  381
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\health_score.py",
+                      "mtime":  "2025-08-06T18:09:04",
+                      "bytes":  337
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\incident_reporting.py",
+                      "mtime":  "2025-08-06T18:23:40",
+                      "bytes":  1002
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\leakage.py",
+                      "mtime":  "2025-08-06T18:09:04",
+                      "bytes":  464
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\lease_renewal.py",
+                      "mtime":  "2025-08-06T18:16:36",
+                      "bytes":  1101
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\lease_score.py",
+                      "mtime":  "2025-08-06T18:06:11",
+                      "bytes":  1168
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\maintenance.py",
+                      "mtime":  "2025-08-04T19:24:37",
+                      "bytes":  1903
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\mobile_feedback.py",
+                      "mtime":  "2025-08-06T18:22:13",
+                      "bytes":  494
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\New Text Document.txt",
+                      "mtime":  "2025-08-04T19:11:15",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\notification.py",
+                      "mtime":  "2025-08-06T18:16:36",
+                      "bytes":  952
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\package_delivery.py",
+                      "mtime":  "2025-08-06T18:40:29",
+                      "bytes":  1670
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\payment.py",
+                      "mtime":  "2025-08-06T18:20:13",
+                      "bytes":  499
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\pdf_report.py",
+                      "mtime":  "2025-08-06T18:20:11",
+                      "bytes":  336
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\regulatory.py",
+                      "mtime":  "2025-08-06T18:16:36",
+                      "bytes":  522
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\rent.py",
+                      "mtime":  "2025-08-04T19:17:11",
+                      "bytes":  3796
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\reporting.py",
+                      "mtime":  "2025-08-04T19:44:40",
+                      "bytes":  3292
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\revenue_leak.py",
+                      "mtime":  "2025-08-06T18:16:34",
+                      "bytes":  529
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\save_summary.py",
+                      "mtime":  "2025-08-07T12:58:47",
+                      "bytes":  758
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\super_admin.py",
+                      "mtime":  "2025-08-06T18:20:11",
+                      "bytes":  429
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\video_inspection.py",
+                      "mtime":  "2025-08-06T17:42:24",
+                      "bytes":  1191
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\visitor_pass.py",
+                      "mtime":  "2025-08-06T18:01:21",
+                      "bytes":  1160
+                  },
+                  {
+                      "path":  "estatecore-backend\\routes\\__init__.py",
+                      "mtime":  "2025-08-06T22:18:31",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\tasks\\maintenance_ai.py",
+                      "mtime":  "2025-08-04T19:25:27",
+                      "bytes":  273
+                  },
+                  {
+                      "path":  "estatecore-backend\\tasks\\New Text Document.txt",
+                      "mtime":  "2025-08-04T19:12:26",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\tasks\\scheduler.py",
+                      "mtime":  "2025-08-04T19:17:33",
+                      "bytes":  1114
+                  },
+                  {
+                      "path":  "estatecore-backend\\tests\\ai_payloads\\test_payloads\\detect_leakage.json",
+                      "mtime":  "2025-08-07T04:49:57",
+                      "bytes":  72
+                  },
+                  {
+                      "path":  "estatecore-backend\\tests\\ai_payloads\\test_payloads\\forecast_maintenance.json",
+                      "mtime":  "2025-08-07T04:49:57",
+                      "bytes":  80
+                  },
+                  {
+                      "path":  "estatecore-backend\\tests\\ai_payloads\\test_payloads\\forecast_utility.json",
+                      "mtime":  "2025-08-07T04:49:57",
+                      "bytes":  64
+                  },
+                  {
+                      "path":  "estatecore-backend\\tests\\ai_payloads\\test_payloads\\health_score.json",
+                      "mtime":  "2025-08-07T04:49:57",
+                      "bytes":  68
+                  },
+                  {
+                      "path":  "estatecore-backend\\tests\\ai_payloads\\test_payloads\\predict_delay.json",
+                      "mtime":  "2025-08-07T04:49:57",
+                      "bytes":  79
+                  },
+                  {
+                      "path":  "estatecore-backend\\tests\\ai_payloads\\test_payloads\\score_lease.json",
+                      "mtime":  "2025-08-07T04:49:57",
+                      "bytes":  66
+                  },
+                  {
+                      "path":  "estatecore-backend\\utils\\email.py",
+                      "mtime":  "2025-08-04T19:36:52",
+                      "bytes":  112
+                  },
+                  {
+                      "path":  "estatecore-backend\\utils\\New Text Document.txt",
+                      "mtime":  "2025-08-04T19:13:33",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-backend\\utils\\pdf.py",
+                      "mtime":  "2025-08-04T19:37:48",
+                      "bytes":  1344
+                  },
+                  {
+                      "path":  "estatecore-backend\\utils\\sms.py",
+                      "mtime":  "2025-08-04T19:18:46",
+                      "bytes":  114
+                  },
+                  {
+                      "path":  "estatecore-backend\\utils\\__init__.py",
+                      "mtime":  "2025-08-04T19:13:52",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\.env",
+                      "mtime":  "2025-08-06T20:17:50",
+                      "bytes":  36
+                  },
+                  {
+                      "path":  "estatecore-frontend\\.env.example",
+                      "mtime":  "2025-08-07T20:22:12",
+                      "bytes":  40
+                  },
+                  {
+                      "path":  "estatecore-frontend\\alembic.ini",
+                      "mtime":  "2025-08-06T20:17:50",
+                      "bytes":  857
+                  },
+                  {
+                      "path":  "estatecore-frontend\\App.jsx",
+                      "mtime":  "2025-08-06T20:17:50",
+                      "bytes":  1305
+                  },
+                  {
+                      "path":  "estatecore-frontend\\index.css",
+                      "mtime":  "2025-08-06T20:17:50",
+                      "bytes":  59
+                  },
+                  {
+                      "path":  "estatecore-frontend\\index.html",
+                      "mtime":  "2025-08-08T12:42:01",
+                      "bytes":  248
+                  },
+                  {
+                      "path":  "estatecore-frontend\\Login.jsx",
+                      "mtime":  "2025-08-06T20:17:50",
+                      "bytes":  1419
+                  },
+                  {
+                      "path":  "estatecore-frontend\\main.jsx",
+                      "mtime":  "2025-08-07T17:59:24",
+                      "bytes":  253
+                  },
+                  {
+                      "path":  "estatecore-frontend\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:17:50",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\package-lock.json",
+                      "mtime":  "2025-08-08T03:46:32",
+                      "bytes":  103722
+                  },
+                  {
+                      "path":  "estatecore-frontend\\package.json",
+                      "mtime":  "2025-08-08T12:42:01",
+                      "bytes":  273
+                  },
+                  {
+                      "path":  "estatecore-frontend\\postcss.config.cjs",
+                      "mtime":  "2025-08-08T02:57:24",
+                      "bytes":  71
+                  },
+                  {
+                      "path":  "estatecore-frontend\\README.md",
+                      "mtime":  "2025-08-08T02:57:23",
+                      "bytes":  357
+                  },
+                  {
+                      "path":  "estatecore-frontend\\README_ACH.md",
+                      "mtime":  "2025-08-08T03:15:57",
+                      "bytes":  1076
+                  },
+                  {
+                      "path":  "estatecore-frontend\\README_RBAC_UI.md",
+                      "mtime":  "2025-08-08T12:26:54",
+                      "bytes":  1279
+                  },
+                  {
+                      "path":  "estatecore-frontend\\tailwind.config.cjs",
+                      "mtime":  "2025-08-08T02:57:23",
+                      "bytes":  114
+                  },
+                  {
+                      "path":  "estatecore-frontend\\tailwind.config.js",
+                      "mtime":  "2025-08-06T23:04:00",
+                      "bytes":  113
+                  },
+                  {
+                      "path":  "estatecore-frontend\\vite.config.js",
+                      "mtime":  "2025-08-08T12:42:01",
+                      "bytes":  130
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\AccessAnomalyMonitor.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  506
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\AccessControl.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1624
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\AccessLogViewer.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  955
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\AccessPage.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1135
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\AccessSimulator.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1026
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\AdminTools.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1630
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\AILeaseRiskAnalyzer.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  285
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\App.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  2423
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\BehaviorInsightAnalyzer.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  515
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\CashFlowForecastTool.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  280
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\CommunityAnnouncements.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  306
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\ComplianceTracker.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  294
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\Dashboard.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  347
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\DocumentVault.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  285
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\EvictionRiskFlags.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  621
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\FeatureToggleManager.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1069
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\FinanceSummaryWidget.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  797
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\IntegrationKeyManager.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1131
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\InviteFlow.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1384
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\InvitePage.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  855
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\LeaseRenewal.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  2032
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\LeaseScoring.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  2123
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\Login.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1397
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\MaintenancePage.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  216
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\MobileAppScaffold.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  425
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\MobileUnlockControl.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  271
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\New Text Document.txt",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  226
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\PackageDeliveryLog.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  2519
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\PackageLog.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  283
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\PDFReportDownloader.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  932
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\PushNotifications.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  298
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\RentManagement.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  3216
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\RentReceipts.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1258
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\RentUpload.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  822
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\RevenueLeakageDetector.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  487
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\SmartMaintenancePredictor.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  305
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\SystemSimulationLab.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  810
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\UserProfile.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  633
+                  },
+                  {
+                      "path":  "estatecore-frontend\\pages\\VisitorPassManager.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  282
+                  },
+                  {
+                      "path":  "estatecore-frontend\\public\\favicon.ico",
+                      "mtime":  "2025-08-08T01:56:56",
+                      "bytes":  4
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\AccessControl.jsx",
+                      "mtime":  "2025-08-06T20:18:01",
+                      "bytes":  119
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\AdminTools.jsx",
+                      "mtime":  "2025-08-06T20:18:01",
+                      "bytes":  119
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\api.js",
+                      "mtime":  "2025-08-06T20:18:01",
+                      "bytes":  976
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\App.jsx",
+                      "mtime":  "2025-08-07T20:25:18",
+                      "bytes":  735
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\Dashboard.jsx",
+                      "mtime":  "2025-08-06T20:18:01",
+                      "bytes":  110
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\index.css",
+                      "mtime":  "2025-08-07T19:30:57",
+                      "bytes":  649
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\main.jsx",
+                      "mtime":  "2025-08-08T12:42:23",
+                      "bytes":  163
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:18:01",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\RentManagement.jsx",
+                      "mtime":  "2025-08-06T20:18:01",
+                      "bytes":  121
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\routes.js",
+                      "mtime":  "2025-08-06T20:06:00",
+                      "bytes":  765
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\zzz.jsx",
+                      "mtime":  "2025-08-06T20:18:01",
+                      "bytes":  110
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\AccessControl.jsx",
+                      "mtime":  "2025-08-06T20:48:38",
+                      "bytes":  1749
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\Layout.jsx",
+                      "mtime":  "2025-08-07T16:54:43",
+                      "bytes":  1478
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\Login.jsx",
+                      "mtime":  "2025-08-07T19:31:53",
+                      "bytes":  1103
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\Navbar.jsx",
+                      "mtime":  "2025-08-07T17:47:52",
+                      "bytes":  96
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\New Text Document.txt",
+                      "mtime":  "2025-08-07T16:40:15",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\NotFound.jsx",
+                      "mtime":  "2025-08-07T17:24:38",
+                      "bytes":  427
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\ProtectedRoute.jsx",
+                      "mtime":  "2025-08-07T20:23:27",
+                      "bytes":  413
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\RequireRole.jsx",
+                      "mtime":  "2025-08-08T12:42:38",
+                      "bytes":  192
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\Sidebar.jsx",
+                      "mtime":  "2025-08-07T20:23:25",
+                      "bytes":  582
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\access\\AccessLogTable.jsx",
+                      "mtime":  "2025-08-06T20:49:29",
+                      "bytes":  2046
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\access\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:49:29",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\access\\VisitorPassGenerator.jsx",
+                      "mtime":  "2025-08-06T20:49:29",
+                      "bytes":  1561
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\auth\\Login.jsx",
+                      "mtime":  "2025-08-06T23:04:00",
+                      "bytes":  1037
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AccessControl.jsx",
+                      "mtime":  "2025-08-06T23:04:00",
+                      "bytes":  113
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AccessLog.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  319
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AccessLogWidget.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  4035
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AccessManagement.jsx",
+                      "mtime":  "2025-08-07T17:15:14",
+                      "bytes":  117
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AccessSimulator.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  1639
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AdminAnalytics.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  233
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AdminPanel.jsx",
+                      "mtime":  "2025-08-07T17:17:28",
+                      "bytes":  115
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AssetHealthScore.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  276
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\AssetHealthScoreDemo.jsx",
+                      "mtime":  "2025-08-07T12:39:15",
+                      "bytes":  1383
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\BulkUpload.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  328
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\CashFlowWidget.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  292
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\CommunityFeed.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  1777
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\Dashboard.jsx",
+                      "mtime":  "2025-08-07T15:52:40",
+                      "bytes":  12492
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\DashboardSummary.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  1534
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\DocumentVault.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  1548
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\EvictionRiskFlag.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  278
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\ExportButtons.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  541
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\FeedbackForm.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  487
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\GateControl.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  449
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\GeofenceUnlock.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  316
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\IncidentReport.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  529
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\IncomeVsCostWidget.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  840
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\LeaseRenewal.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  536
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\LeaseScoring.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  1469
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\LeaseScoringDemo.jsx",
+                      "mtime":  "2025-08-07T12:31:59",
+                      "bytes":  1350
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\Maintenance.jsx",
+                      "mtime":  "2025-08-07T17:16:55",
+                      "bytes":  111
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\MaintenanceForecastDemo.jsx",
+                      "mtime":  "2025-08-07T12:39:15",
+                      "bytes":  1441
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\MaintenanceRequests.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  2609
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\ModelTrainingPanel.jsx",
+                      "mtime":  "2025-08-07T14:09:28",
+                      "bytes":  1391
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\NotificationSender.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  539
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\PackageDeliveryLog.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  2434
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\PDFReportButton.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  134
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\QuickBooksExportPanel.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  1240
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\RegulatoryDocs.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  290
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\RentDelayDemo.jsx",
+                      "mtime":  "2025-08-07T12:39:15",
+                      "bytes":  1413
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\RentManagement.jsx",
+                      "mtime":  "2025-08-06T23:04:00",
+                      "bytes":  115
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\RentUpload.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  822
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\RentVsPaidChart.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  1449
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\RevenueLeakage.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  297
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\RevenueLeakageDemo.jsx",
+                      "mtime":  "2025-08-07T12:39:15",
+                      "bytes":  1381
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\SuperAdminToggles.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  288
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\TenantAIOverview.jsx",
+                      "mtime":  "2025-08-07T12:47:42",
+                      "bytes":  4418
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\UtilityForecastDemo.jsx",
+                      "mtime":  "2025-08-07T12:39:15",
+                      "bytes":  1377
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\VideoInspection.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  356
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\dashboard\\VisitorPassManager.jsx",
+                      "mtime":  "2025-08-06T20:49:01",
+                      "bytes":  376
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\AccessControl.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1749
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\CreateMaintenanceForm.jsx",
+                      "mtime":  "2025-08-06T20:19:23",
+                      "bytes":  1313
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\MaintenanceTable.jsx",
+                      "mtime":  "2025-08-06T20:19:23",
+                      "bytes":  2406
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:19:23",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\ProtectedRoute.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  212
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\access\\AccessLogTable.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  2046
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\access\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\access\\VisitorPassGenerator.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1561
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\AccessControl.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  478
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\AccessLog.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  319
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\AccessLogWidget.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  4035
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\AccessSimulator.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1639
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\AdminAnalytics.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  233
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\AdminPanel.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  440
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\AssetHealthScore.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  276
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\BulkUpload.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  328
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\CashFlowWidget.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  292
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\CommunityFeed.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1777
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\Dashboard.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  192
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\DashboardSummary.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1534
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\DocumentVault.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1548
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\EvictionRiskFlag.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  278
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\ExportButtons.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  541
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\FeedbackForm.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  487
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\GateControl.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  449
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\GeofenceUnlock.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  316
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\IncidentReport.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  529
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\IncomeVsCostWidget.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  840
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\LeaseRenewal.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  536
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\LeaseScoring.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1469
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\Maintenance.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  294
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\MaintenanceRequests.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  2609
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\NotificationSender.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  539
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\PackageDeliveryLog.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  2434
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\PDFReportButton.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  134
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\QuickBooksExportPanel.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1240
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\RegulatoryDocs.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  290
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\RentManagement.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  286
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\RentUpload.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  822
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\RentVsPaidChart.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1449
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\RevenueLeakage.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  297
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\SuperAdminToggles.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  288
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\VideoInspection.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  356
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\dashboard\\VisitorPassManager.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  376
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\maintenance\\CreateMaintenanceForm.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1313
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\maintenance\\MaintenanceTable.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  2406
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\maintenance\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\payments\\AdminPaymentsTable.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1609
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\payments\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\payments\\PaymentHistoryTable.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1354
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\payments\\t.txt",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  297
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\payments\\TenantPayRent.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1033
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\rent\\BulkUploadRent.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  767
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\rent\\LateFeeConfigModal.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  1242
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\rent\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\maintenance\\rent\\RentTable.jsx",
+                      "mtime":  "2025-08-06T20:19:21",
+                      "bytes":  2208
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\payments\\AdminPaymentsTable.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1609
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\payments\\New Text Document.txt",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\payments\\PaymentHistoryTable.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1354
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\payments\\t.txt",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  297
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\payments\\TenantPayRent.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1033
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\rent\\BulkUploadRent.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  767
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\rent\\LateFeeConfigModal.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  1242
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\rent\\New Text Document.txt",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\components\\rent\\RentTable.jsx",
+                      "mtime":  "2025-08-06T23:54:18",
+                      "bytes":  2208
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\contexts\\AuthContext.jsx",
+                      "mtime":  "2025-08-06T20:20:26",
+                      "bytes":  843
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\contexts\\New Text Document.txt",
+                      "mtime":  "2025-08-06T20:20:26",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\hooks\\New Text Document.txt",
+                      "mtime":  "2025-08-07T16:03:21",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\hooks\\useAuth.jsx",
+                      "mtime":  "2025-08-07T19:31:35",
+                      "bytes":  1122
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\AccessControl.jsx",
+                      "mtime":  "2025-08-06T20:20:47",
+                      "bytes":  1624
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\AccessLog.jsx",
+                      "mtime":  "2025-08-06T20:15:10",
+                      "bytes":  74
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\AccessPage.jsx",
+                      "mtime":  "2025-08-06T20:20:47",
+                      "bytes":  1135
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\AdminPanel.jsx",
+                      "mtime":  "2025-08-08T12:43:08",
+                      "bytes":  78
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\AdminTools.jsx",
+                      "mtime":  "2025-08-06T20:20:47",
+                      "bytes":  1630
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\App.jsx",
+                      "mtime":  "2025-08-08T12:43:08",
+                      "bytes":  916
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\BulkUpload.jsx",
+                      "mtime":  "2025-08-08T01:57:28",
+                      "bytes":  692
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\Dashboard.jsx",
+                      "mtime":  "2025-08-07T20:23:52",
+                      "bytes":  254
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\FinancialDashboard.jsx",
+                      "mtime":  "2025-08-06T20:15:10",
+                      "bytes":  92
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\InviteFlow.jsx",
+                      "mtime":  "2025-08-06T20:20:47",
+                      "bytes":  1384
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\InviteUser.jsx",
+                      "mtime":  "2025-08-06T20:15:10",
+                      "bytes":  76
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\InvoicePayments.jsx",
+                      "mtime":  "2025-08-08T03:06:10",
+                      "bytes":  584
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\Leases.jsx",
+                      "mtime":  "2025-08-08T02:58:53",
+                      "bytes":  530
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\Login.jsx",
+                      "mtime":  "2025-08-07T20:23:52",
+                      "bytes":  1686
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\Maintenance.jsx",
+                      "mtime":  "2025-08-06T20:52:51",
+                      "bytes":  404
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\MaintenanceBoard.jsx",
+                      "mtime":  "2025-08-08T02:58:53",
+                      "bytes":  712
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\MaintenanceRequests.jsx",
+                      "mtime":  "2025-08-06T20:15:10",
+                      "bytes":  94
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\ManagerPanel.jsx",
+                      "mtime":  "2025-08-08T12:28:04",
+                      "bytes":  325
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\Messages.jsx",
+                      "mtime":  "2025-08-08T02:58:53",
+                      "bytes":  805
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\NewWorkOrder.jsx",
+                      "mtime":  "2025-08-08T02:58:53",
+                      "bytes":  950
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\PayInvoice.jsx",
+                      "mtime":  "2025-08-08T03:06:10",
+                      "bytes":  1834
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\RentDashboard.jsx",
+                      "mtime":  "2025-08-08T02:58:53",
+                      "bytes":  574
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\RentInvoiceDetail.jsx",
+                      "mtime":  "2025-08-08T01:57:28",
+                      "bytes":  85
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\RentInvoices.jsx",
+                      "mtime":  "2025-08-08T02:58:53",
+                      "bytes":  831
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\RentManagement.jsx",
+                      "mtime":  "2025-08-06T20:20:47",
+                      "bytes":  3216
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\RentManager.jsx",
+                      "mtime":  "2025-08-06T20:15:10",
+                      "bytes":  78
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\RentReceipt.jsx",
+                      "mtime":  "2025-08-06T20:15:10",
+                      "bytes":  78
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\Reports.jsx",
+                      "mtime":  "2025-08-08T02:58:53",
+                      "bytes":  668
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\SuperAdmin.jsx",
+                      "mtime":  "2025-08-07T20:24:11",
+                      "bytes":  295
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\TenantPortal.jsx",
+                      "mtime":  "2025-08-08T12:43:08",
+                      "bytes":  82
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\Tenants.jsx",
+                      "mtime":  "2025-08-08T01:57:28",
+                      "bytes":  578
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\VideoInspection.jsx",
+                      "mtime":  "2025-08-06T20:15:10",
+                      "bytes":  86
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\WorkOrderDetail.jsx",
+                      "mtime":  "2025-08-08T02:38:12",
+                      "bytes":  69
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\pages\\WorkOrderList.jsx",
+                      "mtime":  "2025-08-08T02:58:53",
+                      "bytes":  1329
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\src\\components\\ProtectedRoute.jsx",
+                      "mtime":  "2025-08-06T22:58:06",
+                      "bytes":  239
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\src\\components\\auth\\Login.jsx",
+                      "mtime":  "2025-08-06T22:58:06",
+                      "bytes":  1016
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\src\\components\\dashboard\\AccessControl.jsx",
+                      "mtime":  "2025-08-06T22:58:06",
+                      "bytes":  113
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\src\\components\\dashboard\\AdminPanel.jsx",
+                      "mtime":  "2025-08-06T22:58:06",
+                      "bytes":  107
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\src\\components\\dashboard\\Dashboard.jsx",
+                      "mtime":  "2025-08-06T22:58:06",
+                      "bytes":  104
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\src\\components\\dashboard\\Maintenance.jsx",
+                      "mtime":  "2025-08-06T22:58:06",
+                      "bytes":  108
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\src\\components\\dashboard\\RentManagement.jsx",
+                      "mtime":  "2025-08-06T22:58:06",
+                      "bytes":  115
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\utils\\api.js",
+                      "mtime":  "2025-08-08T02:58:25",
+                      "bytes":  811
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\utils\\auth.js",
+                      "mtime":  "2025-08-08T02:58:25",
+                      "bytes":  419
+                  },
+                  {
+                      "path":  "estatecore-frontend\\src\\utils\\roles.js",
+                      "mtime":  "2025-08-08T12:43:28",
+                      "bytes":  103
+                  },
+                  {
+                      "path":  "extras\\public\\favicon.ico",
+                      "mtime":  "2025-08-08T01:56:56",
+                      "bytes":  4
+                  }
+              ],
+    "created":  "2025-08-08T09:12:22",
+    "out_file":  "C:\\Users\\toivy\\Desktop\\estatecore_master_full.zip",
+    "note":  "Bundle for today + tomorrow agenda (Stripe excluded, migrations included)"
+}

@@ -1,0 +1,14 @@
+
+[Unit]
+Description=Gunicorn instance for EstateCore
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/estatecore-backend
+Environment="PATH=/opt/estatecore-backend/venv/bin"
+ExecStart=/opt/estatecore-backend/venv/bin/gunicorn -c /opt/estatecore-backend/deploy/gunicorn.conf.py wsgi:app
+
+[Install]
+WantedBy=multi-user.target

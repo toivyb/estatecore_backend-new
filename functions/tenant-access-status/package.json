@@ -1,0 +1,13 @@
+{
+  "name": "tenant-access-status",
+  "version": "1.0.0",
+  "description": "EstateCore Tenant Access Status Function",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "node src/main.js"
+  },
+  "dependencies": {
+    "appwrite": "^19.0.0"
+  }
+}

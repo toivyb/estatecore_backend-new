@@ -1,0 +1,13 @@
+{
+  "name": "camera-stream-control",
+  "version": "1.0.0",
+  "description": "EstateCore Camera Stream Control Function",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "node src/main.js"
+  },
+  "dependencies": {
+    "appwrite": "^19.0.0"
+  }
+}
