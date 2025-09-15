@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: estatecore-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: estatecore-db
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: https://estatecore-frontend.netlify.app,http://localhost:3000,http://localhost:5173
+  - type: pserv
+    name: estatecore-db
+    env: postgresql
+    plan: free
+    databaseName: estatecore
+    user: estatecore_user
