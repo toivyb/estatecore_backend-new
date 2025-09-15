@@ -3,33 +3,31 @@ import sys
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from config import Config
 
 # Initialize extensions
 db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)
+    
+    # Configuration
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_secret_key_change_in_production')
+    
+    # Database URI - handle Render's postgres:// URLs
+    database_url = os.environ.get('DATABASE_URL', 'sqlite:///estatecore.db')
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
+    # CORS Configuration
+    cors_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://localhost:5173').split(',')
     
     # Initialize extensions
     db.init_app(app)
-    CORS(app, origins=app.config['CORS_ORIGINS'])
+    CORS(app, origins=cors_origins)
     
-    # Import and register blueprints
-    from estatecore_backend.routes.auth import auth_bp
-    from estatecore_backend.routes.properties import properties_bp
-    from estatecore_backend.routes.users import users_bp
-    from estatecore_backend.routes.payments import payments_bp
-    from estatecore_backend.routes.dashboard import dashboard_bp
-    
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(properties_bp, url_prefix='/api/properties')
-    app.register_blueprint(users_bp, url_prefix='/api/users')
-    app.register_blueprint(payments_bp, url_prefix='/api/payments')
-    app.register_blueprint(dashboard_bp, url_prefix='/')
-    
-    # Health check route
+    # Health check routes
     @app.route('/health')
     def health():
         return jsonify({'status': 'healthy', 'service': 'EstateCore Backend'})
@@ -37,6 +35,23 @@ def create_app():
     @app.route('/')
     def root():
         return jsonify({'message': 'EstateCore API', 'status': 'running'})
+    
+    @app.route('/api/properties')
+    def get_properties():
+        return jsonify([])
+    
+    @app.route('/dashboard')
+    def get_dashboard():
+        return jsonify({
+            'total_properties': 0,
+            'available_properties': 0,
+            'occupied_properties': 0,
+            'total_users': 0,
+            'total_payments': 0,
+            'total_revenue': 0.0,
+            'pending_revenue': 0.0,
+            'recent_properties': []
+        })
     
     with app.app_context():
         try:
@@ -46,8 +61,10 @@ def create_app():
     
     return app
 
+# Create the app instance for gunicorn
+app = create_app()
+
 # For direct execution
 if __name__ == '__main__':
-    app = create_app()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
