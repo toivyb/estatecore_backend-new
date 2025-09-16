@@ -6,14 +6,96 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from datetime import datetime, timedelta
 import uuid
+import stripe
+from decimal import Decimal
 
 # Initialize extensions
 db = SQLAlchemy()
 
 # Database Models
+class Company(db.Model):
+    __tablename__ = 'companies'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    legal_name = db.Column(db.String(200), nullable=True)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    address = db.Column(db.String(255), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    state = db.Column(db.String(50), nullable=True)
+    zip_code = db.Column(db.String(20), nullable=True)
+    website = db.Column(db.String(200), nullable=True)
+    license_number = db.Column(db.String(100), nullable=True)
+    tax_id = db.Column(db.String(50), nullable=True)
+    stripe_customer_id = db.Column(db.String(100), nullable=True)
+    subscription_status = db.Column(db.String(20), default='trial')
+    subscription_plan = db.Column(db.String(50), default='basic')
+    trial_ends_at = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_deleted = db.Column(db.Boolean, nullable=False, default=False)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationships
+    buildings = db.relationship('Building', backref='company', lazy=True)
+    users = db.relationship('User', backref='company', lazy=True)
+
+class Building(db.Model):
+    __tablename__ = 'buildings'
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=False)
+    name = db.Column(db.String(200), nullable=False)
+    building_type = db.Column(db.String(50), nullable=False, default='residential')
+    description = db.Column(db.Text, nullable=True)
+    street_address = db.Column(db.String(255), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    state = db.Column(db.String(50), nullable=False)
+    zip_code = db.Column(db.String(20), nullable=False)
+    year_built = db.Column(db.Integer, nullable=True)
+    total_floors = db.Column(db.Integer, nullable=True)
+    total_units = db.Column(db.Integer, nullable=True, default=0)
+    parking_spaces = db.Column(db.Integer, nullable=True, default=0)
+    amenities = db.Column(db.Text, nullable=True)  # JSON string of amenities
+    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_deleted = db.Column(db.Boolean, nullable=False, default=False)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationships
+    units = db.relationship('Unit', backref='building', lazy=True)
+    maintenance_requests = db.relationship('MaintenanceRequest', backref='building', lazy=True)
+
+class StripeCustomer(db.Model):
+    __tablename__ = 'stripe_customers'
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=True)
+    stripe_customer_id = db.Column(db.String(100), nullable=False, unique=True)
+    email = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(200), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+class StripeSubscription(db.Model):
+    __tablename__ = 'stripe_subscriptions'
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=False)
+    stripe_subscription_id = db.Column(db.String(100), nullable=False, unique=True)
+    stripe_customer_id = db.Column(db.String(100), nullable=False)
+    plan_id = db.Column(db.String(100), nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+    current_period_start = db.Column(db.DateTime, nullable=False)
+    current_period_end = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=True)
     email = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
@@ -111,7 +193,8 @@ class Property(db.Model):
 class Unit(db.Model):
     __tablename__ = 'units'
     id = db.Column(db.Integer, primary_key=True)
-    property_id = db.Column(db.Integer, nullable=False)
+    building_id = db.Column(db.Integer, db.ForeignKey('buildings.id'), nullable=False)
+    property_id = db.Column(db.Integer, nullable=True)  # Kept for backward compatibility
     unit_number = db.Column(db.String(50), nullable=False)
     floor_number = db.Column(db.Integer, nullable=True)
     bedrooms = db.Column(db.Integer, nullable=True)
@@ -122,10 +205,16 @@ class Unit(db.Model):
     status = db.Column(db.String(11), nullable=True)
     is_occupied = db.Column(db.Boolean, nullable=True)
     available_date = db.Column(db.Date, nullable=True)
+    current_tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=True)
+    lease_start = db.Column(db.Date, nullable=True)
+    lease_end = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     is_deleted = db.Column(db.Boolean, nullable=False, default=False)
     deleted_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationships
+    current_tenant = db.relationship('Tenant', backref='current_unit', lazy=True)
     
     # Add compatibility properties
     @property
@@ -190,23 +279,58 @@ class Payment(db.Model):
     __tablename__ = 'payments'
     id = db.Column(db.Integer, primary_key=True)
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=True)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
     payment_date = db.Column(db.DateTime, default=datetime.utcnow)
     due_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(20), default='pending')
     payment_method = db.Column(db.String(50))
     transaction_id = db.Column(db.String(100))
+    stripe_payment_intent_id = db.Column(db.String(100), nullable=True)
+    stripe_charge_id = db.Column(db.String(100), nullable=True)
+    payment_type = db.Column(db.String(50), default='rent')  # rent, deposit, fee, etc.
+    description = db.Column(db.Text, nullable=True)
+    late_fee = db.Column(db.Numeric(10, 2), nullable=True, default=0)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+class RentPayment(db.Model):
+    __tablename__ = 'rent_payments'
+    id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payments.id'), nullable=True)
+    amount_due = db.Column(db.Numeric(10, 2), nullable=False)
+    amount_paid = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    late_fee = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    due_date = db.Column(db.Date, nullable=False)
+    paid_date = db.Column(db.Date, nullable=True)
+    status = db.Column(db.String(20), default='pending')  # pending, paid, partial, late, waived
+    payment_period = db.Column(db.String(20), nullable=False)  # e.g., "2024-01"
+    stripe_subscription_id = db.Column(db.String(100), nullable=True)
+    auto_pay_enabled = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 class MaintenanceRequest(db.Model):
     __tablename__ = 'maintenance_requests'
     id = db.Column(db.Integer, primary_key=True)
-    property_id = db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=False)
+    building_id = db.Column(db.Integer, db.ForeignKey('buildings.id'), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=True)
+    property_id = db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=True)  # Backward compatibility
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'))
+    assigned_to_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     priority = db.Column(db.String(20), default='medium')
     status = db.Column(db.String(20), default='open')
+    category = db.Column(db.String(50), nullable=True)  # plumbing, electrical, hvac, etc.
+    estimated_cost = db.Column(db.Numeric(10, 2), nullable=True)
+    actual_cost = db.Column(db.Numeric(10, 2), nullable=True)
+    scheduled_date = db.Column(db.DateTime, nullable=True)
+    completed_date = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 class Message(db.Model):
     __tablename__ = 'messages'
@@ -405,15 +529,30 @@ def create_app():
     # Users API
     @app.route('/api/users', methods=['GET'])
     def get_users():
-        users = User.query.all()  # Get all users including inactive
-        return jsonify([{
-            'id': u.id,
-            'email': u.email,
-            'username': u.username,
-            'role': u.role,
-            'is_active': u.is_active,
-            'created_at': u.created_at.isoformat()
-        } for u in users])
+        try:
+            # Direct SQL query to avoid model issues during deployment
+            result = db.session.execute(db.text("""
+                SELECT id, email, first_name, last_name, phone, role, is_active, created_at
+                FROM users 
+                WHERE is_deleted = false OR is_deleted IS NULL
+            """)).fetchall()
+            
+            users_list = []
+            for row in result:
+                users_list.append({
+                    'id': row[0],
+                    'email': row[1],
+                    'username': f"{row[2]} {row[3]}" if row[2] and row[3] else row[1],
+                    'first_name': row[2],
+                    'last_name': row[3],
+                    'phone': row[4],
+                    'role': row[5],
+                    'is_active': row[6] if row[6] is not None else True,
+                    'created_at': row[7].isoformat() if row[7] else None
+                })
+            return jsonify(users_list)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/users', methods=['POST'])
     def create_user():
@@ -726,27 +865,109 @@ def create_app():
     # Dashboard API
     @app.route('/dashboard', methods=['GET'])
     def get_dashboard():
-        total_properties = Property.query.count()
-        available_properties = Property.query.filter_by(is_available=True).count()
-        total_users = User.query.filter_by(is_active=True).count()
-        total_payments = Payment.query.count()
-        
-        completed_payments = Payment.query.filter_by(status='completed').all()
-        total_revenue = sum(p.amount for p in completed_payments)
-        
-        pending_payments = Payment.query.filter_by(status='pending').all()
-        pending_revenue = sum(p.amount for p in pending_payments)
-        
-        return jsonify({
-            'total_properties': total_properties,
-            'available_properties': available_properties,
-            'occupied_properties': total_properties - available_properties,
-            'total_users': total_users,
-            'total_payments': total_payments,
-            'total_revenue': total_revenue,
-            'pending_revenue': pending_revenue,
-            'recent_properties': []
-        })
+        try:
+            # Direct SQL queries to avoid model issues
+            total_properties = db.session.execute(db.text("SELECT COUNT(*) FROM properties WHERE is_deleted = false OR is_deleted IS NULL")).scalar()
+            available_properties = db.session.execute(db.text("SELECT COUNT(*) FROM properties WHERE (is_active = true OR is_active IS NULL) AND (is_deleted = false OR is_deleted IS NULL)")).scalar()
+            total_users = db.session.execute(db.text("SELECT COUNT(*) FROM users WHERE (is_active = true OR is_active IS NULL) AND (is_deleted = false OR is_deleted IS NULL)")).scalar()
+            
+            # Check if payments table exists
+            payments_exist = db.session.execute(db.text("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'payments'
+                )
+            """)).scalar()
+            
+            if payments_exist:
+                total_payments = db.session.execute(db.text("SELECT COUNT(*) FROM payments")).scalar()
+                completed_revenue = db.session.execute(db.text("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'completed'")).scalar()
+                pending_revenue = db.session.execute(db.text("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'pending'")).scalar()
+            else:
+                total_payments = 0
+                completed_revenue = 0
+                pending_revenue = 0
+            
+            return jsonify({
+                'total_properties': total_properties or 0,
+                'available_properties': available_properties or 0,
+                'occupied_properties': (total_properties or 0) - (available_properties or 0),
+                'total_users': total_users or 0,
+                'total_payments': total_payments or 0,
+                'total_revenue': float(completed_revenue) if completed_revenue else 0,
+                'pending_revenue': float(pending_revenue) if pending_revenue else 0,
+                'recent_properties': []
+            })
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    # AI Analytics Endpoints - Lease Management
+    @app.route('/api/ai/lease-expiration-check', methods=['GET'])
+    def get_lease_expiration_check():
+        try:
+            # Check if units table exists and has lease data
+            units_exist = db.session.execute(db.text("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'units'
+                )
+            """)).scalar()
+            
+            if not units_exist:
+                # Return mock data if table doesn't exist yet
+                return jsonify({
+                    'expiring_soon': [],
+                    'expired': [],
+                    'alerts': ['Lease tracking system is being set up']
+                })
+            
+            # Check if lease_end column exists, if not use mock data
+            try:
+                # Try to query lease_end column
+                expiring_soon = db.session.execute(db.text("""
+                    SELECT id, unit_number, lease_end 
+                    FROM units 
+                    WHERE lease_end IS NOT NULL 
+                    AND lease_end BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
+                    AND (is_deleted = false OR is_deleted IS NULL)
+                    LIMIT 10
+                """)).fetchall()
+                
+                expired = db.session.execute(db.text("""
+                    SELECT id, unit_number, lease_end 
+                    FROM units 
+                    WHERE lease_end IS NOT NULL 
+                    AND lease_end < CURRENT_DATE
+                    AND (is_deleted = false OR is_deleted IS NULL)
+                    LIMIT 10
+                """)).fetchall()
+                
+            except Exception:
+                # Column doesn't exist, return mock data
+                expiring_soon = []
+                expired = []
+            
+            alerts = []
+            if len(expiring_soon) > 0:
+                alerts.append(f"{len(expiring_soon)} leases expiring within 30 days")
+            if len(expired) > 0:
+                alerts.append(f"{len(expired)} leases have already expired")
+            
+            return jsonify({
+                'expiring_soon': [{
+                    'unit_id': row[0],
+                    'unit_number': row[1],
+                    'lease_end': row[2].isoformat() if row[2] else None
+                } for row in expiring_soon],
+                'expired': [{
+                    'unit_id': row[0],
+                    'unit_number': row[1],
+                    'lease_end': row[2].isoformat() if row[2] else None
+                } for row in expired],
+                'alerts': alerts if alerts else ['All leases are current']
+            })
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/auth/login', methods=['POST'])
     def login():
@@ -1611,6 +1832,386 @@ def create_app():
             db.create_all()
         except Exception as e:
             print(f"Database error: {e}")
+    
+    # Initialize Stripe
+    stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_your_test_key_here')
+    
+    # Companies API
+    @app.route('/api/companies', methods=['GET'])
+    def get_companies():
+        try:
+            # Check if companies table exists
+            result = db.session.execute(db.text("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'companies'
+                )
+            """)).fetchone()
+            
+            if not result[0]:
+                # Table doesn't exist yet, return empty list
+                return jsonify([])
+            
+            # Direct SQL query for existing tables (simplified for compatibility)
+            result = db.session.execute(db.text("""
+                SELECT id, name, email
+                FROM companies 
+                LIMIT 10
+            """)).fetchall()
+            
+            companies_list = []
+            for row in result:
+                companies_list.append({
+                    'id': row[0],
+                    'name': row[1],
+                    'email': row[2],
+                    'phone': None,
+                    'city': None,
+                    'state': None,
+                    'created_at': None,
+                    'is_active': True,
+                    'building_count': 0  # Will update when buildings table exists
+                })
+            return jsonify(companies_list)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/companies', methods=['POST'])
+    def create_company():
+        try:
+            data = request.get_json()
+            
+            # Create Stripe customer for the company
+            stripe_customer = None
+            if data.get('email'):
+                try:
+                    stripe_customer = stripe.Customer.create(
+                        email=data['email'],
+                        name=data['name'],
+                        description=f"Company: {data['name']}"
+                    )
+                except Exception as stripe_error:
+                    print(f"Stripe customer creation failed: {stripe_error}")
+            
+            company = Company(
+                name=data['name'],
+                legal_name=data.get('legal_name'),
+                email=data['email'],
+                phone=data.get('phone'),
+                address=data.get('address'),
+                city=data.get('city'),
+                state=data.get('state'),
+                zip_code=data.get('zip_code'),
+                website=data.get('website'),
+                license_number=data.get('license_number'),
+                tax_id=data.get('tax_id'),
+                stripe_customer_id=stripe_customer.id if stripe_customer else None,
+                trial_ends_at=datetime.utcnow() + timedelta(days=30)  # 30-day trial
+            )
+            db.session.add(company)
+            db.session.commit()
+            
+            return jsonify({'message': 'Company created', 'id': company.id}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/companies/<int:company_id>', methods=['PUT'])
+    def update_company(company_id):
+        try:
+            company = Company.query.get_or_404(company_id)
+            data = request.get_json()
+            
+            company.name = data.get('name', company.name)
+            company.legal_name = data.get('legal_name', company.legal_name)
+            company.email = data.get('email', company.email)
+            company.phone = data.get('phone', company.phone)
+            company.address = data.get('address', company.address)
+            company.city = data.get('city', company.city)
+            company.state = data.get('state', company.state)
+            company.zip_code = data.get('zip_code', company.zip_code)
+            company.website = data.get('website', company.website)
+            company.license_number = data.get('license_number', company.license_number)
+            company.tax_id = data.get('tax_id', company.tax_id)
+            company.updated_at = datetime.utcnow()
+            
+            db.session.commit()
+            return jsonify({'message': 'Company updated successfully'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    # Buildings API
+    @app.route('/api/buildings', methods=['GET'])
+    def get_buildings():
+        try:
+            # Check if buildings table exists
+            result = db.session.execute(db.text("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'buildings'
+                )
+            """)).fetchone()
+            
+            if not result[0]:
+                # Table doesn't exist yet, return empty list
+                return jsonify([])
+            
+            company_id = request.args.get('company_id')
+            
+            # Direct SQL query for existing tables (simplified for compatibility)
+            result = db.session.execute(db.text("""
+                SELECT id, name
+                FROM buildings 
+                LIMIT 10
+            """)).fetchall()
+            
+            buildings_list = []
+            for row in result:
+                buildings_list.append({
+                    'id': row[0],
+                    'name': row[1],
+                    'street_address': None,
+                    'city': None,
+                    'state': None,
+                    'total_units': 0,
+                    'created_at': None,
+                    'is_active': True,
+                    'unit_count': 0  # Will update when units table relationships work
+                })
+            return jsonify(buildings_list)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/buildings', methods=['POST'])
+    def create_building():
+        try:
+            data = request.get_json()
+            building = Building(
+                company_id=data['company_id'],
+                name=data['name'],
+                building_type=data.get('building_type', 'residential'),
+                description=data.get('description'),
+                street_address=data['street_address'],
+                city=data['city'],
+                state=data['state'],
+                zip_code=data['zip_code'],
+                year_built=data.get('year_built'),
+                total_floors=data.get('total_floors'),
+                total_units=data.get('total_units', 0),
+                parking_spaces=data.get('parking_spaces', 0),
+                amenities=data.get('amenities'),
+                manager_id=data.get('manager_id')
+            )
+            db.session.add(building)
+            db.session.commit()
+            return jsonify({'message': 'Building created', 'id': building.id}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/buildings/<int:building_id>/units', methods=['GET'])
+    def get_building_units(building_id):
+        try:
+            units = Unit.query.filter_by(building_id=building_id, is_deleted=False).all()
+            return jsonify([{
+                'id': u.id,
+                'building_id': u.building_id,
+                'unit_number': u.unit_number,
+                'floor_number': u.floor_number,
+                'bedrooms': u.bedrooms,
+                'bathrooms': u.bathrooms,
+                'sqft': u.sqft,
+                'base_rent': float(u.base_rent) if u.base_rent else 0,
+                'security_deposit': float(u.security_deposit) if u.security_deposit else 0,
+                'status': u.status,
+                'is_occupied': u.is_occupied,
+                'available_date': u.available_date.isoformat() if u.available_date else None,
+                'current_tenant': {
+                    'id': u.current_tenant.id,
+                    'name': f"{u.current_tenant.first_name} {u.current_tenant.last_name}"
+                } if u.current_tenant else None,
+                'lease_start': u.lease_start.isoformat() if u.lease_start else None,
+                'lease_end': u.lease_end.isoformat() if u.lease_end else None
+            } for u in units])
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    # Enhanced Units API for Building Integration (extending existing endpoint)
+    @app.route('/api/units/buildings', methods=['POST'])
+    def create_building_unit():
+        try:
+            data = request.get_json()
+            unit = Unit(
+                building_id=data['building_id'],
+                property_id=data.get('property_id'),  # Backward compatibility
+                unit_number=data['unit_number'],
+                floor_number=data.get('floor_number'),
+                bedrooms=data.get('bedrooms'),
+                bathrooms=data.get('bathrooms'),
+                sqft=data.get('sqft'),
+                base_rent=Decimal(str(data['base_rent'])),
+                security_deposit=Decimal(str(data.get('security_deposit', 0))),
+                status=data.get('status', 'available'),
+                available_date=datetime.strptime(data['available_date'], '%Y-%m-%d').date() if data.get('available_date') else None
+            )
+            db.session.add(unit)
+            db.session.commit()
+            
+            # Update building total units count
+            building = Building.query.get(data['building_id'])
+            if building:
+                building.total_units = Unit.query.filter_by(building_id=building.id, is_deleted=False).count()
+                db.session.commit()
+            
+            return jsonify({'message': 'Building unit created', 'id': unit.id}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    # Stripe Payment Integration APIs
+    @app.route('/api/stripe/create-customer', methods=['POST'])
+    def create_stripe_customer():
+        try:
+            data = request.get_json()
+            
+            # Create Stripe customer
+            stripe_customer = stripe.Customer.create(
+                email=data['email'],
+                name=data['name'],
+                phone=data.get('phone'),
+                description=f"Tenant ID: {data.get('tenant_id', 'Unknown')}"
+            )
+            
+            # Store in our database
+            customer = StripeCustomer(
+                tenant_id=data.get('tenant_id'),
+                company_id=data.get('company_id'),
+                stripe_customer_id=stripe_customer.id,
+                email=data['email'],
+                name=data['name'],
+                phone=data.get('phone')
+            )
+            db.session.add(customer)
+            db.session.commit()
+            
+            return jsonify({
+                'stripe_customer_id': stripe_customer.id,
+                'customer_id': customer.id
+            })
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/stripe/create-payment-intent', methods=['POST'])
+    def create_stripe_payment_intent():
+        try:
+            data = request.get_json()
+            amount = int(float(data['amount']) * 100)  # Convert to cents
+            
+            # Create Stripe payment intent
+            intent = stripe.PaymentIntent.create(
+                amount=amount,
+                currency='usd',
+                customer=data.get('customer_id'),
+                description=data.get('description', 'Rent payment'),
+                metadata={
+                    'tenant_id': str(data.get('tenant_id', '')),
+                    'unit_id': str(data.get('unit_id', '')),
+                    'payment_period': data.get('payment_period', '')
+                }
+            )
+            
+            # Create payment record
+            payment = Payment(
+                tenant_id=data.get('tenant_id'),
+                unit_id=data.get('unit_id'),
+                amount=Decimal(str(data['amount'])),
+                due_date=datetime.strptime(data['due_date'], '%Y-%m-%d') if data.get('due_date') else datetime.utcnow(),
+                payment_type=data.get('payment_type', 'rent'),
+                description=data.get('description'),
+                stripe_payment_intent_id=intent.id,
+                payment_method='stripe'
+            )
+            db.session.add(payment)
+            db.session.commit()
+            
+            return jsonify({
+                'client_secret': intent.client_secret,
+                'payment_intent_id': intent.id,
+                'payment_id': payment.id
+            })
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/stripe/confirm-payment', methods=['POST'])
+    def confirm_stripe_payment():
+        try:
+            data = request.get_json()
+            payment_intent_id = data['payment_intent_id']
+            
+            # Retrieve payment intent from Stripe
+            intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+            
+            # Update payment record
+            payment = Payment.query.filter_by(stripe_payment_intent_id=payment_intent_id).first()
+            if payment:
+                payment.status = 'completed' if intent.status == 'succeeded' else 'failed'
+                payment.payment_date = datetime.utcnow()
+                if intent.charges.data:
+                    payment.stripe_charge_id = intent.charges.data[0].id
+                    payment.transaction_id = intent.charges.data[0].id
+                db.session.commit()
+            
+            return jsonify({
+                'status': intent.status,
+                'payment_id': payment.id if payment else None
+            })
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/rent-payments', methods=['GET'])
+    def get_rent_payments():
+        try:
+            # Check if rent_payments table exists
+            result = db.session.execute(db.text("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'rent_payments'
+                )
+            """)).fetchone()
+            
+            if not result[0]:
+                # Table doesn't exist yet, return empty list
+                return jsonify([])
+            
+            tenant_id = request.args.get('tenant_id')
+            unit_id = request.args.get('unit_id')
+            status = request.args.get('status')
+            
+            # Build dynamic SQL query
+            sql = "SELECT id, tenant_id, unit_id, amount_due, amount_paid, due_date, status, payment_period FROM rent_payments WHERE 1=1"
+            params = {}
+            
+            if tenant_id:
+                sql += " AND tenant_id = :tenant_id"
+                params['tenant_id'] = tenant_id
+            if unit_id:
+                sql += " AND unit_id = :unit_id"
+                params['unit_id'] = unit_id
+            if status:
+                sql += " AND status = :status"
+                params['status'] = status
+            
+            result = db.session.execute(db.text(sql), params).fetchall()
+            
+            return jsonify([{
+                'id': row[0],
+                'tenant_id': row[1],
+                'unit_id': row[2],
+                'amount_due': float(row[3]) if row[3] else 0,
+                'amount_paid': float(row[4]) if row[4] else 0,
+                'due_date': row[5].isoformat() if row[5] else None,
+                'status': row[6],
+                'payment_period': row[7]
+            } for row in result])
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     return app
 

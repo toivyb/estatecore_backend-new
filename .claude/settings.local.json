@@ -33,7 +33,9 @@
       "Bash(wmic:*)",
       "Bash(npm run build:*)",
       "Bash(cat:*)",
-      "Bash(where netlify)"
+      "Bash(where netlify)",
+      "Bash(git merge:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []
