@@ -25,7 +25,7 @@ def create_app():
     
     # Initialize extensions
     db.init_app(app)
-    CORS(app, origins=cors_origins)
+    CORS(app, origins=cors_origins, supports_credentials=True, allow_headers=['Content-Type', 'Authorization'])
     
     # Health check routes
     @app.route('/health')
