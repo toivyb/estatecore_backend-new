@@ -60,15 +60,31 @@ def create_app():
             email = data.get('email')
             password = data.get('password')
             
-            # Simple demo authentication
+            # Super Admin authentication
+            if email == 'toivybraun@gmail.com' and password == 'Unique3315!':
+                return jsonify({
+                    'access_token': 'super-admin-token-secure',
+                    'user': {
+                        'id': 1,
+                        'email': email,
+                        'username': 'Toivy Braun',
+                        'role': 'super_admin',
+                        'isAdmin': True,
+                        'permissions': ['all']
+                    }
+                })
+            
+            # Demo user authentication
             if email == 'demo@estatecore.com' and password == 'demo123':
                 return jsonify({
                     'access_token': 'demo-token-12345',
                     'user': {
-                        'id': 1,
+                        'id': 2,
                         'email': email,
                         'username': 'Demo User',
-                        'role': 'admin'
+                        'role': 'admin',
+                        'isAdmin': True,
+                        'permissions': ['properties', 'users', 'reports']
                     }
                 })
             
