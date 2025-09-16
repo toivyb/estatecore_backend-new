@@ -35,7 +35,8 @@
       "Bash(cat:*)",
       "Bash(where netlify)",
       "Bash(git merge:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []
