@@ -14,7 +14,6 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    organization_id = db.Column(db.Integer, nullable=True)
     email = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
@@ -36,7 +35,6 @@ class User(db.Model):
 class Property(db.Model):
     __tablename__ = 'properties'
     id = db.Column(db.Integer, primary_key=True)
-    organization_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(200), nullable=False)
     property_type = db.Column(db.String(10), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -145,7 +143,6 @@ class Unit(db.Model):
 class Tenant(db.Model):
     __tablename__ = 'tenants'
     id = db.Column(db.Integer, primary_key=True)
-    organization_id = db.Column(db.Integer, nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), nullable=False)
@@ -350,7 +347,6 @@ def create_app():
     def create_property():
         data = request.get_json()
         property = Property(
-            organization_id=1,  # Default organization
             name=data['name'],
             street_address=data.get('address', ''),
             city=data.get('city', 'Unknown'),
@@ -555,7 +551,6 @@ def create_app():
             data = request.get_json()
             
             tenant = Tenant(
-                organization_id=1,  # Default organization
                 first_name=data.get('first_name', ''),
                 last_name=data.get('last_name', ''),
                 email=data.get('email', ''),
