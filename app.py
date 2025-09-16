@@ -320,7 +320,7 @@ def create_app():
     # Health check routes
     @app.route('/health')
     def health():
-        return jsonify({'status': 'healthy', 'service': 'EstateCore Backend'})
+        return jsonify({'status': 'healthy', 'service': 'EstateCore Backend', 'version': '2.0'})
     
     @app.route('/')
     def root():
