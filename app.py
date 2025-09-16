@@ -354,30 +354,47 @@ def create_app():
     # Payments API
     @app.route('/api/payments', methods=['GET'])
     def get_payments():
-        payments = db.session.query(Payment, Tenant, User, Property).join(Tenant).join(User).join(Property).all()
-        return jsonify([{
-            'id': pay.id,
-            'amount': pay.amount,
-            'payment_date': pay.payment_date.isoformat(),
-            'due_date': pay.due_date.isoformat(),
-            'status': pay.status,
-            'tenant': u.username,
-            'property': p.name
-        } for pay, t, u, p in payments])
+        try:
+            payments = Payment.query.all()
+            result = []
+            for payment in payments:
+                tenant = Tenant.query.get(payment.tenant_id) if payment.tenant_id else None
+                user = User.query.get(tenant.user_id) if tenant and tenant.user_id else None
+                property = Property.query.get(tenant.property_id) if tenant and tenant.property_id else None
+                
+                result.append({
+                    'id': payment.id,
+                    'amount': payment.amount,
+                    'payment_date': payment.payment_date.isoformat(),
+                    'due_date': payment.due_date.isoformat(),
+                    'status': payment.status,
+                    'tenant': user.username if user else 'Unknown',
+                    'property': property.name if property else 'Unknown'
+                })
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     # Maintenance API
     @app.route('/api/maintenance', methods=['GET'])
     def get_maintenance():
-        requests = db.session.query(MaintenanceRequest, Property).join(Property).all()
-        return jsonify([{
-            'id': m.id,
-            'title': m.title,
-            'description': m.description,
-            'priority': m.priority,
-            'status': m.status,
-            'property': p.name,
-            'created_at': m.created_at.isoformat()
-        } for m, p in requests])
+        try:
+            requests = MaintenanceRequest.query.all()
+            result = []
+            for request in requests:
+                property = Property.query.get(request.property_id) if request.property_id else None
+                result.append({
+                    'id': request.id,
+                    'title': request.title,
+                    'description': request.description,
+                    'priority': request.priority,
+                    'status': request.status,
+                    'property': property.name if property else 'Unknown',
+                    'created_at': request.created_at.isoformat()
+                })
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/maintenance', methods=['POST'])
     def create_maintenance():
