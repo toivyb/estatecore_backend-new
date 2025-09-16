@@ -329,19 +329,33 @@ def create_app():
     # Properties API
     @app.route('/api/properties', methods=['GET'])
     def get_properties():
-        properties = Property.query.all()
-        return jsonify([{
-            'id': p.id,
-            'name': p.name,
-            'address': p.address,
-            'type': p.type,
-            'bedrooms': p.bedrooms,
-            'bathrooms': p.bathrooms,
-            'rent': p.rent,
-            'units': p.units,
-            'occupancy': p.occupancy,
-            'is_available': p.is_available
-        } for p in properties])
+        try:
+            # Direct SQL query to avoid model issues during deployment
+            result = db.session.execute(db.text("""
+                SELECT id, name, street_address, property_type, description,
+                       total_units, is_active, created_at
+                FROM properties 
+                WHERE is_deleted = false OR is_deleted IS NULL
+            """)).fetchall()
+            
+            properties_list = []
+            for row in result:
+                properties_list.append({
+                    'id': row[0],
+                    'name': row[1],
+                    'address': row[2],
+                    'type': row[3],
+                    'bedrooms': 0,  # Default since not in schema
+                    'bathrooms': 0,  # Default since not in schema
+                    'rent': 0,      # Default since not in schema
+                    'units': row[5] if row[5] else 1,
+                    'occupancy': 'available',  # Default
+                    'is_available': row[6] if row[6] is not None else True,
+                    'description': row[4]
+                })
+            return jsonify(properties_list)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/properties', methods=['POST'])
     def create_property():
@@ -519,29 +533,36 @@ def create_app():
     @app.route('/api/tenants', methods=['GET'])
     def get_tenants():
         try:
-            tenants = Tenant.query.all()
-            result = []
-            for tenant in tenants:
-                result.append({
-                    'id': tenant.id,
+            # Direct SQL query to avoid model issues during deployment
+            result = db.session.execute(db.text("""
+                SELECT id, first_name, last_name, email, phone, 
+                       move_in_date, move_out_date, is_active, monthly_income
+                FROM tenants 
+                WHERE is_deleted = false OR is_deleted IS NULL
+            """)).fetchall()
+            
+            tenants_list = []
+            for row in result:
+                tenants_list.append({
+                    'id': row[0],
                     'user': {
-                        'id': tenant.id, 
-                        'email': tenant.email, 
-                        'username': f"{tenant.first_name} {tenant.last_name}"
+                        'id': row[0], 
+                        'email': row[3], 
+                        'username': f"{row[1]} {row[2]}"
                     },
                     'property': None,  # Not available in current schema
                     'unit': None,      # Not available in current schema
-                    'lease_start': tenant.move_in_date.isoformat() if tenant.move_in_date else None,
-                    'lease_end': tenant.move_out_date.isoformat() if tenant.move_out_date else None,
+                    'lease_start': row[5].isoformat() if row[5] else None,
+                    'lease_end': row[6].isoformat() if row[6] else None,
                     'rent_amount': 0,  # Not available in current schema
                     'deposit': 0,      # Not available in current schema
-                    'status': 'active' if tenant.is_active else 'inactive',
-                    'first_name': tenant.first_name,
-                    'last_name': tenant.last_name,
-                    'phone': tenant.phone,
-                    'monthly_income': float(tenant.monthly_income) if tenant.monthly_income else 0
+                    'status': 'active' if row[7] else 'inactive',
+                    'first_name': row[1],
+                    'last_name': row[2],
+                    'phone': row[4],
+                    'monthly_income': float(row[8]) if row[8] else 0
                 })
-            return jsonify(result)
+            return jsonify(tenants_list)
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     
