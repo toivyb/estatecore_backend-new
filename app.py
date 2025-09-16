@@ -433,11 +433,15 @@ def create_app():
     # Health check routes
     @app.route('/health')
     def health():
-        return jsonify({'status': 'healthy', 'service': 'EstateCore Backend', 'version': '3.0', 'dashboard_fixed': True})
+        return jsonify({'status': 'healthy', 'service': 'EstateCore Backend', 'version': '4.0', 'models_fixed': True, 'timestamp': datetime.utcnow().isoformat()})
     
     @app.route('/')
     def root():
         return jsonify({'message': 'EstateCore API', 'status': 'running'})
+    
+    @app.route('/test-deployment')
+    def test_deployment():
+        return jsonify({'deployment': 'success', 'version': '4.0', 'dashboard_ready': True})
     
     # Properties API
     @app.route('/api/properties', methods=['GET'])
