@@ -68,12 +68,7 @@ class MaintenanceRequest(db.Model):
     description = db.Column(db.Text)
     priority = db.Column(db.String(20), default='medium')
     status = db.Column(db.String(20), default='open')
-    assigned_contractor = db.Column(db.String(100))
-    estimated_completion = db.Column(db.DateTime)
-    estimated_cost = db.Column(db.Float)
-    actual_cost = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    resolved_at = db.Column(db.DateTime)
 
 class Message(db.Model):
     __tablename__ = 'messages'
