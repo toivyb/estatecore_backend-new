@@ -16,7 +16,7 @@ services:
           name: estatecore-db
           property: connectionString
       - key: CORS_ORIGINS
-        value: https://estatecore-frontend.netlify.app,http://localhost:3000,http://localhost:5173
+        value: https://your-actual-netlify-url.netlify.app,http://localhost:3000,http://localhost:5173
 
 databases:
   - name: estatecore-db
