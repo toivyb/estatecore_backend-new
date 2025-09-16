@@ -53,6 +53,31 @@ def create_app():
             'recent_properties': []
         })
     
+    @app.route('/api/auth/login', methods=['POST'])
+    def login():
+        try:
+            data = request.get_json()
+            email = data.get('email')
+            password = data.get('password')
+            
+            # Simple demo authentication
+            if email == 'demo@estatecore.com' and password == 'demo123':
+                return jsonify({
+                    'access_token': 'demo-token-12345',
+                    'user': {
+                        'id': 1,
+                        'email': email,
+                        'username': 'Demo User',
+                        'role': 'admin'
+                    }
+                })
+            
+            return jsonify({'error': 'Invalid credentials'}), 401
+            
+        except Exception as e:
+            print(f"Login error: {e}")
+            return jsonify({'error': 'Login failed'}), 500
+    
     with app.app_context():
         try:
             db.create_all()
