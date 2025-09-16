@@ -281,16 +281,26 @@ def create_app():
     # Tenants API
     @app.route('/api/tenants', methods=['GET'])
     def get_tenants():
-        tenants = db.session.query(Tenant, User, Property).join(User).join(Property).all()
-        return jsonify([{
-            'id': t.id,
-            'user': {'id': u.id, 'email': u.email, 'username': u.username},
-            'property': {'id': p.id, 'name': p.name, 'address': p.address},
-            'lease_start': t.lease_start.isoformat() if t.lease_start else None,
-            'lease_end': t.lease_end.isoformat() if t.lease_end else None,
-            'rent_amount': t.rent_amount,
-            'status': t.status
-        } for t, u, p in tenants])
+        try:
+            tenants = Tenant.query.all()
+            result = []
+            for tenant in tenants:
+                user = User.query.get(tenant.user_id) if tenant.user_id else None
+                property = Property.query.get(tenant.property_id) if tenant.property_id else None
+                
+                result.append({
+                    'id': tenant.id,
+                    'user': {'id': user.id, 'email': user.email, 'username': user.username} if user else None,
+                    'property': {'id': property.id, 'name': property.name, 'address': property.address} if property else None,
+                    'lease_start': tenant.lease_start.isoformat() if tenant.lease_start else None,
+                    'lease_end': tenant.lease_end.isoformat() if tenant.lease_end else None,
+                    'rent_amount': tenant.rent_amount,
+                    'deposit': tenant.deposit,
+                    'status': tenant.status
+                })
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/tenants', methods=['POST'])
     def create_tenant():
