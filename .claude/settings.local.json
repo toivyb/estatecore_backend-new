@@ -42,7 +42,9 @@
       "Bash(set DATABASE_URL=postgresql://estatecore_user:StrongPassword123@localhost:5432/estatecore_dev)",
       "Bash(git remote add:*)",
       "Bash(git remote set-url:*)",
-      "WebFetch(domain:estatecore-backend-sujs.onrender.com)"
+      "WebFetch(domain:estatecore-backend-sujs.onrender.com)",
+      "Bash(grep:*)",
+      "Bash(start /B python:*)"
     ],
     "deny": [],
     "ask": []
