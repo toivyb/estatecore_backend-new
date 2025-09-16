@@ -398,16 +398,19 @@ def create_app():
     
     @app.route('/api/maintenance', methods=['POST'])
     def create_maintenance():
-        data = request.get_json()
-        request_obj = MaintenanceRequest(
-            property_id=data['property_id'],
-            title=data['title'],
-            description=data.get('description'),
-            priority=data.get('priority', 'medium')
-        )
-        db.session.add(request_obj)
-        db.session.commit()
-        return jsonify({'message': 'Maintenance request created', 'id': request_obj.id}), 201
+        try:
+            data = request.get_json()
+            request_obj = MaintenanceRequest(
+                property_id=data['property_id'],
+                title=data['title'],
+                description=data.get('description'),
+                priority=data.get('priority', 'medium')
+            )
+            db.session.add(request_obj)
+            db.session.commit()
+            return jsonify({'message': 'Maintenance request created', 'id': request_obj.id}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/maintenance/<int:request_id>', methods=['PUT'])
     def update_maintenance(request_id):
