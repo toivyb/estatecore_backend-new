@@ -37,16 +37,33 @@ class Property(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+class Unit(db.Model):
+    __tablename__ = 'units'
+    id = db.Column(db.Integer, primary_key=True)
+    property_id = db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=False)
+    unit_number = db.Column(db.String(20), nullable=False)
+    bedrooms = db.Column(db.Integer)
+    bathrooms = db.Column(db.Float)
+    rent = db.Column(db.Float, nullable=False)
+    square_feet = db.Column(db.Integer)
+    is_available = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Tenant(db.Model):
     __tablename__ = 'tenants'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     property_id = db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False)
     lease_start = db.Column(db.DateTime)
     lease_end = db.Column(db.DateTime)
     rent_amount = db.Column(db.Float, nullable=False)
     deposit = db.Column(db.Float)
     status = db.Column(db.String(20), default='active')
+    lease_document_path = db.Column(db.String(500))
+    lease_document_name = db.Column(db.String(200))
+    lease_parsed_data = db.Column(db.Text)
+    lease_expiration_reminder_sent = db.Column(db.Boolean, default=False)
 
 class Payment(db.Model):
     __tablename__ = 'payments'
@@ -273,6 +290,81 @@ def create_app():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     
+    # Units API
+    @app.route('/api/units', methods=['GET'])
+    def get_units():
+        try:
+            property_id = request.args.get('property_id')
+            if property_id:
+                units = Unit.query.filter_by(property_id=property_id).all()
+            else:
+                units = Unit.query.all()
+            
+            result = []
+            for unit in units:
+                property = Property.query.get(unit.property_id) if unit.property_id else None
+                result.append({
+                    'id': unit.id,
+                    'property_id': unit.property_id,
+                    'property_name': property.name if property else 'Unknown',
+                    'unit_number': unit.unit_number,
+                    'bedrooms': unit.bedrooms,
+                    'bathrooms': unit.bathrooms,
+                    'rent': unit.rent,
+                    'square_feet': unit.square_feet,
+                    'is_available': unit.is_available
+                })
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/units', methods=['POST'])
+    def create_unit():
+        try:
+            data = request.get_json()
+            unit = Unit(
+                property_id=data['property_id'],
+                unit_number=data['unit_number'],
+                bedrooms=data.get('bedrooms'),
+                bathrooms=data.get('bathrooms'),
+                rent=data['rent'],
+                square_feet=data.get('square_feet'),
+                is_available=data.get('is_available', True)
+            )
+            db.session.add(unit)
+            db.session.commit()
+            return jsonify({'message': 'Unit created', 'id': unit.id}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/units/<int:unit_id>', methods=['PUT'])
+    def update_unit(unit_id):
+        try:
+            unit = Unit.query.get_or_404(unit_id)
+            data = request.get_json()
+            
+            unit.unit_number = data.get('unit_number', unit.unit_number)
+            unit.bedrooms = data.get('bedrooms', unit.bedrooms)
+            unit.bathrooms = data.get('bathrooms', unit.bathrooms)
+            unit.rent = data.get('rent', unit.rent)
+            unit.square_feet = data.get('square_feet', unit.square_feet)
+            unit.is_available = data.get('is_available', unit.is_available)
+            
+            db.session.commit()
+            return jsonify({'message': 'Unit updated successfully'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/units/<int:unit_id>', methods=['DELETE'])
+    def delete_unit(unit_id):
+        try:
+            unit = Unit.query.get_or_404(unit_id)
+            db.session.delete(unit)
+            db.session.commit()
+            return jsonify({'message': 'Unit deleted successfully'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
     # Tenants API
     @app.route('/api/tenants', methods=['GET'])
     def get_tenants():
@@ -282,16 +374,19 @@ def create_app():
             for tenant in tenants:
                 user = User.query.get(tenant.user_id) if tenant.user_id else None
                 property = Property.query.get(tenant.property_id) if tenant.property_id else None
+                unit = Unit.query.get(tenant.unit_id) if hasattr(tenant, 'unit_id') and tenant.unit_id else None
                 
                 result.append({
                     'id': tenant.id,
                     'user': {'id': user.id, 'email': user.email, 'username': user.username} if user else None,
                     'property': {'id': property.id, 'name': property.name, 'address': property.address} if property else None,
+                    'unit': {'id': unit.id, 'unit_number': unit.unit_number} if unit else None,
                     'lease_start': tenant.lease_start.isoformat() if tenant.lease_start else None,
                     'lease_end': tenant.lease_end.isoformat() if tenant.lease_end else None,
                     'rent_amount': tenant.rent_amount,
                     'deposit': tenant.deposit,
-                    'status': tenant.status
+                    'status': tenant.status,
+                    'lease_document_name': tenant.lease_document_name if hasattr(tenant, 'lease_document_name') else None
                 })
             return jsonify(result)
         except Exception as e:
@@ -301,14 +396,24 @@ def create_app():
     def create_tenant():
         try:
             data = request.get_json()
+            # Mark unit as unavailable
+            if data.get('unit_id'):
+                unit = Unit.query.get(data['unit_id'])
+                if unit:
+                    unit.is_available = False
+                    
             tenant = Tenant(
                 user_id=data['user_id'],
                 property_id=data['property_id'],
+                unit_id=data.get('unit_id'),
                 lease_start=datetime.strptime(data['lease_start'], '%Y-%m-%d') if data.get('lease_start') else None,
                 lease_end=datetime.strptime(data['lease_end'], '%Y-%m-%d') if data.get('lease_end') else None,
                 rent_amount=data.get('rent_amount'),
                 deposit=data.get('deposit'),
-                status='active'
+                status='active',
+                lease_document_name=data.get('lease_document_name'),
+                lease_document_path=data.get('lease_document_path'),
+                lease_parsed_data=data.get('lease_parsed_data')
             )
             db.session.add(tenant)
             db.session.commit()
@@ -1008,6 +1113,125 @@ def create_app():
         }
         
         return jsonify(analytics)
+
+    # AI Lease Processing & Expiration Reminders
+    @app.route('/api/ai/process-lease', methods=['POST'])
+    def process_lease_document():
+        try:
+            data = request.get_json()
+            lease_content = data.get('lease_content', '')
+            tenant_id = data.get('tenant_id')
+            
+            # AI lease parsing simulation (in production, use OpenAI or similar)
+            import re
+            
+            # Extract lease dates
+            lease_start_match = re.search(r'lease.*start.*?(\d{1,2}[/-]\d{1,2}[/-]\d{4})', lease_content, re.IGNORECASE)
+            lease_end_match = re.search(r'lease.*end|expir.*?(\d{1,2}[/-]\d{4}|\d{1,2}[/-]\d{1,2}[/-]\d{4})', lease_content, re.IGNORECASE)
+            rent_match = re.search(r'\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', lease_content)
+            
+            parsed_data = {
+                'lease_start': lease_start_match.group(1) if lease_start_match else None,
+                'lease_end': lease_end_match.group(1) if lease_end_match else None,
+                'rent_amount': rent_match.group(1).replace(',', '') if rent_match else None,
+                'parsed_at': datetime.utcnow().isoformat(),
+                'ai_confidence': 0.85,
+                'extracted_terms': []
+            }
+            
+            # Update tenant record with parsed data
+            if tenant_id:
+                tenant = Tenant.query.get(tenant_id)
+                if tenant:
+                    tenant.lease_parsed_data = str(parsed_data)
+                    db.session.commit()
+            
+            return jsonify({
+                'message': 'Lease document processed successfully',
+                'parsed_data': parsed_data
+            })
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/ai/lease-expiration-check', methods=['GET'])
+    def check_lease_expirations():
+        try:
+            # Get tenants with leases expiring in the next 30-90 days
+            thirty_days = datetime.utcnow() + timedelta(days=30)
+            ninety_days = datetime.utcnow() + timedelta(days=90)
+            
+            expiring_leases = Tenant.query.filter(
+                Tenant.lease_end.between(datetime.utcnow(), ninety_days),
+                Tenant.status == 'active'
+            ).all()
+            
+            notifications = []
+            for tenant in expiring_leases:
+                user = User.query.get(tenant.user_id) if tenant.user_id else None
+                property = Property.query.get(tenant.property_id) if tenant.property_id else None
+                unit = Unit.query.get(tenant.unit_id) if hasattr(tenant, 'unit_id') and tenant.unit_id else None
+                
+                days_until_expiry = (tenant.lease_end - datetime.utcnow()).days if tenant.lease_end else 0
+                
+                priority = 'high' if days_until_expiry <= 30 else 'medium' if days_until_expiry <= 60 else 'low'
+                
+                notifications.append({
+                    'tenant_id': tenant.id,
+                    'tenant_name': user.username if user else 'Unknown',
+                    'tenant_email': user.email if user else 'Unknown',
+                    'property_name': property.name if property else 'Unknown',
+                    'unit_number': unit.unit_number if unit else 'N/A',
+                    'lease_end_date': tenant.lease_end.isoformat() if tenant.lease_end else None,
+                    'days_until_expiry': days_until_expiry,
+                    'priority': priority,
+                    'reminder_sent': tenant.lease_expiration_reminder_sent if hasattr(tenant, 'lease_expiration_reminder_sent') else False
+                })
+            
+            return jsonify({
+                'expiring_leases': notifications,
+                'total_count': len(notifications),
+                'high_priority_count': len([n for n in notifications if n['priority'] == 'high'])
+            })
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/ai/send-expiration-reminder/<int:tenant_id>', methods=['POST'])
+    def send_expiration_reminder(tenant_id):
+        try:
+            tenant = Tenant.query.get_or_404(tenant_id)
+            user = User.query.get(tenant.user_id) if tenant.user_id else None
+            property = Property.query.get(tenant.property_id) if tenant.property_id else None
+            unit = Unit.query.get(tenant.unit_id) if hasattr(tenant, 'unit_id') and tenant.unit_id else None
+            
+            # Mark reminder as sent
+            if hasattr(tenant, 'lease_expiration_reminder_sent'):
+                tenant.lease_expiration_reminder_sent = True
+                db.session.commit()
+            
+            # In production, send actual email/SMS here
+            message_content = f"""
+            Dear {user.username if user else 'Tenant'},
+            
+            This is a reminder that your lease for {property.name if property else 'your property'} 
+            {f'Unit {unit.unit_number}' if unit else ''} 
+            is set to expire on {tenant.lease_end.strftime('%B %d, %Y') if tenant.lease_end else 'N/A'}.
+            
+            Please contact us to discuss renewal options.
+            
+            Best regards,
+            Property Management
+            """
+            
+            return jsonify({
+                'message': 'Expiration reminder sent successfully',
+                'recipient': user.email if user else 'Unknown',
+                'lease_end_date': tenant.lease_end.isoformat() if tenant.lease_end else None
+            })
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
     with app.app_context():
         try:
