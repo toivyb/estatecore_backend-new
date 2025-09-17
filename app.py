@@ -37,7 +37,7 @@ def create_app():
     # Health check routes
     @app.route('/health')
     def health():
-        return jsonify({'status': 'healthy', 'service': 'EstateCore Backend', 'version': 'emergency-1.0', 'fixed': True})
+        return jsonify({'status': 'healthy', 'service': 'EstateCore Backend', 'version': 'emergency-2.0', 'fixed': True, 'deployed': datetime.utcnow().isoformat()})
     
     @app.route('/')
     def root():
@@ -187,6 +187,35 @@ def create_app():
             return jsonify(users_list)
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+    
+    # Maintenance API - Direct SQL
+    @app.route('/api/maintenance', methods=['GET'])
+    def get_maintenance():
+        try:
+            # Direct SQL query for maintenance requests
+            result = db.session.execute(db.text("""
+                SELECT id, property_id, tenant_id, title, description, priority, status, created_at
+                FROM maintenance_requests 
+                ORDER BY created_at DESC
+                LIMIT 50
+            """)).fetchall()
+            
+            maintenance_list = []
+            for row in result:
+                maintenance_list.append({
+                    'id': row[0],
+                    'property_id': row[1],
+                    'tenant_id': row[2],
+                    'title': row[3],
+                    'description': row[4],
+                    'priority': row[5],
+                    'status': row[6],
+                    'created_at': row[7].isoformat() if row[7] else None
+                })
+            return jsonify(maintenance_list)
+        except Exception as e:
+            # If table doesn't exist, return empty list
+            return jsonify([])
     
     # Login endpoint
     @app.route('/api/auth/login', methods=['POST'])
