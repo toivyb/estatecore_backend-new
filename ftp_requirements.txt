@@ -1,0 +1,5 @@
+# FTP Server Dependencies for LPR Integration
+pyftpdlib==1.5.7
+watchdog==3.0.0
+requests==2.31.0
+python-dotenv==1.0.0

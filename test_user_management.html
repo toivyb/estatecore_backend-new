@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced User Management Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { background: #007bff; color: white; padding: 10px 15px; border: none; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .result { background: #f8f9fa; padding: 10px; margin-top: 10px; border-left: 3px solid #007bff; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        input, select, textarea { width: 100%; padding: 8px; margin: 5px 0; }
+        .form-group { margin: 10px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Enhanced User Management System Test</h1>
+    
+    <div class="grid">
+        <!-- Companies Section -->
+        <div class="section">
+            <h2>LPR Companies Management</h2>
+            
+            <div class="form-group">
+                <h3>Create New Company</h3>
+                <input type="text" id="companyName" placeholder="Company Name" required>
+                <textarea id="companyDescription" placeholder="Company Description"></textarea>
+                <input type="email" id="companyEmail" placeholder="Contact Email">
+                <input type="tel" id="companyPhone" placeholder="Contact Phone">
+                <select id="companySubscription">
+                    <option value="basic">Basic</option>
+                    <option value="premium">Premium</option>
+                    <option value="enterprise">Enterprise</option>
+                </select>
+                <button onclick="createCompany()">Create Company</button>
+            </div>
+            
+            <div class="form-group">
+                <button onclick="listCompanies()">List All Companies</button>
+                <div id="companiesResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+        
+        <!-- User Invitations Section -->
+        <div class="section">
+            <h2>Enhanced User Invitations</h2>
+            
+            <div class="form-group">
+                <h3>Send Enhanced Invitation</h3>
+                <input type="email" id="userEmail" placeholder="Email Address" required>
+                
+                <label>Access Type:</label>
+                <select id="accessType" onchange="toggleAccessFields()">
+                    <option value="">Select access type...</option>
+                    <option value="property_management">Property Management Only</option>
+                    <option value="lpr_management">LPR Management Only</option>
+                    <option value="both">Both Property and LPR</option>
+                </select>
+                
+                <div id="propertyFields" style="display:none;">
+                    <label>Property Role:</label>
+                    <select id="propertyRole">
+                        <option value="property_manager">Property Manager</option>
+                        <option value="property_admin">Property Admin</option>
+                        <option value="user">Property User</option>
+                    </select>
+                </div>
+                
+                <div id="lprFields" style="display:none;">
+                    <label>LPR Company:</label>
+                    <select id="lprCompany">
+                        <option value="">Loading companies...</option>
+                    </select>
+                    
+                    <label>LPR Role:</label>
+                    <select id="lprRole">
+                        <option value="lpr_admin">LPR Administrator</option>
+                        <option value="lpr_manager">LPR Manager</option>
+                        <option value="lpr_viewer">LPR Viewer</option>
+                    </select>
+                    
+                    <label>LPR Permissions:</label>
+                    <select id="lprPermissions">
+                        <option value="view_only">View Only</option>
+                        <option value="manage_alerts">Manage Alerts</option>
+                        <option value="full_access">Full Access</option>
+                    </select>
+                </div>
+                
+                <button onclick="sendInvitation()">Send Invitation</button>
+            </div>
+            
+            <div id="invitationResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+    
+    <!-- API Test Results -->
+    <div class="section">
+        <h2>API Test Results</h2>
+        <button onclick="testAllEndpoints()">Test All Endpoints</button>
+        <div id="apiResults" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        // Load companies on page load
+        window.onload = function() {
+            loadCompaniesForSelect();
+        };
+
+        function toggleAccessFields() {
+            const accessType = document.getElementById('accessType').value;
+            const propertyFields = document.getElementById('propertyFields');
+            const lprFields = document.getElementById('lprFields');
+            
+            propertyFields.style.display = 
+                (accessType === 'property_management' || accessType === 'both') ? 'block' : 'none';
+            lprFields.style.display = 
+                (accessType === 'lpr_management' || accessType === 'both') ? 'block' : 'none';
+        }
+
+        async function loadCompaniesForSelect() {
+            try {
+                const response = await fetch('http://localhost:5000/api/lpr/companies');
+                const companies = await response.json();
+                
+                const select = document.getElementById('lprCompany');
+                select.innerHTML = '<option value="">Select company...</option>';
+                
+                companies.forEach(company => {
+                    const option = document.createElement('option');
+                    option.value = company.id;
+                    option.textContent = `${company.name} (${company.user_count} users)`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load companies:', error);
+            }
+        }
+
+        async function createCompany() {
+            const name = document.getElementById('companyName').value;
+            const description = document.getElementById('companyDescription').value;
+            const email = document.getElementById('companyEmail').value;
+            const phone = document.getElementById('companyPhone').value;
+            const subscription = document.getElementById('companySubscription').value;
+            
+            if (!name) {
+                alert('Company name is required!');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/lpr/companies', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name, description, contact_email: email, 
+                        contact_phone: phone, subscription_type: subscription
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Company created successfully!');
+                    document.getElementById('companyName').value = '';
+                    document.getElementById('companyDescription').value = '';
+                    document.getElementById('companyEmail').value = '';
+                    document.getElementById('companyPhone').value = '';
+                    loadCompaniesForSelect(); // Refresh company list
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+
+        async function listCompanies() {
+            try {
+                const response = await fetch('http://localhost:5000/api/lpr/companies');
+                const companies = await response.json();
+                
+                const resultDiv = document.getElementById('companiesResult');
+                resultDiv.style.display = 'block';
+                
+                let html = '<h4>Active LPR Companies:</h4><ul>';
+                companies.forEach(company => {
+                    html += `<li><strong>${company.name}</strong> (${company.subscription_type}) - ${company.user_count} users</li>`;
+                });
+                html += '</ul>';
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                document.getElementById('companiesResult').innerHTML = 
+                    '<p class="error">Error fetching companies: ' + error.message + '</p>';
+                document.getElementById('companiesResult').style.display = 'block';
+            }
+        }
+
+        async function sendInvitation() {
+            const email = document.getElementById('userEmail').value;
+            const accessType = document.getElementById('accessType').value;
+            
+            if (!email || !accessType) {
+                alert('Email and access type are required!');
+                return;
+            }
+            
+            const inviteData = {
+                email: email,
+                access_type: accessType,
+                property_management_access: accessType === 'property_management' || accessType === 'both',
+                lpr_management_access: accessType === 'lpr_management' || accessType === 'both'
+            };
+            
+            if (inviteData.property_management_access) {
+                inviteData.property_role = document.getElementById('propertyRole').value;
+            }
+            
+            if (inviteData.lpr_management_access) {
+                inviteData.lpr_role = document.getElementById('lprRole').value;
+                inviteData.lpr_company_id = parseInt(document.getElementById('lprCompany').value);
+                inviteData.lpr_permissions = document.getElementById('lprPermissions').value;
+                
+                if (!inviteData.lpr_company_id) {
+                    alert('Please select an LPR company!');
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/invites/send-enhanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(inviteData)
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('invitationResult');
+                resultDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    resultDiv.className = 'result';
+                    resultDiv.innerHTML = `
+                        <h4>Invitation Sent Successfully!</h4>
+                        <p><strong>Email:</strong> ${email}</p>
+                        <p><strong>Access Type:</strong> ${accessType}</p>
+                        <p><strong>Token:</strong> ${result.token}</p>
+                        <p><strong>Expires:</strong> ${result.expires_at}</p>
+                    `;
+                    
+                    // Clear form
+                    document.getElementById('userEmail').value = '';
+                    document.getElementById('accessType').value = '';
+                    toggleAccessFields();
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '<p>Error: ' + result.error + '</p>';
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('invitationResult');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<p>Network error: ' + error.message + '</p>';
+            }
+        }
+
+        async function testAllEndpoints() {
+            const resultDiv = document.getElementById('apiResults');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>Testing endpoints...</p>';
+            
+            const tests = [];
+            
+            // Test companies endpoint
+            try {
+                const response = await fetch('http://localhost:5000/api/lpr/companies');
+                const data = await response.json();
+                tests.push(`✅ GET /api/lpr/companies - Found ${data.length} companies`);
+            } catch (error) {
+                tests.push(`❌ GET /api/lpr/companies - Error: ${error.message}`);
+            }
+            
+            // Test enhanced invite endpoint
+            try {
+                const response = await fetch('http://localhost:5000/api/invites/send-enhanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        access_type: 'lpr_management',
+                        lpr_management_access: true,
+                        lpr_role: 'lpr_viewer',
+                        lpr_company_id: 1,
+                        lpr_permissions: 'view_only'
+                    })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    tests.push(`✅ POST /api/invites/send-enhanced - Invitation created`);
+                } else {
+                    tests.push(`⚠️ POST /api/invites/send-enhanced - ${data.error}`);
+                }
+            } catch (error) {
+                tests.push(`❌ POST /api/invites/send-enhanced - Error: ${error.message}`);
+            }
+            
+            resultDiv.innerHTML = '<h4>API Test Results:</h4><ul><li>' + tests.join('</li><li>') + '</li></ul>';
+        }
+    </script>
+</body>
+</html>

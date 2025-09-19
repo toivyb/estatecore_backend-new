@@ -36,7 +36,20 @@
       "Bash(where netlify)",
       "Bash(git merge:*)",
       "Bash(timeout:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(move:*)",
+      "Bash(mv:*)",
+      "Bash(/dev/null)",
+      "Bash(powershell:*)",
+      "Bash(dir:*)",
+      "Bash(sed:*)",
+      "Bash(grep:*)",
+      "Bash(set PORT=5001)",
+      "Bash(tail:*)",
+      "Bash(pip3 install:*)",
+      "Bash(rm:*)",
+      "Bash(npm install)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
