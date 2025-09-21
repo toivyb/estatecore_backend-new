@@ -1,5 +1,17 @@
-# wsgi.py at project root
+#!/usr/bin/env python3
+"""
+WSGI entry point for EstateCore production deployment
+"""
+import os
+from simple_app import create_app
 
-from estatecore_backend import create_app
+# Set production environment
+os.environ.setdefault('FLASK_ENV', 'production')
 
-app = create_app()
+# Create application instance
+application = create_app()
+app = application
+
+if __name__ == "__main__":
+    # For development/testing
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)

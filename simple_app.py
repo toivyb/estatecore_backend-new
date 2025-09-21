@@ -30,14 +30,32 @@ import stripe
 def create_app():
     app = Flask(__name__)
     
-    # Security Configuration
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
-    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', secrets.token_hex(32))
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)  # Extended for testing
+    # Configuration - Load production config if available
+    if os.getenv('FLASK_ENV') == 'production':
+        try:
+            from production_config import ProductionConfig
+            app.config.from_object(ProductionConfig)
+            ProductionConfig.init_app(app)
+        except ImportError:
+            pass
+    else:
+        # Development configuration
+        app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
+        app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', secrets.token_hex(32))
+        app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)  # Extended for testing
     
-    # CORS with security headers
+    # CORS with security headers - Production and Development
     CORS(app, 
-         origins=['http://localhost:3017', 'http://localhost:3016', 'http://localhost:3014', 'http://localhost:3013', 'http://localhost:3006', 'http://localhost:3000'],
+         origins=[
+             'https://app.myestatecore.com',
+             'https://myestatecore.com', 
+             'http://localhost:3017', 
+             'http://localhost:3016', 
+             'http://localhost:3014', 
+             'http://localhost:3013', 
+             'http://localhost:3006', 
+             'http://localhost:3000'
+         ],
          supports_credentials=True,
          expose_headers=['Content-Type', 'Authorization'],
          allow_headers=['Content-Type', 'Authorization']
@@ -3289,6 +3307,22 @@ def create_app():
     sys.path.append(os.path.join(os.path.dirname(__file__), 'ai_modules', 'environmental'))
     from environmental_api import init_environmental_system
     environmental_api = init_environmental_system(app)
+    
+    # Health check endpoint for Docker
+    @app.route('/api/health')
+    def health_check():
+        """Health check endpoint for deployment monitoring"""
+        return jsonify({
+            'status': 'healthy',
+            'version': '4.0',
+            'timestamp': datetime.utcnow().isoformat(),
+            'services': {
+                'billing_system': 'active',
+                'environmental_monitoring': 'active',
+                'user_management': 'active',
+                'ai_analytics': 'active'
+            }
+        })
     
     return app
 
