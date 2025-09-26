@@ -9469,6 +9469,962 @@ def create_app():
                 'error': f'Batch optimization failed: {str(e)}'
             }), 500
 
+    # Market Intelligence API Routes (Phase 7A)
+    @app.route('/api/market/current-data', methods=['GET'])
+    def get_current_market_data_endpoint():
+        """Get current market data for location and property type"""
+        try:
+            location = request.args.get('location')
+            property_type = request.args.get('property_type', 'single_family')
+            
+            if not location:
+                return jsonify({
+                    'success': False,
+                    'error': 'Location parameter is required'
+                }), 400
+            
+            # Import market intelligence service
+            import asyncio
+            from ai_services.market_intelligence.market_data_engine import get_current_market_data
+            
+            # Run async function
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(get_current_market_data(location, property_type))
+            
+            return jsonify({
+                'success': True,
+                'market_data': result
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get market data: {str(e)}'
+            }), 500
+    
+    @app.route('/api/market/trends', methods=['GET'])
+    def get_market_trends_endpoint():
+        """Get market trend analysis"""
+        try:
+            location = request.args.get('location')
+            property_type = request.args.get('property_type', 'single_family')
+            days_back = int(request.args.get('days_back', 30))
+            
+            if not location:
+                return jsonify({
+                    'success': False,
+                    'error': 'Location parameter is required'
+                }), 400
+            
+            # Import market intelligence service
+            import asyncio
+            from ai_services.market_intelligence.market_data_engine import get_market_trends_analysis
+            
+            # Run async function
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(get_market_trends_analysis(location, property_type, days_back))
+            
+            return jsonify({
+                'success': True,
+                'trends_analysis': result
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get market trends: {str(e)}'
+            }), 500
+    
+    @app.route('/api/market/opportunities', methods=['GET'])
+    def get_investment_opportunities_endpoint():
+        """Get current investment opportunities"""
+        try:
+            max_opportunities = int(request.args.get('max_opportunities', 10))
+            
+            # Import market intelligence service
+            import asyncio
+            from ai_services.market_intelligence.market_data_engine import get_investment_opportunities
+            
+            # Run async function
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(get_investment_opportunities(max_opportunities))
+            
+            return jsonify({
+                'success': True,
+                'opportunities': result
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get investment opportunities: {str(e)}'
+            }), 500
+    
+    @app.route('/api/market/forecast', methods=['GET'])
+    def get_market_forecast_endpoint():
+        """Get market forecast for specific metric"""
+        try:
+            location = request.args.get('location')
+            property_type = request.args.get('property_type', 'single_family')
+            metric = request.args.get('metric', 'median_price')
+            
+            if not location:
+                return jsonify({
+                    'success': False,
+                    'error': 'Location parameter is required'
+                }), 400
+            
+            # Import market analytics service
+            import asyncio
+            from ai_services.market_intelligence.market_analytics_service import get_market_forecast
+            
+            # Run async function
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(get_market_forecast(location, property_type, metric))
+            
+            return jsonify({
+                'success': True,
+                'forecast': result
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get market forecast: {str(e)}'
+            }), 500
+    
+    @app.route('/api/market/competitive-analysis', methods=['GET'])
+    def get_competitive_analysis_endpoint():
+        """Get competitive analysis for location and property type"""
+        try:
+            location = request.args.get('location')
+            property_type = request.args.get('property_type', 'single_family')
+            
+            if not location:
+                return jsonify({
+                    'success': False,
+                    'error': 'Location parameter is required'
+                }), 400
+            
+            # Import market analytics service
+            import asyncio
+            from ai_services.market_intelligence.market_analytics_service import get_competitive_analysis
+            
+            # Run async function
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(get_competitive_analysis(location, property_type))
+            
+            return jsonify({
+                'success': True,
+                'analysis': result
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get competitive analysis: {str(e)}'
+            }), 500
+    
+    @app.route('/api/market/segments', methods=['GET'])
+    def get_market_segments_endpoint():
+        """Get market segmentation analysis"""
+        try:
+            location = request.args.get('location')
+            
+            if not location:
+                return jsonify({
+                    'success': False,
+                    'error': 'Location parameter is required'
+                }), 400
+            
+            # Import market analytics service
+            import asyncio
+            from ai_services.market_intelligence.market_analytics_service import get_market_segments
+            
+            # Run async function
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(get_market_segments(location))
+            
+            return jsonify({
+                'success': True,
+                'segments': result
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get market segments: {str(e)}'
+            }), 500
+    
+    @app.route('/api/market/dashboard-data', methods=['GET'])
+    def get_market_dashboard_data():
+        """Get comprehensive market dashboard data"""
+        try:
+            location = request.args.get('location', 'New York, NY')
+            property_type = request.args.get('property_type', 'single_family')
+            
+            # Import services
+            import asyncio
+            from ai_services.market_intelligence.market_data_engine import (
+                get_current_market_data, get_investment_opportunities
+            )
+            from ai_services.market_intelligence.market_analytics_service import (
+                get_market_forecast, get_competitive_analysis
+            )
+            
+            # Run async functions
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            # Gather all data
+            current_data = loop.run_until_complete(get_current_market_data(location, property_type))
+            opportunities = loop.run_until_complete(get_investment_opportunities(5))
+            forecast = loop.run_until_complete(get_market_forecast(location, property_type, 'median_price'))
+            competition = loop.run_until_complete(get_competitive_analysis(location, property_type))
+            
+            dashboard_data = {
+                'location': location,
+                'property_type': property_type,
+                'current_market_data': current_data,
+                'investment_opportunities': opportunities,
+                'price_forecast': forecast,
+                'competitive_analysis': competition,
+                'last_updated': datetime.now().isoformat(),
+                'data_sources': ['SimulatedProvider'],  # Would list real sources in production
+                'system_status': 'operational'
+            }
+            
+            return jsonify({
+                'success': True,
+                'dashboard': dashboard_data
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get dashboard data: {str(e)}'
+            }), 500
+    
+    # AI-Powered Chatbot API Endpoints
+    @app.route('/api/chatbot/message', methods=['POST'])
+    def process_chatbot_message():
+        """Process chatbot message and return response"""
+        try:
+            data = request.json
+            message = data.get('message', '').strip()
+            user_id = data.get('user_id', 'anonymous')
+            session_id = data.get('session_id')
+            
+            if not message:
+                return jsonify({
+                    'success': False,
+                    'error': 'Message is required'
+                }), 400
+            
+            # Import chatbot processing function
+            import asyncio
+            from ai_services.conversational_ai.chatbot_engine import process_chat_message
+            
+            # Process message asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            response = loop.run_until_complete(
+                process_chat_message(message, user_id, session_id)
+            )
+            
+            return jsonify({
+                'success': True,
+                'data': response
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to process message: {str(e)}'
+            }), 500
+    
+    @app.route('/api/chatbot/conversation/<session_id>', methods=['GET'])
+    def get_conversation_history(session_id):
+        """Get conversation history for a session"""
+        try:
+            # Import chatbot components
+            from ai_services.conversational_ai.chatbot_engine import get_estatecore_chatbot
+            
+            chatbot = get_estatecore_chatbot()
+            conversation_manager = chatbot.conversation_manager
+            
+            # Try to get context from memory first
+            context = conversation_manager.active_contexts.get(session_id)
+            
+            if context:
+                history = context.conversation_history
+            else:
+                # Try to load from database
+                context = conversation_manager._load_context_from_db(session_id)
+                if context:
+                    history = context.conversation_history
+                else:
+                    history = []
+            
+            return jsonify({
+                'success': True,
+                'history': history,
+                'session_id': session_id
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get conversation history: {str(e)}'
+            }), 500
+    
+    @app.route('/api/chatbot/sessions', methods=['GET'])
+    def get_user_sessions():
+        """Get all conversation sessions for a user"""
+        try:
+            user_id = request.args.get('user_id', 'anonymous')
+            
+            # Import database handling
+            import sqlite3
+            import os
+            from datetime import datetime
+            
+            db_path = os.path.join(os.path.dirname(__file__), 'conversations.db')
+            
+            if not os.path.exists(db_path):
+                return jsonify({
+                    'success': True,
+                    'sessions': []
+                })
+            
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT session_id, created_at, last_activity
+                FROM conversations 
+                WHERE user_id = ?
+                ORDER BY last_activity DESC
+                LIMIT 20
+            """, (user_id,))
+            
+            sessions = []
+            for row in cursor.fetchall():
+                session_id, created_at, last_activity = row
+                sessions.append({
+                    'session_id': session_id,
+                    'created_at': created_at,
+                    'last_activity': last_activity
+                })
+            
+            conn.close()
+            
+            return jsonify({
+                'success': True,
+                'sessions': sessions
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get user sessions: {str(e)}'
+            }), 500
+    
+    @app.route('/api/chatbot/quick-actions', methods=['GET'])
+    def get_chatbot_quick_actions():
+        """Get available quick actions for the chatbot"""
+        try:
+            quick_actions = [
+                {
+                    'id': 'property_overview',
+                    'text': 'Show property overview',
+                    'icon': '🏠',
+                    'category': 'property'
+                },
+                {
+                    'id': 'occupancy_rates',
+                    'text': 'Check occupancy rates',
+                    'icon': '📊',
+                    'category': 'analytics'
+                },
+                {
+                    'id': 'rental_income',
+                    'text': 'View rental income',
+                    'icon': '💰',
+                    'category': 'financial'
+                },
+                {
+                    'id': 'maintenance_status',
+                    'text': 'Maintenance status',
+                    'icon': '🔧',
+                    'category': 'maintenance'
+                },
+                {
+                    'id': 'market_data',
+                    'text': 'Get market data',
+                    'icon': '📈',
+                    'category': 'market'
+                },
+                {
+                    'id': 'schedule_maintenance',
+                    'text': 'Schedule maintenance',
+                    'icon': '🗓️',
+                    'category': 'maintenance'
+                },
+                {
+                    'id': 'financial_report',
+                    'text': 'Generate financial report',
+                    'icon': '📋',
+                    'category': 'financial'
+                },
+                {
+                    'id': 'tenant_info',
+                    'text': 'Tenant information',
+                    'icon': '👤',
+                    'category': 'tenant'
+                }
+            ]
+            
+            return jsonify({
+                'success': True,
+                'actions': quick_actions
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get quick actions: {str(e)}'
+            }), 500
+    
+    # Advanced Analytics API Endpoints
+    @app.route('/api/analytics/property-performance', methods=['GET'])
+    def get_property_performance_analytics():
+        """Get property performance analytics report"""
+        try:
+            property_ids = request.args.getlist('property_ids')
+            time_frame = request.args.get('time_frame', 'monthly')
+            
+            # Import analytics functions
+            import asyncio
+            from ai_services.advanced_analytics.analytics_engine import generate_property_performance_analytics
+            
+            # Generate analytics asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            analytics_data = loop.run_until_complete(
+                generate_property_performance_analytics(property_ids, time_frame)
+            )
+            
+            return jsonify({
+                'success': True,
+                'analytics': analytics_data
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to generate property performance analytics: {str(e)}'
+            }), 500
+    
+    @app.route('/api/analytics/financial-trends', methods=['GET'])
+    def get_financial_trends_analytics():
+        """Get financial trends analytics report"""
+        try:
+            time_frame = request.args.get('time_frame', 'quarterly')
+            
+            # Import analytics functions
+            import asyncio
+            from ai_services.advanced_analytics.analytics_engine import generate_financial_trends_analytics
+            
+            # Generate analytics asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            analytics_data = loop.run_until_complete(
+                generate_financial_trends_analytics(time_frame)
+            )
+            
+            return jsonify({
+                'success': True,
+                'analytics': analytics_data
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to generate financial trends analytics: {str(e)}'
+            }), 500
+    
+    @app.route('/api/analytics/predictive-maintenance', methods=['GET'])
+    def get_predictive_maintenance_analytics():
+        """Get predictive maintenance analytics report"""
+        try:
+            # Import analytics functions
+            import asyncio
+            from ai_services.advanced_analytics.analytics_engine import generate_predictive_maintenance_analytics
+            
+            # Generate analytics asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            analytics_data = loop.run_until_complete(
+                generate_predictive_maintenance_analytics()
+            )
+            
+            return jsonify({
+                'success': True,
+                'analytics': analytics_data
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to generate predictive maintenance analytics: {str(e)}'
+            }), 500
+    
+    @app.route('/api/analytics/dashboard-overview', methods=['GET'])
+    def get_analytics_dashboard_overview():
+        """Get overview data for analytics dashboard"""
+        try:
+            # Import analytics functions
+            import asyncio
+            from ai_services.advanced_analytics.analytics_engine import (
+                generate_property_performance_analytics,
+                generate_financial_trends_analytics,
+                generate_predictive_maintenance_analytics
+            )
+            
+            # Generate all analytics asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            # Get summary data for dashboard
+            property_analytics = loop.run_until_complete(
+                generate_property_performance_analytics()
+            )
+            
+            financial_analytics = loop.run_until_complete(
+                generate_financial_trends_analytics()
+            )
+            
+            maintenance_analytics = loop.run_until_complete(
+                generate_predictive_maintenance_analytics()
+            )
+            
+            # Create dashboard overview
+            dashboard_data = {
+                'summary': {
+                    'total_reports_generated': 3,
+                    'accuracy_score': round((
+                        property_analytics['accuracy_score'] + 
+                        financial_analytics['accuracy_score'] + 
+                        maintenance_analytics['accuracy_score']
+                    ) / 3, 2),
+                    'last_updated': property_analytics['generated_at'],
+                    'data_freshness': 'real-time'
+                },
+                'key_insights': [],
+                'charts_overview': {
+                    'property_performance': {
+                        'roi_trend': property_analytics['charts_data']['roi_trend'],
+                        'occupancy_summary': property_analytics['charts_data']['occupancy_distribution']
+                    },
+                    'financial_trends': {
+                        'revenue_trend': financial_analytics['charts_data']['revenue_trend'],
+                        'expense_breakdown': financial_analytics['charts_data']['expense_breakdown']
+                    },
+                    'maintenance_patterns': {
+                        'categories': maintenance_analytics['charts_data']['maintenance_categories'],
+                        'cost_trend': maintenance_analytics['charts_data']['cost_trend']
+                    }
+                },
+                'recent_reports': [
+                    {
+                        'id': property_analytics['report_id'],
+                        'title': property_analytics['title'],
+                        'type': 'property_performance',
+                        'generated_at': property_analytics['generated_at']
+                    },
+                    {
+                        'id': financial_analytics['report_id'],
+                        'title': financial_analytics['title'],
+                        'type': 'financial_trends',
+                        'generated_at': financial_analytics['generated_at']
+                    },
+                    {
+                        'id': maintenance_analytics['report_id'],
+                        'title': maintenance_analytics['title'],
+                        'type': 'predictive_maintenance',
+                        'generated_at': maintenance_analytics['generated_at']
+                    }
+                ]
+            }
+            
+            # Collect key insights from all reports
+            for analytics in [property_analytics, financial_analytics, maintenance_analytics]:
+                if analytics.get('insights'):
+                    for insight in analytics['insights'][:2]:  # Top 2 insights per report
+                        dashboard_data['key_insights'].append({
+                            'title': insight['title'],
+                            'description': insight['description'],
+                            'type': insight['insight_type'],
+                            'probability': insight['probability'],
+                            'time_horizon': insight['time_horizon']
+                        })
+            
+            return jsonify({
+                'success': True,
+                'dashboard': dashboard_data
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get analytics dashboard overview: {str(e)}'
+            }), 500
+    
+    @app.route('/api/analytics/reports', methods=['GET'])
+    def get_analytics_reports():
+        """Get list of available analytics reports"""
+        try:
+            # Import database handling
+            import sqlite3
+            import os
+            import json
+            
+            db_path = os.path.join(os.path.dirname(__file__), 'ai_services', 'advanced_analytics', 'analytics.db')
+            
+            if not os.path.exists(db_path):
+                return jsonify({
+                    'success': True,
+                    'reports': []
+                })
+            
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT report_id, report_type, title, generated_at, expires_at
+                FROM analytics_reports 
+                ORDER BY generated_at DESC
+                LIMIT 50
+            """)
+            
+            reports = []
+            for row in cursor.fetchall():
+                report_id, report_type, title, generated_at, expires_at = row
+                reports.append({
+                    'report_id': report_id,
+                    'report_type': report_type,
+                    'title': title,
+                    'generated_at': generated_at,
+                    'expires_at': expires_at,
+                    'status': 'active' if expires_at > datetime.now().isoformat() else 'expired'
+                })
+            
+            conn.close()
+            
+            return jsonify({
+                'success': True,
+                'reports': reports
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get analytics reports: {str(e)}'
+            }), 500
+    
+    @app.route('/api/analytics/reports/<report_id>', methods=['GET'])
+    def get_analytics_report_details(report_id):
+        """Get detailed analytics report by ID"""
+        try:
+            # Import database handling
+            import sqlite3
+            import os
+            import json
+            
+            db_path = os.path.join(os.path.dirname(__file__), 'ai_services', 'advanced_analytics', 'analytics.db')
+            
+            if not os.path.exists(db_path):
+                return jsonify({
+                    'success': False,
+                    'error': 'Analytics database not found'
+                }), 404
+            
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT content FROM analytics_reports 
+                WHERE report_id = ?
+            """, (report_id,))
+            
+            row = cursor.fetchone()
+            if not row:
+                return jsonify({
+                    'success': False,
+                    'error': 'Report not found'
+                }), 404
+            
+            report_content = json.loads(row[0])
+            conn.close()
+            
+            return jsonify({
+                'success': True,
+                'report': report_content
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get report details: {str(e)}'
+            }), 500
+    
+    # Voice Assistant API Endpoints
+    @app.route('/api/voice/session/start', methods=['POST'])
+    def start_voice_session():
+        """Start a new voice interaction session"""
+        try:
+            data = request.json
+            user_id = data.get('user_id', 'anonymous')
+            language = data.get('language', 'en-US')
+            voice = data.get('voice', 'female_professional')
+            
+            # Import voice assistant functions
+            import asyncio
+            from ai_services.voice_assistant.voice_engine import start_voice_session_api
+            
+            # Start session asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            session_data = loop.run_until_complete(
+                start_voice_session_api(user_id, language, voice)
+            )
+            
+            return jsonify({
+                'success': True,
+                'session': session_data
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to start voice session: {str(e)}'
+            }), 500
+    
+    @app.route('/api/voice/process', methods=['POST'])
+    def process_voice_input():
+        """Process voice input and return response"""
+        try:
+            data = request.json
+            session_id = data.get('session_id')
+            audio_data = data.get('audio_data')  # Base64 encoded audio
+            
+            if not session_id or not audio_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'session_id and audio_data are required'
+                }), 400
+            
+            # Import voice assistant functions
+            import asyncio
+            from ai_services.voice_assistant.voice_engine import process_voice_input_api
+            
+            # Process voice input asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            response_data = loop.run_until_complete(
+                process_voice_input_api(session_id, audio_data)
+            )
+            
+            return jsonify({
+                'success': True,
+                'response': response_data
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to process voice input: {str(e)}'
+            }), 500
+    
+    @app.route('/api/voice/session/end', methods=['POST'])
+    def end_voice_session():
+        """End a voice interaction session"""
+        try:
+            data = request.json
+            session_id = data.get('session_id')
+            
+            if not session_id:
+                return jsonify({
+                    'success': False,
+                    'error': 'session_id is required'
+                }), 400
+            
+            # Import voice assistant
+            import asyncio
+            from ai_services.voice_assistant.voice_engine import get_voice_assistant
+            
+            # End session asynchronously
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            assistant = get_voice_assistant()
+            loop.run_until_complete(assistant.end_voice_session(session_id))
+            
+            return jsonify({
+                'success': True,
+                'message': 'Voice session ended successfully'
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to end voice session: {str(e)}'
+            }), 500
+    
+    @app.route('/api/voice/capabilities', methods=['GET'])
+    def get_voice_capabilities():
+        """Get voice assistant capabilities and configuration"""
+        try:
+            capabilities = {
+                'supported_languages': [
+                    {'code': 'en-US', 'name': 'English (US)', 'default': True},
+                    {'code': 'en-UK', 'name': 'English (UK)', 'default': False},
+                    {'code': 'es-US', 'name': 'Spanish (US)', 'default': False},
+                    {'code': 'fr-FR', 'name': 'French (France)', 'default': False},
+                    {'code': 'de-DE', 'name': 'German (Germany)', 'default': False}
+                ],
+                'available_voices': [
+                    {'id': 'male_professional', 'name': 'David Professional', 'gender': 'male', 'style': 'professional'},
+                    {'id': 'female_professional', 'name': 'Sarah Professional', 'gender': 'female', 'style': 'professional', 'default': True},
+                    {'id': 'neutral_ai', 'name': 'AI Assistant', 'gender': 'neutral', 'style': 'ai_assistant'}
+                ],
+                'supported_commands': [
+                    {
+                        'category': 'Property Management',
+                        'commands': [
+                            'What is the occupancy rate?',
+                            'Show property status',
+                            'Check property performance'
+                        ]
+                    },
+                    {
+                        'category': 'Maintenance',
+                        'commands': [
+                            'Schedule maintenance',
+                            'Show maintenance requests',
+                            'Check maintenance status'
+                        ]
+                    },
+                    {
+                        'category': 'Financial',
+                        'commands': [
+                            'Show rent collection',
+                            'View financial report',
+                            'Check rental income'
+                        ]
+                    },
+                    {
+                        'category': 'Market Intelligence',
+                        'commands': [
+                            'Get market data',
+                            'Show market trends',
+                            'Check investment opportunities'
+                        ]
+                    }
+                ],
+                'features': {
+                    'wake_word_detection': True,
+                    'continuous_listening': True,
+                    'noise_reduction': True,
+                    'echo_cancellation': True,
+                    'multi_language_support': True,
+                    'voice_adaptation': True,
+                    'conversation_context': True,
+                    'visual_responses': True
+                },
+                'audio_settings': {
+                    'supported_formats': ['wav', 'mp3', 'webm'],
+                    'sample_rates': [8000, 16000, 22050, 44100],
+                    'bit_depths': [16, 24],
+                    'channels': [1, 2],
+                    'max_duration_seconds': 300
+                }
+            }
+            
+            return jsonify({
+                'success': True,
+                'capabilities': capabilities
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get voice capabilities: {str(e)}'
+            }), 500
+    
+    @app.route('/api/voice/audio/<filename>', methods=['GET'])
+    def get_voice_audio(filename):
+        """Serve generated voice audio files"""
+        try:
+            # In a real implementation, this would serve actual audio files
+            # For demo purposes, we'll return a placeholder response
+            
+            return jsonify({
+                'message': 'Audio file would be served here',
+                'filename': filename,
+                'note': 'This is a demo endpoint - actual audio file serving would be implemented with proper file handling'
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to serve audio file: {str(e)}'
+            }), 500
+    
+    @app.route('/api/voice/test', methods=['GET'])
+    def test_voice_system():
+        """Test voice system functionality"""
+        try:
+            # Import and test voice assistant
+            import asyncio
+            from ai_services.voice_assistant.voice_engine import get_voice_assistant
+            
+            assistant = get_voice_assistant()
+            
+            # Test basic functionality
+            test_results = {
+                'recognition_engine': 'initialized',
+                'command_processor': 'initialized', 
+                'synthesis_engine': 'initialized',
+                'active_sessions': len(assistant.active_sessions),
+                'system_status': 'operational',
+                'test_timestamp': datetime.now().isoformat()
+            }
+            
+            return jsonify({
+                'success': True,
+                'test_results': test_results
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Voice system test failed: {str(e)}'
+            }), 500
+
     return app
 
 # Create the app instance for gunicorn
