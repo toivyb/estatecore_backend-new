@@ -1,0 +1,74 @@
+import requests
+import json
+
+# EstateCore API - {{ endpoint.summary }}
+# {{ endpoint.description }}
+
+# Configuration
+API_BASE_URL = "{{ base_url }}"
+API_KEY = "your_api_key_here"  # Replace with your actual API key
+
+# Headers
+headers = {
+    "Content-Type": "application/json",
+    "X-API-Key": API_KEY
+}
+
+{% if path_params %}
+# Path parameters
+{% for param in path_params %}
+{{ param.name }} = "{{ param.example or 'example_value' }}"  # {{ param.description }}
+{% endfor %}
+
+{% endif %}
+{% if query_params %}
+# Query parameters
+params = {
+{% for param in query_params %}
+    "{{ param.name }}": {{ param.example or '"example_value"' }},  # {{ param.description }}
+{% endfor %}
+}
+
+{% endif %}
+{% if body_params %}
+# Request body
+data = {
+{% for param in body_params %}
+    "{{ param.name }}": {{ param.example or '"example_value"' }},  # {{ param.description }}
+{% endfor %}
+}
+
+{% endif %}
+# Build URL
+{% if path_params %}
+url = f"{API_BASE_URL}{{ path }}".format(
+{% for param in path_params %}
+    {{ param.name }}={{ param.name }},
+{% endfor %}
+)
+{% else %}
+url = f"{API_BASE_URL}{{ path }}"
+{% endif %}
+
+try:
+    # Make API request
+    response = requests.{{ method.lower() }}(
+        url,
+        headers=headers{% if query_params %},
+        params=params{% endif %}{% if has_body %},
+        json=data{% endif %}
+    )
+    
+    # Check response status
+    response.raise_for_status()
+    
+    # Parse response
+    result = response.json()
+    print("Response:")
+    print(json.dumps(result, indent=2))
+    
+except requests.exceptions.RequestException as e:
+    print(f"API request failed: {e}")
+    if hasattr(e, 'response') and e.response is not None:
+        print(f"Status code: {e.response.status_code}")
+        print(f"Response: {e.response.text}")

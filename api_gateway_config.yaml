@@ -1,0 +1,449 @@
+# EstateCore API Gateway Configuration
+# Comprehensive configuration for enterprise-grade API Gateway
+
+# Basic Information
+info:
+  title: "EstateCore API Gateway"
+  version: "1.0.0"
+  description: "Enterprise-grade property management API Gateway"
+  contact:
+    name: "EstateCore Support"
+    url: "https://estatecore.com/support"
+    email: "support@estatecore.com"
+  license:
+    name: "MIT"
+    url: "https://opensource.org/licenses/MIT"
+
+# Server Configuration
+servers:
+  - url: "https://api.estatecore.com"
+    description: "Production server"
+  - url: "https://staging-api.estatecore.com"
+    description: "Staging server"
+  - url: "https://sandbox-api.estatecore.com"
+    description: "Sandbox server"
+
+# Security Schemes
+security_schemes:
+  - name: "ApiKeyAuth"
+    type: "api_key"
+    description: "API key authentication via X-API-Key header"
+    api_key_name: "X-API-Key"
+    api_key_location: "header"
+  
+  - name: "BearerAuth"
+    type: "http"
+    description: "JWT Bearer token authentication"
+    bearer_format: "JWT"
+  
+  - name: "OAuth2"
+    type: "oauth2"
+    description: "OAuth 2.0 authentication"
+    oauth2_flows:
+      authorization_code:
+        authorization_url: "https://api.estatecore.com/oauth/authorize"
+        token_url: "https://api.estatecore.com/oauth/token"
+        scopes:
+          read: "Read access to resources"
+          write: "Write access to resources"
+          admin: "Administrative access"
+          properties:read: "Read property data"
+          properties:write: "Modify property data"
+          tenants:read: "Read tenant data"
+          tenants:write: "Modify tenant data"
+          payments:read: "Read payment data"
+          payments:write: "Process payments"
+          maintenance:read: "Read maintenance data"
+          maintenance:write: "Manage maintenance"
+          analytics:read: "Access analytics"
+          webhooks:manage: "Manage webhooks"
+
+# API Endpoints Configuration
+endpoints:
+  # Authentication Endpoints
+  - path: "/api/v1/auth/login"
+    method: "POST"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/auth/login"
+    authentication: "none"
+    rate_limit: 10
+    rate_limit_type: "per_minute"
+    circuit_breaker_enabled: true
+    circuit_breaker_threshold: 5
+    circuit_breaker_timeout: 60
+    documentation:
+      summary: "User authentication"
+      description: "Authenticate user credentials and return access token"
+      tags: ["Authentication"]
+    
+  - path: "/api/v1/auth/logout"
+    method: "POST"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/auth/logout"
+    authentication: "jwt_token"
+    documentation:
+      summary: "User logout"
+      description: "Invalidate user session and revoke tokens"
+      tags: ["Authentication"]
+
+  # Properties Endpoints
+  - path: "/api/v1/properties"
+    method: "GET"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/properties"
+    authentication: "api_key"
+    required_scopes: ["properties:read"]
+    rate_limit: 100
+    rate_limit_type: "per_minute"
+    enable_caching: true
+    cache_ttl: 300
+    documentation:
+      summary: "List properties"
+      description: "Retrieve a paginated list of properties with filtering options"
+      tags: ["Properties"]
+
+  - path: "/api/v1/properties"
+    method: "POST"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/properties"
+    authentication: "api_key"
+    required_scopes: ["properties:write"]
+    rate_limit: 50
+    rate_limit_type: "per_minute"
+    webhook_enabled: true
+    webhook_events: ["property.created"]
+    documentation:
+      summary: "Create property"
+      description: "Create a new property in the system"
+      tags: ["Properties"]
+
+  - path: "/api/v1/properties/{property_id}"
+    method: "GET"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/properties/{property_id}"
+    authentication: "api_key"
+    required_scopes: ["properties:read"]
+    enable_caching: true
+    cache_ttl: 600
+    documentation:
+      summary: "Get property details"
+      description: "Retrieve detailed information about a specific property"
+      tags: ["Properties"]
+
+  - path: "/api/v1/properties/{property_id}"
+    method: "PUT"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/properties/{property_id}"
+    authentication: "api_key"
+    required_scopes: ["properties:write"]
+    rate_limit: 25
+    rate_limit_type: "per_minute"
+    webhook_enabled: true
+    webhook_events: ["property.updated"]
+    documentation:
+      summary: "Update property"
+      description: "Update an existing property's information"
+      tags: ["Properties"]
+
+  # Tenants Endpoints
+  - path: "/api/v1/tenants"
+    method: "GET"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/tenants"
+    authentication: "api_key"
+    required_scopes: ["tenants:read"]
+    rate_limit: 100
+    rate_limit_type: "per_minute"
+    enable_caching: true
+    cache_ttl: 300
+    documentation:
+      summary: "List tenants"
+      description: "Retrieve a paginated list of tenants"
+      tags: ["Tenants"]
+
+  - path: "/api/v1/tenants"
+    method: "POST"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/tenants"
+    authentication: "api_key"
+    required_scopes: ["tenants:write"]
+    rate_limit: 50
+    rate_limit_type: "per_minute"
+    webhook_enabled: true
+    webhook_events: ["tenant.created"]
+    documentation:
+      summary: "Create tenant"
+      description: "Add a new tenant to the system"
+      tags: ["Tenants"]
+
+  # Payments Endpoints
+  - path: "/api/v1/payments"
+    method: "GET"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/payments"
+    authentication: "api_key"
+    required_scopes: ["payments:read"]
+    rate_limit: 100
+    rate_limit_type: "per_minute"
+    documentation:
+      summary: "List payments"
+      description: "Retrieve payment transaction history"
+      tags: ["Payments"]
+
+  - path: "/api/v1/payments"
+    method: "POST"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/payments"
+    authentication: "api_key"
+    required_scopes: ["payments:write"]
+    rate_limit: 25
+    rate_limit_type: "per_minute"
+    webhook_enabled: true
+    webhook_events: ["payment.processed", "payment.failed"]
+    documentation:
+      summary: "Process payment"
+      description: "Process a new payment transaction"
+      tags: ["Payments"]
+
+  # Maintenance Endpoints
+  - path: "/api/v1/maintenance"
+    method: "GET"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/maintenance"
+    authentication: "api_key"
+    required_scopes: ["maintenance:read"]
+    rate_limit: 100
+    rate_limit_type: "per_minute"
+    documentation:
+      summary: "List maintenance requests"
+      description: "Retrieve maintenance request history"
+      tags: ["Maintenance"]
+
+  - path: "/api/v1/maintenance"
+    method: "POST"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/maintenance"
+    authentication: "api_key"
+    required_scopes: ["maintenance:write"]
+    rate_limit: 50
+    rate_limit_type: "per_minute"
+    webhook_enabled: true
+    webhook_events: ["maintenance.created", "maintenance.assigned"]
+    documentation:
+      summary: "Create maintenance request"
+      description: "Submit a new maintenance request"
+      tags: ["Maintenance"]
+
+  # Analytics Endpoints
+  - path: "/api/v1/analytics/dashboard"
+    method: "GET"
+    version: "v1"
+    upstream_url: "http://localhost:5000/api/analytics/dashboard"
+    authentication: "api_key"
+    required_scopes: ["analytics:read"]
+    rate_limit: 50
+    rate_limit_type: "per_minute"
+    enable_caching: true
+    cache_ttl: 600
+    documentation:
+      summary: "Get dashboard analytics"
+      description: "Retrieve comprehensive dashboard analytics data"
+      tags: ["Analytics"]
+
+# Default Clients Configuration
+clients:
+  - client_id: "demo_client"
+    client_secret: "demo_secret_key_change_in_production"
+    client_name: "Demo Client"
+    client_type: "confidential"
+    organization_id: "demo_org"
+    redirect_uris:
+      - "http://localhost:3000/callback"
+      - "https://demo.estatecore.com/callback"
+    allowed_scopes:
+      - "read"
+      - "write"
+      - "properties:read"
+      - "properties:write"
+      - "tenants:read"
+      - "tenants:write"
+    allowed_grant_types:
+      - "authorization_code"
+      - "client_credentials"
+      - "refresh_token"
+    access_token_lifetime: 3600
+    refresh_token_lifetime: 2592000
+    api_keys:
+      - "ec_demo_key_12345678901234567890123456789012"
+    is_active: true
+
+# Rate Limiting Configuration
+rate_limiting:
+  default_limits:
+    requests_per_second: 10
+    requests_per_minute: 100
+    requests_per_hour: 1000
+    requests_per_day: 10000
+  
+  algorithms:
+    - endpoint: "/api/v1/auth/login"
+      algorithm: "fixed_window"
+      requests_per_minute: 10
+      scope: "per_ip"
+    
+    - endpoint: "/api/v1/payments"
+      algorithm: "token_bucket"
+      requests_per_minute: 25
+      scope: "per_user"
+
+# Circuit Breaker Configuration
+circuit_breakers:
+  default_settings:
+    failure_threshold: 5
+    timeout: 60
+    half_open_max_calls: 3
+  
+  specific_endpoints:
+    - endpoint: "/api/v1/payments"
+      failure_threshold: 3
+      timeout: 120
+    
+    - endpoint: "/api/v1/maintenance"
+      failure_threshold: 10
+      timeout: 30
+
+# Caching Configuration
+caching:
+  enabled: true
+  default_ttl: 300
+  max_cache_size: 1000
+  
+  endpoint_specific:
+    - endpoint: "/api/v1/properties"
+      ttl: 600
+    
+    - endpoint: "/api/v1/analytics/dashboard"
+      ttl: 900
+
+# Monitoring and SLA Configuration
+monitoring:
+  metrics_retention_days: 30
+  alert_thresholds:
+    error_rate_percentage: 5.0
+    response_time_ms: 2000
+    availability_percentage: 99.9
+  
+  sla_targets:
+    - metric: "availability"
+      threshold: 99.9
+      operator: ">="
+      time_window: 3600
+      description: "API availability should be >= 99.9% over 1 hour"
+    
+    - metric: "response_time"
+      threshold: 1000.0
+      operator: "<="
+      time_window: 300
+      description: "95th percentile response time should be <= 1000ms over 5 minutes"
+    
+    - metric: "error_rate"
+      threshold: 1.0
+      operator: "<="
+      time_window: 600
+      description: "Error rate should be <= 1% over 10 minutes"
+
+# Enterprise Features Configuration
+enterprise:
+  multi_tenant:
+    enabled: true
+    isolation_levels: ["standard", "enhanced", "dedicated"]
+    
+    tier_limits:
+      basic:
+        requests_per_minute: 100
+        webhook_endpoints: 3
+        custom_endpoints: 5
+        concurrent_requests: 5
+      
+      professional:
+        requests_per_minute: 500
+        webhook_endpoints: 10
+        custom_endpoints: 25
+        concurrent_requests: 20
+      
+      enterprise:
+        requests_per_minute: 2000
+        webhook_endpoints: 50
+        custom_endpoints: 100
+        concurrent_requests: 100
+      
+      white_label:
+        requests_per_minute: 5000
+        webhook_endpoints: 200
+        custom_endpoints: 500
+        concurrent_requests: 500
+
+  webhooks:
+    enabled: true
+    default_retry_count: 3
+    default_retry_delay: 60
+    default_timeout: 30
+    max_payload_size: 1048576  # 1MB
+
+  backup_recovery:
+    enabled: true
+    default_retention_days: 30
+    encryption_enabled: true
+    compression_enabled: true
+    storage_location: "local"
+
+# Documentation Configuration
+documentation:
+  auto_generation: true
+  include_examples: true
+  include_schemas: true
+  interactive_explorer: true
+  
+  sdk_generation:
+    enabled: true
+    languages: ["python", "javascript", "java", "csharp", "php", "go", "ruby"]
+  
+  sandbox:
+    enabled: true
+    auto_populate_data: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "json"
+  include_request_body: false
+  include_response_body: false
+  max_body_size: 1024
+  
+  destinations:
+    - type: "file"
+      path: "/var/log/api_gateway.log"
+      max_size: "100MB"
+      backup_count: 5
+    
+    - type: "console"
+      format: "text"
+
+# Feature Flags
+feature_flags:
+  request_transformation: true
+  response_transformation: true
+  api_versioning: true
+  custom_endpoints: true
+  webhook_delivery: true
+  circuit_breakers: true
+  rate_limiting: true
+  caching: true
+  monitoring: true
+  analytics: true
+  backup_recovery: true
+  multi_tenant: true
+  oauth2: true
+  api_documentation: true
+  sdk_generation: true
+  sandbox_environment: true

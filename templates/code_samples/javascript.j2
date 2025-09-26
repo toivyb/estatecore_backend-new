@@ -1,0 +1,87 @@
+// EstateCore API - {{ endpoint.summary }}
+// {{ endpoint.description }}
+
+const API_BASE_URL = "{{ base_url }}";
+const API_KEY = "your_api_key_here"; // Replace with your actual API key
+
+{% if path_params %}
+// Path parameters
+{% for param in path_params %}
+const {{ param.name }} = "{{ param.example or 'example_value' }}"; // {{ param.description }}
+{% endfor %}
+
+{% endif %}
+{% if query_params %}
+// Query parameters
+const queryParams = new URLSearchParams({
+{% for param in query_params %}
+  "{{ param.name }}": "{{ param.example or 'example_value' }}", // {{ param.description }}
+{% endfor %}
+});
+
+{% endif %}
+{% if body_params %}
+// Request body
+const requestData = {
+{% for param in body_params %}
+  "{{ param.name }}": "{{ param.example or 'example_value' }}", // {{ param.description }}
+{% endfor %}
+};
+
+{% endif %}
+// Build URL
+{% if path_params %}
+const url = `${API_BASE_URL}{{ path }}`.replace(
+{% for param in path_params %}
+  /\{{{ param.name }}\}/g, {{ param.name }}{% if not loop.last %},{% endif %}
+{% endfor %}
+){% if query_params %} + "?" + queryParams.toString(){% endif %};
+{% else %}
+const url = `${API_BASE_URL}{{ path }}`{% if query_params %} + "?" + queryParams.toString(){% endif %};
+{% endif %}
+
+// Request options
+const options = {
+  method: "{{ method }}",
+  headers: {
+    "Content-Type": "application/json",
+    "X-API-Key": API_KEY
+  }{% if has_body %},
+  body: JSON.stringify(requestData){% endif %}
+};
+
+// Make API request
+fetch(url, options)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log("Response:", data);
+  })
+  .catch(error => {
+    console.error("API request failed:", error);
+  });
+
+// Using async/await
+async function makeAPIRequest() {
+  try {
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log("Response:", data);
+    return data;
+  } catch (error) {
+    console.error("API request failed:", error);
+    throw error;
+  }
+}
+
+// Call the function
+makeAPIRequest();

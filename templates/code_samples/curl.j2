@@ -1,0 +1,25 @@
+# EstateCore API - {{ endpoint.summary }}
+# {{ endpoint.description }}
+
+{% if path_params %}
+# Path parameters:
+{% for param in path_params %}
+# {{ param.name }}: {{ param.description }}
+{% endfor %}
+
+{% endif %}
+{% if query_params %}
+# Query parameters:
+{% for param in query_params %}
+# {{ param.name }}: {{ param.description }}
+{% endfor %}
+
+{% endif %}
+curl -X {{ method }} "{{ base_url }}{{ path }}{% if path_params %}{% for param in path_params %}.replace("{{"{{" + param.name + "}}}}", "{{ param.example or 'example_value' }}"){% endfor %}{% endif %}{% if query_params %}?{% for param in query_params %}{{ param.name }}={{ param.example or 'example_value' }}{% if not loop.last %}&{% endif %}{% endfor %}{% endif %}" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here"{% if has_body %} \
+  -d '{
+{% for param in body_params %}
+    "{{ param.name }}": "{{ param.example or 'example_value' }}"{% if not loop.last %},{% endif %}
+{% endfor %}
+  }'{% endif %}

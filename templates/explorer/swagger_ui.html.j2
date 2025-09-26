@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config.title }} - API Documentation</title>
+    <link rel="stylesheet" type="text/css" href="{{ config.swagger_ui_css }}">
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        body {
+            margin: 0;
+            background: #fafafa;
+        }
+        .swagger-ui .topbar {
+            background-color: #1f2937;
+        }
+        .swagger-ui .topbar .download-url-wrapper .select-label {
+            color: #ffffff;
+        }
+        .swagger-ui .info .title {
+            color: #1f2937;
+        }
+        .custom-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .custom-header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .custom-header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+        .api-info {
+            background: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .api-info h3 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+        .endpoints-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px;
+        }
+        .endpoint-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        .endpoint-card h4 {
+            margin: 0 0 10px 0;
+            color: #1f2937;
+        }
+        .endpoint-card .method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .method.get { background: #61affe; color: white; }
+        .method.post { background: #49cc90; color: white; }
+        .method.put { background: #fca130; color: white; }
+        .method.delete { background: #f93e3e; color: white; }
+        .method.patch { background: #50e3c2; color: white; }
+    </style>
+</head>
+<body>
+    <div class="custom-header">
+        <h1>{{ config.title }}</h1>
+        <p>{{ spec.info.description }}</p>
+        <p><strong>Version:</strong> {{ spec.info.version }}</p>
+    </div>
+
+    <div class="api-info">
+        <h3>Getting Started</h3>
+        <p>Welcome to the {{ config.title }} interactive documentation. You can explore all available endpoints, view request/response schemas, and test API calls directly from this interface.</p>
+        
+        <h4>Authentication</h4>
+        <p>This API supports multiple authentication methods:</p>
+        <ul>
+            <li><strong>API Key:</strong> Include your API key in the <code>X-API-Key</code> header</li>
+            <li><strong>Bearer Token:</strong> Include your JWT token in the <code>Authorization</code> header as <code>Bearer {token}</code></li>
+            <li><strong>OAuth 2.0:</strong> Use the OAuth flow for web applications</li>
+        </ul>
+        
+        <h4>Base URLs</h4>
+        <ul>
+            {% for server in spec.servers %}
+            <li><strong>{{ server.description }}:</strong> <code>{{ server.url }}</code></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="endpoints-summary">
+        {% for tag in spec.tags %}
+        <div class="endpoint-card">
+            <h4>{{ tag.name }}</h4>
+            <p>{{ tag.description }}</p>
+            
+            {% set endpoints = [] %}
+            {% for path, methods in spec.paths.items() %}
+                {% for method, endpoint_spec in methods.items() %}
+                    {% if tag.name in endpoint_spec.get('tags', []) %}
+                        {% set _ = endpoints.append({'path': path, 'method': method, 'summary': endpoint_spec.get('summary', '')}) %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            
+            {% for endpoint in endpoints %}
+            <div style="margin: 5px 0;">
+                <span class="method {{ endpoint.method }}">{{ endpoint.method.upper() }}</span>
+                <code>{{ endpoint.path }}</code>
+                <br><small>{{ endpoint.summary }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="swagger-ui"></div>
+
+    <script src="{{ config.swagger_ui_bundle_js }}"></script>
+    <script src="{{ config.swagger_ui_standalone_preset_js }}"></script>
+    <script>
+        window.onload = function() {
+            const ui = SwaggerUIBundle({
+                url: '{{ config.spec_url }}',
+                dom_id: '#swagger-ui',
+                deepLinking: {{ config.deep_linking | lower }},
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "{{ config.layout }}",
+                validatorUrl: null,
+                showExtensions: {{ config.show_extensions | lower }},
+                showCommonExtensions: {{ config.show_common_extensions | lower }},
+                tryItOutEnabled: true,
+                requestInterceptor: function(request) {
+                    // Add any custom request interceptor logic here
+                    console.log('Making request:', request);
+                    return request;
+                },
+                responseInterceptor: function(response) {
+                    // Add any custom response interceptor logic here
+                    console.log('Received response:', response);
+                    return response;
+                },
+                onComplete: function() {
+                    console.log('Swagger UI loaded successfully');
+                },
+                docExpansion: 'list',
+                operationsSorter: 'alpha',
+                tagsSorter: 'alpha',
+                filter: true,
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+                oauth2RedirectUrl: window.location.origin + '/oauth2-redirect.html'
+            });
+
+            // Custom styling and functionality
+            setTimeout(function() {
+                // Hide the Swagger UI topbar if desired
+                const topbar = document.querySelector('.swagger-ui .topbar');
+                if (topbar) {
+                    topbar.style.display = 'none';
+                }
+                
+                // Add custom API key input
+                const infoSection = document.querySelector('.swagger-ui .info');
+                if (infoSection && !document.getElementById('custom-api-key-input')) {
+                    const apiKeyDiv = document.createElement('div');
+                    apiKeyDiv.innerHTML = `
+                        <div style="background: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 5px; border: 1px solid #e9ecef;">
+                            <h4 style="margin: 0 0 10px 0;">Quick Setup</h4>
+                            <label for="custom-api-key-input" style="display: block; margin-bottom: 5px; font-weight: bold;">API Key:</label>
+                            <input type="text" id="custom-api-key-input" placeholder="Enter your API key here" 
+                                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+                            <button onclick="setApiKey()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                Set API Key
+                            </button>
+                            <p style="margin: 10px 0 0 0; font-size: 0.9em; color: #6c757d;">
+                                Enter your API key above to automatically populate it in all request examples.
+                            </p>
+                        </div>
+                    `;
+                    infoSection.appendChild(apiKeyDiv);
+                }
+            }, 1000);
+
+            window.ui = ui;
+        };
+
+        function setApiKey() {
+            const apiKey = document.getElementById('custom-api-key-input').value;
+            if (apiKey) {
+                // Set API key in Swagger UI
+                ui.preauthorizeApiKey('ApiKeyAuth', apiKey);
+                alert('API key set successfully! You can now test the API endpoints.');
+            } else {
+                alert('Please enter a valid API key.');
+            }
+        }
+
+        // Custom function to copy curl commands
+        function copyCurlCommand(element) {
+            const curlCommand = element.getAttribute('data-curl');
+            navigator.clipboard.writeText(curlCommand).then(function() {
+                alert('Curl command copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>

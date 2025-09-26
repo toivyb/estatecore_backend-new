@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EstateCore Partner Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+        }
+        
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: box-shadow 0.15s ease-in-out;
+        }
+        
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .status-badge {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .tenant-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .tenant-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4><i class="fas fa-building"></i> Partner Portal</h4>
+                        <small class="text-muted">EstateCore White-Label</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-tab="dashboard">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="tenants">
+                                <i class="fas fa-users"></i> Tenants
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="analytics">
+                                <i class="fas fa-chart-bar"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="billing">
+                                <i class="fas fa-dollar-sign"></i> Billing
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="support">
+                                <i class="fas fa-headset"></i> Support
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="settings">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2" id="page-title">Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="showCreateTenantModal()">
+                            <i class="fas fa-plus"></i> New Tenant
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Tab -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title">Total Tenants</h6>
+                                            <h3 id="total-tenants">--</h3>
+                                        </div>
+                                        <i class="fas fa-users fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title">Active Tenants</h6>
+                                            <h3 id="active-tenants">--</h3>
+                                        </div>
+                                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title">Monthly Revenue</h6>
+                                            <h3 id="monthly-revenue">--</h3>
+                                        </div>
+                                        <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title">Support Tickets</h6>
+                                            <h3 id="support-tickets">--</h3>
+                                        </div>
+                                        <i class="fas fa-ticket-alt fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Tenant Growth</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="growthChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Recent Activity</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recent-activity">
+                                        <div class="loading">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tenants Tab -->
+                <div id="tenants-tab" class="tab-content">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="input-group" style="max-width: 300px;">
+                            <input type="text" class="form-control" placeholder="Search tenants..." id="tenant-search">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="filterTenants('all')">All</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="filterTenants('active')">Active</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="filterTenants('suspended')">Suspended</button>
+                        </div>
+                    </div>
+
+                    <div class="row" id="tenants-grid">
+                        <div class="loading col-12 text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics-tab" class="tab-content">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Usage Analytics</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="usageChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Revenue Analytics</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="revenueChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other tabs placeholder -->
+                <div id="billing-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Billing Management</h5>
+                            <p>Billing and revenue sharing management features coming soon.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="support-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Support Center</h5>
+                            <p>Support ticket management and tenant communication features.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settings-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Partner Settings</h5>
+                            <p>Partner configuration and preferences.</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Create Tenant Modal -->
+    <div class="modal fade" id="createTenantModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Tenant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTenantForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tenantName" class="form-label">Tenant Name *</label>
+                                    <input type="text" class="form-control" id="tenantName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tenantSubdomain" class="form-label">Subdomain *</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="tenantSubdomain" required>
+                                        <span class="input-group-text">.estatecore.com</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="contactEmail" class="form-label">Contact Email *</label>
+                                    <input type="email" class="form-control" id="contactEmail" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="contactPhone" class="form-label">Contact Phone</label>
+                                    <input type="tel" class="form-control" id="contactPhone">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="billingPlan" class="form-label">Billing Plan</label>
+                            <select class="form-select" id="billingPlan">
+                                <option value="starter">Starter</option>
+                                <option value="standard" selected>Standard</option>
+                                <option value="premium">Premium</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Features</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="featureAI" checked>
+                                        <label class="form-check-label" for="featureAI">AI Analytics</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="featureLPR">
+                                        <label class="form-check-label" for="featureLPR">License Plate Recognition</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="featureSSO">
+                                        <label class="form-check-label" for="featureSSO">Single Sign-On</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="featureCustomDomain">
+                                        <label class="form-check-label" for="featureCustomDomain">Custom Domain</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="featureAdvancedReporting" checked>
+                                        <label class="form-check-label" for="featureAdvancedReporting">Advanced Reporting</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="featureAPI" checked>
+                                        <label class="form-check-label" for="featureAPI">API Access</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createTenant()">
+                        <span class="spinner-border spinner-border-sm d-none" id="createTenantSpinner"></span>
+                        Create Tenant
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global variables
+        let currentTab = 'dashboard';
+        let tenants = [];
+        let partnerApiKey = 'your-api-key-here'; // This would be set dynamically
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            loadDashboardData();
+        });
+
+        function initializeEventListeners() {
+            // Tab navigation
+            document.querySelectorAll('[data-tab]').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchTab(this.dataset.tab);
+                });
+            });
+
+            // Tenant search
+            document.getElementById('tenant-search').addEventListener('input', function() {
+                searchTenants(this.value);
+            });
+        }
+
+        function switchTab(tabName) {
+            // Update active nav
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Update page title
+            const titles = {
+                dashboard: 'Dashboard',
+                tenants: 'Tenant Management',
+                analytics: 'Analytics',
+                billing: 'Billing',
+                support: 'Support',
+                settings: 'Settings'
+            };
+            document.getElementById('page-title').textContent = titles[tabName];
+
+            currentTab = tabName;
+
+            // Load tab-specific data
+            switch(tabName) {
+                case 'tenants':
+                    loadTenants();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                // Load metrics
+                const response = await fetch('/api/white-label/partners/metrics', {
+                    headers: {
+                        'X-API-Key': partnerApiKey
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDashboardMetrics(data);
+                }
+
+                // Load recent activity
+                loadRecentActivity();
+                
+                // Initialize charts
+                initializeDashboardCharts();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function updateDashboardMetrics(data) {
+            document.getElementById('total-tenants').textContent = data.total_tenants || '0';
+            document.getElementById('active-tenants').textContent = data.active_tenants || '0';
+            document.getElementById('monthly-revenue').textContent = '$' + (data.monthly_revenue || '0');
+            document.getElementById('support-tickets').textContent = data.support_tickets || '0';
+        }
+
+        async function loadTenants() {
+            try {
+                document.getElementById('tenants-grid').innerHTML = '<div class="loading col-12 text-center"><div class="spinner-border" role="status"></div></div>';
+                
+                const response = await fetch('/api/white-label/tenants', {
+                    headers: {
+                        'X-API-Key': partnerApiKey
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    tenants = data.tenants;
+                    renderTenants(tenants);
+                }
+            } catch (error) {
+                console.error('Error loading tenants:', error);
+            }
+        }
+
+        function renderTenants(tenantsToRender) {
+            const grid = document.getElementById('tenants-grid');
+            
+            if (tenantsToRender.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-center"><p>No tenants found.</p></div>';
+                return;
+            }
+
+            const html = tenantsToRender.map(tenant => `
+                <div class="col-md-4 mb-3">
+                    <div class="card tenant-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title">${tenant.display_name}</h6>
+                                <span class="badge ${getStatusBadgeClass(tenant.status)} status-badge">${tenant.status}</span>
+                            </div>
+                            <p class="card-text text-muted small">
+                                <i class="fas fa-globe"></i> ${tenant.primary_domain}<br>
+                                <i class="fas fa-calendar"></i> Created ${new Date(tenant.created_at).toLocaleDateString()}
+                            </p>
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewTenant(${tenant.id})">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="editTenant(${tenant.id})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="manageTenantBranding(${tenant.id})">Branding</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="manageTenantFeatures(${tenant.id})">Features</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="viewTenantAnalytics(${tenant.id})">Analytics</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-warning" href="#" onclick="suspendTenant(${tenant.id})">Suspend</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            grid.innerHTML = html;
+        }
+
+        function getStatusBadgeClass(status) {
+            const classes = {
+                active: 'bg-success',
+                suspended: 'bg-warning',
+                provisioning: 'bg-info',
+                deactivated: 'bg-danger'
+            };
+            return classes[status] || 'bg-secondary';
+        }
+
+        function showCreateTenantModal() {
+            const modal = new bootstrap.Modal(document.getElementById('createTenantModal'));
+            modal.show();
+        }
+
+        async function createTenant() {
+            const form = document.getElementById('createTenantForm');
+            const spinner = document.getElementById('createTenantSpinner');
+            
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            try {
+                spinner.classList.remove('d-none');
+                
+                const formData = {
+                    name: document.getElementById('tenantName').value,
+                    subdomain: document.getElementById('tenantSubdomain').value,
+                    contact_email: document.getElementById('contactEmail').value,
+                    phone: document.getElementById('contactPhone').value,
+                    plan: document.getElementById('billingPlan').value,
+                    feature_flags: {
+                        ai_analytics: document.getElementById('featureAI').checked,
+                        lpr_integration: document.getElementById('featureLPR').checked,
+                        sso_integration: document.getElementById('featureSSO').checked,
+                        custom_domains: document.getElementById('featureCustomDomain').checked,
+                        advanced_reporting: document.getElementById('featureAdvancedReporting').checked,
+                        api_access: document.getElementById('featureAPI').checked
+                    }
+                };
+
+                const response = await fetch('/api/white-label/tenants', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': partnerApiKey
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('createTenantModal')).hide();
+                    form.reset();
+                    loadTenants(); // Refresh tenant list
+                    showAlert('Tenant created successfully!', 'success');
+                } else {
+                    showAlert(result.error || 'Failed to create tenant', 'danger');
+                }
+            } catch (error) {
+                console.error('Error creating tenant:', error);
+                showAlert('Error creating tenant', 'danger');
+            } finally {
+                spinner.classList.add('d-none');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // Insert at top of main content
+            const mainContent = document.querySelector('.main-content');
+            mainContent.insertAdjacentHTML('afterbegin', alertHtml);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = mainContent.querySelector('.alert');
+                if (alert) {
+                    bootstrap.Alert.getOrCreateInstance(alert).close();
+                }
+            }, 5000);
+        }
+
+        function searchTenants(query) {
+            if (!query) {
+                renderTenants(tenants);
+                return;
+            }
+            
+            const filtered = tenants.filter(tenant => 
+                tenant.display_name.toLowerCase().includes(query.toLowerCase()) ||
+                tenant.tenant_key.toLowerCase().includes(query.toLowerCase()) ||
+                tenant.primary_domain.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            renderTenants(filtered);
+        }
+
+        function filterTenants(status) {
+            if (status === 'all') {
+                renderTenants(tenants);
+            } else {
+                const filtered = tenants.filter(tenant => tenant.status === status);
+                renderTenants(filtered);
+            }
+        }
+
+        // Placeholder functions for tenant management
+        function viewTenant(tenantId) {
+            console.log('View tenant:', tenantId);
+        }
+
+        function editTenant(tenantId) {
+            console.log('Edit tenant:', tenantId);
+        }
+
+        function manageTenantBranding(tenantId) {
+            console.log('Manage branding for tenant:', tenantId);
+        }
+
+        function manageTenantFeatures(tenantId) {
+            console.log('Manage features for tenant:', tenantId);
+        }
+
+        function viewTenantAnalytics(tenantId) {
+            console.log('View analytics for tenant:', tenantId);
+        }
+
+        function suspendTenant(tenantId) {
+            if (confirm('Are you sure you want to suspend this tenant?')) {
+                console.log('Suspend tenant:', tenantId);
+            }
+        }
+
+        // Chart initialization
+        function initializeDashboardCharts() {
+            // Growth chart
+            const growthCtx = document.getElementById('growthChart').getContext('2d');
+            new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Tenants',
+                        data: [2, 5, 3, 8, 6, 10],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function loadAnalytics() {
+            // Placeholder for analytics loading
+            console.log('Loading analytics...');
+        }
+
+        function loadRecentActivity() {
+            // Placeholder for recent activity
+            const activities = [
+                'Tenant "Demo Corp" created',
+                'Tenant "Test Inc" activated',
+                'Support ticket #123 resolved',
+                'Revenue milestone reached'
+            ];
+            
+            const html = activities.map(activity => `
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-circle text-primary me-2" style="font-size: 0.5rem;"></i>
+                    <small>${activity}</small>
+                </div>
+            `).join('');
+            
+            document.getElementById('recent-activity').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

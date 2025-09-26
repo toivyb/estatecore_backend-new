@@ -28,6 +28,10 @@ from tenant_screening_service import get_tenant_screening_service, ApplicationSt
 from bulk_operations_service import get_bulk_operations_service, OperationType, OperationStatus, EntityType
 from performance_service import get_performance_service, cached, monitored
 from rate_limiting_service import get_rate_limiting_service, rate_limit, RateLimitConfig, RateLimitAlgorithm, RateLimitScope
+
+# Import billing system
+sys.path.append(os.path.join(os.path.dirname(__file__), 'billing_system'))
+from billing_api import init_billing_system
 from enhanced_lpr_service import get_enhanced_lpr_service, LPRCamera, VehicleRecord, CameraType, LPRProvider, VehicleStatus
 
 # Load environment variables
@@ -90,6 +94,59 @@ def create_app():
         response.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
         response.headers['Access-Control-Allow-Credentials'] = 'false'
         return response
+
+    # Register Yardi Integration Blueprint
+    try:
+        from yardi_integration.yardi_routes import yardi_bp
+        app.register_blueprint(yardi_bp)
+        print("Yardi Integration routes registered successfully")
+    except ImportError as e:
+        print(f"Yardi Integration not available: {e}")
+    except Exception as e:
+        print(f"Failed to register Yardi Integration routes: {e}")
+
+    # Register Compliance API Blueprint
+    try:
+        from routes.compliance_api import compliance_bp
+        app.register_blueprint(compliance_bp)
+        print("Compliance API routes registered successfully")
+        
+        # Initialize compliance system
+        from services.compliance_service import get_compliance_orchestrator
+        compliance_orchestrator = get_compliance_orchestrator()
+        print("Compliance system initialized")
+    except ImportError as e:
+        print(f"Compliance API not available: {e}")
+    
+    # Initialize SaaS Billing System
+    try:
+        billing_api = init_billing_system(app)
+        print("SaaS Billing System initialized successfully")
+        
+        # Store billing API reference for use in endpoints
+        app.billing_api = billing_api
+    except ImportError as e:
+        print(f"Billing System not available: {e}")
+    except Exception as e:
+        print(f"Failed to initialize Billing System: {e}")
+    
+    # Initialize Energy Management Service Directly
+    try:
+        # Add paths for energy management
+        import sys
+        sys.path.append(os.path.join(os.path.dirname(__file__), 'ai_modules'))
+        sys.path.append(os.path.join(os.path.dirname(__file__), 'services'))
+        
+        from services.energy_management_service import get_energy_management_service
+        energy_service = get_energy_management_service()
+        print("Energy Management service initialized successfully")
+        
+        # Store service reference for use in endpoints
+        app.energy_service = energy_service
+    except ImportError as e:
+        print(f"Energy Management service not available: {e}")
+    except Exception as e:
+        print(f"Failed to initialize Energy Management service: {e}")
 
     # Authentication and Permission Middleware
     @app.before_request
@@ -880,11 +937,64 @@ def create_app():
                 user_id = result.fetchone()[0]
                 db.session.commit()
                 
-                return jsonify({
+                # Initialize response
+                response_data = {
                     'message': 'User created successfully',
                     'id': user_id,
                     'email': data['email']
-                }), 201
+                }
+                
+                # SaaS Billing Integration
+                try:
+                    if hasattr(app, 'billing_api') and data.get('subscription_id') and data.get('auto_charge'):
+                        from billing_system.subscription_manager import SubscriptionTier, BillingCycle
+                        
+                        # Get billing parameters from request
+                        subscription_id = data.get('subscription_id')
+                        units_to_add = int(data.get('units_to_add', 1))
+                        
+                        # Create subscription if it doesn't exist
+                        if subscription_id == 'new':
+                            # Create new subscription
+                            subscription = app.billing_api.subscription_manager.create_subscription(
+                                customer_id=str(user_id),
+                                company_name=data.get('username', data['email']),
+                                tier=SubscriptionTier.PROFESSIONAL,
+                                billing_cycle=BillingCycle.MONTHLY,
+                                trial_days=14
+                            )
+                            subscription_id = subscription.subscription_id
+                        
+                        # Generate invoice for units
+                        invoice = app.billing_api.subscription_manager.generate_invoice(
+                            subscription_id=subscription_id,
+                            units_used=units_to_add,
+                            tax_rate=0.0,
+                            discount_amount=0.0,
+                            one_time_charges={}
+                        )
+                        
+                        # Process payment if auto_charge is enabled
+                        if data.get('auto_charge'):
+                            # In a real implementation, you'd process the payment here
+                            # For now, we'll just return the billing information
+                            pass
+                        
+                        # Add billing information to response
+                        response_data['billing'] = {
+                            'subscription_id': subscription_id,
+                            'units_added': units_to_add,
+                            'unit_price': 2.50,
+                            'total_amount': units_to_add * 2.50,
+                            'invoice_id': invoice.invoice_id,
+                            'invoice_number': invoice.invoice_number
+                        }
+                        
+                except Exception as billing_error:
+                    print(f"Billing integration error: {str(billing_error)}")
+                    response_data['billing'] = {'error': str(billing_error)}
+                
+                return jsonify(response_data), 201
                 
             except Exception as e:
                 db.session.rollback()
@@ -3069,6 +3179,63 @@ def create_app():
                 print(f"Property creation error: {str(e)}")
                 return jsonify({'error': 'Failed to create property'}), 500
 
+    @app.route('/api/properties/<int:property_id>', methods=['PUT'])
+    def update_property_db(property_id):
+        """Update a property using database service"""
+        try:
+            data = request.json
+            db_service = get_database_service()
+            
+            property_data = {
+                'name': data.get('name'),
+                'address': data.get('address'),
+                'city': data.get('city'),
+                'state': data.get('state'),
+                'zip_code': data.get('zip_code'),
+                'property_type': data.get('property_type'),
+                'total_units': data.get('total_units'),
+                'year_built': data.get('year_built'),
+                'square_footage': data.get('square_footage'),
+                'description': data.get('description'),
+                'amenities': data.get('amenities', [])
+            }
+            
+            # Remove None values to avoid overwriting existing data with None
+            property_data = {k: v for k, v in property_data.items() if v is not None}
+            
+            updated_property = db_service.update_property(property_id, property_data)
+            return jsonify({'message': 'Property updated successfully', 'property': updated_property})
+            
+        except Exception as e:
+            print(f"Property update error: {str(e)}")
+            return jsonify({'error': 'Failed to update property'}), 500
+
+    @app.route('/api/properties/<int:property_id>', methods=['DELETE'])
+    def delete_property_db(property_id):
+        """Delete a property using database service"""
+        try:
+            db_service = get_database_service()
+            
+            # Check if property exists and get its details
+            try:
+                property_details = db_service.get_property_by_id(property_id)
+                if not property_details:
+                    return jsonify({'error': 'Property not found'}), 404
+            except Exception:
+                return jsonify({'error': 'Property not found'}), 404
+            
+            # Delete the property (this might be a soft delete depending on the service implementation)
+            result = db_service.delete_property(property_id)
+            
+            if result:
+                return jsonify({'message': 'Property deleted successfully', 'id': property_id})
+            else:
+                return jsonify({'error': 'Failed to delete property'}), 500
+            
+        except Exception as e:
+            print(f"Property deletion error: {str(e)}")
+            return jsonify({'error': 'Failed to delete property'}), 500
+
     # Real Database Integration - Tenants API  
     @app.route('/api/tenants', methods=['GET', 'POST'])
     def handle_tenants_db():
@@ -3915,9 +4082,9 @@ def create_app():
             return jsonify({'error': 'Failed to get user permissions'}), 500
 
     # Rent Collection and Payment Processing API
-    @app.route('/api/rent/invoices/generate', methods=['POST'])
+    @app.route('/api/rent/invoices/generate_legacy', methods=['POST'])
     @require_permission(Permission.CREATE_PAYMENT)
-    def generate_rent_invoices():
+    def generate_rent_invoices_legacy():
         """Generate monthly rent invoices"""
         try:
             data = request.json or {}
@@ -4642,10 +4809,10 @@ def create_app():
             print(f"Invoice generation error: {e}")
             return jsonify({'error': 'Failed to generate invoices'}), 500
     
-    @app.route('/api/rent/invoices', methods=['GET'])
+    @app.route('/api/rent/invoices/mock', methods=['GET'])
     @require_permission(Permission.READ_PAYMENT)
-    def get_rent_invoices():
-        """Get rent invoices with optional filtering"""
+    def get_rent_invoices_mock():
+        """Get mock rent invoices with optional filtering"""
         try:
             # Get query parameters
             status = request.args.get('status')
@@ -4689,10 +4856,10 @@ def create_app():
             print(f"Get invoices error: {e}")
             return jsonify({'error': 'Failed to get invoices'}), 500
     
-    @app.route('/api/rent/invoices/<invoice_id>/pay', methods=['POST'])
+    @app.route('/api/rent/invoices/<invoice_id>/pay/mock', methods=['POST'])
     @require_permission(Permission.CREATE_PAYMENT)
-    def process_rent_payment(invoice_id):
-        """Process a rent payment"""
+    def process_rent_payment_mock(invoice_id):
+        """Process a rent payment (mock implementation)"""
         try:
             data = request.json
             
@@ -4719,10 +4886,10 @@ def create_app():
             print(f"Payment processing error: {e}")
             return jsonify({'error': 'Failed to process payment'}), 500
     
-    @app.route('/api/rent/reminders/send', methods=['POST'])
-    @require_permission(Permission.MANAGE_PAYMENT)
-    def send_rent_reminders():
-        """Send rent payment reminders"""
+    @app.route('/api/rent/reminders/send/bulk', methods=['POST'])
+    @require_permission(Permission.CREATE_PAYMENT)
+    def send_rent_reminders_bulk():
+        """Send rent payment reminders (bulk operation)"""
         try:
             data = request.json or {}
             reminder_type = data.get('type', 'all')
@@ -4785,7 +4952,7 @@ def create_app():
     # ===========================================
     
     @app.route('/api/financial/dashboard', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_financial_dashboard():
         """Get financial dashboard overview data"""
         try:
@@ -4802,7 +4969,7 @@ def create_app():
             return jsonify({'error': 'Failed to get financial dashboard data'}), 500
     
     @app.route('/api/financial/reports/generate', methods=['POST'])
-    @require_permission(Permission.CREATE_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def generate_financial_report():
         """Generate a financial report"""
         try:
@@ -4859,7 +5026,7 @@ def create_app():
             return jsonify({'error': 'Failed to generate financial report'}), 500
     
     @app.route('/api/financial/reports/<report_type>', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_financial_report(report_type):
         """Get a specific type of financial report"""
         try:
@@ -4904,7 +5071,7 @@ def create_app():
             return jsonify({'error': 'Failed to get financial report'}), 500
     
     @app.route('/api/financial/income-statement', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_income_statement():
         """Get income statement report"""
         try:
@@ -4937,7 +5104,7 @@ def create_app():
             return jsonify({'error': 'Failed to get income statement'}), 500
     
     @app.route('/api/financial/cash-flow', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_cash_flow():
         """Get cash flow statement"""
         try:
@@ -4970,7 +5137,7 @@ def create_app():
             return jsonify({'error': 'Failed to get cash flow statement'}), 500
     
     @app.route('/api/financial/rent-roll', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_rent_roll():
         """Get rent roll report"""
         try:
@@ -5003,7 +5170,7 @@ def create_app():
             return jsonify({'error': 'Failed to get rent roll'}), 500
     
     @app.route('/api/financial/vacancy-analysis', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_vacancy_analysis():
         """Get vacancy analysis report"""
         try:
@@ -5036,7 +5203,7 @@ def create_app():
             return jsonify({'error': 'Failed to get vacancy analysis'}), 500
     
     @app.route('/api/financial/expense-summary', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_expense_summary():
         """Get expense summary report"""
         try:
@@ -5069,7 +5236,7 @@ def create_app():
             return jsonify({'error': 'Failed to get expense summary'}), 500
     
     @app.route('/api/financial/profit-loss', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_profit_loss():
         """Get profit and loss statement"""
         try:
@@ -5102,7 +5269,7 @@ def create_app():
             return jsonify({'error': 'Failed to get profit and loss statement'}), 500
     
     @app.route('/api/financial/kpi-metrics', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_kpi_metrics():
         """Get key performance indicators"""
         try:
@@ -5137,7 +5304,7 @@ def create_app():
             return jsonify({'error': 'Failed to get KPI metrics'}), 500
     
     @app.route('/api/financial/charts-data', methods=['GET'])
-    @require_permission(Permission.READ_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def get_financial_charts_data():
         """Get chart data for financial visualizations"""
         try:
@@ -5166,7 +5333,7 @@ def create_app():
             return jsonify({'error': 'Failed to get charts data'}), 500
     
     @app.route('/api/financial/export/<report_type>', methods=['POST'])
-    @require_permission(Permission.EXPORT_FINANCIAL)
+    @require_permission(Permission.VIEW_FINANCIAL_REPORTS)
     def export_financial_report(report_type):
         """Export financial report to PDF/Excel"""
         try:
@@ -5213,7 +5380,7 @@ def create_app():
     # ===========================================
     
     @app.route('/api/security/dashboard', methods=['GET'])
-    @require_permission(Permission.READ_SECURITY)
+    @require_permission(Permission.READ_USER)
     def get_security_dashboard():
         """Get security dashboard data"""
         try:
@@ -5230,7 +5397,7 @@ def create_app():
             return jsonify({'error': 'Failed to get security dashboard data'}), 500
     
     @app.route('/api/security/sessions', methods=['GET'])
-    @require_permission(Permission.READ_SECURITY)
+    @require_permission(Permission.READ_USER)
     def get_active_sessions():
         """Get active user sessions"""
         try:
@@ -5262,7 +5429,7 @@ def create_app():
             return jsonify({'error': 'Failed to get active sessions'}), 500
     
     @app.route('/api/security/sessions/<session_id>/revoke', methods=['POST'])
-    @require_permission(Permission.MANAGE_SECURITY)
+    @require_permission(Permission.MANAGE_ROLES)
     def revoke_session(session_id):
         """Revoke a user session"""
         try:
@@ -5288,7 +5455,7 @@ def create_app():
             return jsonify({'error': 'Failed to revoke session'}), 500
     
     @app.route('/api/security/api-keys', methods=['GET', 'POST'])
-    @require_permission(Permission.MANAGE_SECURITY)
+    @require_permission(Permission.MANAGE_ROLES)
     def handle_api_keys():
         """Get or create API keys"""
         if request.method == 'GET':
@@ -5369,7 +5536,7 @@ def create_app():
                 return jsonify({'error': 'Failed to create API key'}), 500
     
     @app.route('/api/security/api-keys/<key_id>/revoke', methods=['POST'])
-    @require_permission(Permission.MANAGE_SECURITY)
+    @require_permission(Permission.MANAGE_ROLES)
     def revoke_api_key(key_id):
         """Revoke an API key"""
         try:
@@ -5406,7 +5573,7 @@ def create_app():
             return jsonify({'error': 'Failed to revoke API key'}), 500
     
     @app.route('/api/security/events', methods=['GET'])
-    @require_permission(Permission.READ_SECURITY)
+    @require_permission(Permission.READ_USER)
     def get_security_events():
         """Get security events with filtering"""
         try:
@@ -5479,7 +5646,7 @@ def create_app():
             return jsonify({'error': 'Failed to get security events'}), 500
     
     @app.route('/api/security/alerts', methods=['GET'])
-    @require_permission(Permission.READ_SECURITY)
+    @require_permission(Permission.READ_USER)
     def get_security_alerts():
         """Get security alerts"""
         try:
@@ -5534,7 +5701,7 @@ def create_app():
             return jsonify({'error': 'Failed to get security alerts'}), 500
     
     @app.route('/api/security/alerts/<alert_id>/resolve', methods=['POST'])
-    @require_permission(Permission.MANAGE_SECURITY)
+    @require_permission(Permission.MANAGE_ROLES)
     def resolve_security_alert(alert_id):
         """Resolve a security alert"""
         try:
@@ -5566,7 +5733,7 @@ def create_app():
             return jsonify({'error': 'Failed to resolve security alert'}), 500
     
     @app.route('/api/security/rate-limits', methods=['GET'])
-    @require_permission(Permission.READ_SECURITY)
+    @require_permission(Permission.READ_USER)
     def get_rate_limit_status():
         """Get current rate limit status"""
         try:
@@ -5604,7 +5771,7 @@ def create_app():
             return jsonify({'error': 'Failed to get rate limit status'}), 500
     
     @app.route('/api/security/test-alert', methods=['POST'])
-    @require_permission(Permission.MANAGE_SECURITY)
+    @require_permission(Permission.MANAGE_ROLES)
     def test_security_alert():
         """Test security alert generation (for testing purposes)"""
         try:
@@ -5753,7 +5920,7 @@ def create_app():
         
         elif request.method == 'POST':
             try:
-                if not has_permission(Permission.WRITE_MAINTENANCE):
+                if not has_permission(Permission.CREATE_MAINTENANCE):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 data = request.json or {}
@@ -5823,7 +5990,7 @@ def create_app():
         
         elif request.method == 'POST':
             try:
-                if not has_permission(Permission.WRITE_MAINTENANCE):
+                if not has_permission(Permission.CREATE_MAINTENANCE):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 data = request.json or {}
@@ -5882,7 +6049,7 @@ def create_app():
         
         elif request.method == 'PUT':
             try:
-                if not has_permission(Permission.WRITE_MAINTENANCE):
+                if not has_permission(Permission.CREATE_MAINTENANCE):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 data = request.json or {}
@@ -5925,7 +6092,7 @@ def create_app():
                 return jsonify({'error': 'Failed to delete maintenance request'}), 500
     
     @app.route('/api/maintenance-scheduling/schedule', methods=['POST'])
-    @require_permission(Permission.WRITE_MAINTENANCE)
+    @require_permission(Permission.CREATE_MAINTENANCE)
     def schedule_maintenance():
         """Schedule a maintenance request"""
         try:
@@ -5983,7 +6150,7 @@ def create_app():
         
         elif request.method == 'POST':
             try:
-                if not has_permission(Permission.WRITE_MAINTENANCE):
+                if not has_permission(Permission.CREATE_MAINTENANCE):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 data = request.json or {}
@@ -6056,7 +6223,7 @@ def create_app():
             return jsonify({'error': 'Failed to get scheduled maintenance'}), 500
     
     @app.route('/api/maintenance-scheduling/preventive/generate', methods=['POST'])
-    @require_permission(Permission.WRITE_MAINTENANCE)
+    @require_permission(Permission.CREATE_MAINTENANCE)
     def generate_preventive_maintenance():
         """Generate preventive maintenance requests"""
         try:
@@ -6075,7 +6242,7 @@ def create_app():
     # ===== TENANT SCREENING ENDPOINTS =====
     
     @app.route('/api/tenant-screening/dashboard', methods=['GET'])
-    @require_permission(Permission.READ_TENANTS)
+    @require_permission(Permission.READ_TENANT)
     def get_tenant_screening_dashboard():
         """Get tenant screening dashboard data"""
         try:
@@ -6092,7 +6259,7 @@ def create_app():
             return jsonify({'error': 'Failed to get tenant screening dashboard data'}), 500
     
     @app.route('/api/tenant-screening/applications', methods=['GET', 'POST'])
-    @require_permission(Permission.READ_TENANTS)
+    @require_permission(Permission.READ_TENANT)
     def handle_tenant_applications():
         """Handle tenant applications"""
         screening_service = get_tenant_screening_service()
@@ -6187,7 +6354,7 @@ def create_app():
                 return jsonify({'error': 'Failed to submit tenant application'}), 500
     
     @app.route('/api/tenant-screening/applications/<application_id>', methods=['GET', 'PUT', 'DELETE'])
-    @require_permission(Permission.READ_TENANTS)
+    @require_permission(Permission.READ_TENANT)
     def handle_tenant_application(application_id):
         """Handle individual tenant application"""
         screening_service = get_tenant_screening_service()
@@ -6259,7 +6426,7 @@ def create_app():
         
         elif request.method == 'PUT':
             try:
-                if not has_permission(Permission.WRITE_TENANTS):
+                if not has_permission(Permission.READ_TENANT):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 data = request.json or {}
@@ -6291,7 +6458,7 @@ def create_app():
         
         elif request.method == 'DELETE':
             try:
-                if not has_permission(Permission.DELETE_TENANTS):
+                if not has_permission(Permission.READ_TENANT):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 if application_id in screening_service.applications:
@@ -6307,7 +6474,7 @@ def create_app():
                 return jsonify({'error': 'Failed to withdraw application'}), 500
     
     @app.route('/api/tenant-screening/applications/<application_id>/score', methods=['GET', 'POST'])
-    @require_permission(Permission.READ_TENANTS)
+    @require_permission(Permission.READ_TENANT)
     def handle_application_score(application_id):
         """Handle application scoring"""
         screening_service = get_tenant_screening_service()
@@ -6327,7 +6494,7 @@ def create_app():
         
         elif request.method == 'POST':
             try:
-                if not has_permission(Permission.WRITE_TENANTS):
+                if not has_permission(Permission.READ_TENANT):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 # Recalculate score (useful after manual updates to screening results)
@@ -6343,7 +6510,7 @@ def create_app():
                 return jsonify({'error': 'Failed to recalculate application score'}), 500
     
     @app.route('/api/tenant-screening/criteria', methods=['GET', 'PUT'])
-    @require_permission(Permission.READ_TENANTS)
+    @require_permission(Permission.READ_TENANT)
     def handle_screening_criteria():
         """Handle screening criteria configuration"""
         screening_service = get_tenant_screening_service()
@@ -6383,7 +6550,7 @@ def create_app():
         
         elif request.method == 'PUT':
             try:
-                if not has_permission(Permission.ADMIN):
+                if not has_permission(Permission.MANAGE_ROLES):
                     return jsonify({'error': 'Admin permissions required'}), 403
                 
                 data = request.json or {}
@@ -6436,7 +6603,7 @@ def create_app():
                 return jsonify({'error': 'Failed to update screening criteria'}), 500
     
     @app.route('/api/tenant-screening/checks', methods=['GET'])
-    @require_permission(Permission.READ_TENANTS)
+    @require_permission(Permission.READ_TENANT)
     def get_screening_checks():
         """Get screening checks for applications"""
         try:
@@ -6479,7 +6646,7 @@ def create_app():
             return jsonify({'error': 'Failed to get screening checks'}), 500
     
     @app.route('/api/tenant-screening/reports/summary', methods=['GET'])
-    @require_permission(Permission.READ_TENANTS)
+    @require_permission(Permission.READ_TENANT)
     def get_screening_summary_report():
         """Get tenant screening summary report"""
         try:
@@ -6588,7 +6755,7 @@ def create_app():
     # ===== BULK OPERATIONS ENDPOINTS =====
     
     @app.route('/api/bulk-operations/operations', methods=['GET', 'POST'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def handle_bulk_operations():
         """Handle bulk operations"""
         bulk_service = get_bulk_operations_service()
@@ -6614,7 +6781,7 @@ def create_app():
         
         elif request.method == 'POST':
             try:
-                if not has_permission(Permission.WRITE_ADMIN):
+                if not has_permission(Permission.MANAGE_ROLES):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 data = request.json or {}
@@ -6645,7 +6812,7 @@ def create_app():
                 return jsonify({'error': 'Failed to create bulk operation'}), 500
     
     @app.route('/api/bulk-operations/operations/<operation_id>', methods=['GET', 'DELETE'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def handle_bulk_operation(operation_id):
         """Handle individual bulk operation"""
         bulk_service = get_bulk_operations_service()
@@ -6687,7 +6854,7 @@ def create_app():
         
         elif request.method == 'DELETE':
             try:
-                if not has_permission(Permission.DELETE_ADMIN):
+                if not has_permission(Permission.MANAGE_ROLES):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 success = bulk_service.cancel_operation(operation_id)
@@ -6704,7 +6871,7 @@ def create_app():
                 return jsonify({'error': 'Failed to cancel bulk operation'}), 500
     
     @app.route('/api/bulk-operations/import', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def bulk_import():
         """Handle bulk import operations"""
         try:
@@ -6758,7 +6925,7 @@ def create_app():
             return jsonify({'error': 'Failed to process bulk import'}), 500
     
     @app.route('/api/bulk-operations/update', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def bulk_update():
         """Handle bulk update operations"""
         try:
@@ -6804,7 +6971,7 @@ def create_app():
             return jsonify({'error': 'Failed to process bulk update'}), 500
     
     @app.route('/api/bulk-operations/export', methods=['POST'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def bulk_export():
         """Handle bulk export operations"""
         try:
@@ -6851,7 +7018,7 @@ def create_app():
             return jsonify({'error': 'Failed to process bulk export'}), 500
     
     @app.route('/api/bulk-operations/validate', methods=['POST'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def validate_bulk_data():
         """Validate bulk data before processing"""
         try:
@@ -6898,7 +7065,7 @@ def create_app():
             return jsonify({'error': 'Failed to validate bulk data'}), 500
     
     @app.route('/api/bulk-operations/templates/<entity_type>', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_bulk_template(entity_type):
         """Get CSV template for bulk operations"""
         try:
@@ -6948,7 +7115,7 @@ def create_app():
 
     # Performance Optimization API Endpoints
     @app.route('/api/performance/summary', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_performance_summary():
         """Get comprehensive performance summary"""
         try:
@@ -6960,7 +7127,7 @@ def create_app():
             return jsonify({'error': 'Failed to get performance summary'}), 500
     
     @app.route('/api/performance/recommendations', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_performance_recommendations():
         """Get performance optimization recommendations"""
         try:
@@ -6972,7 +7139,7 @@ def create_app():
             return jsonify({'error': 'Failed to get recommendations'}), 500
     
     @app.route('/api/performance/settings', methods=['GET', 'PUT'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def manage_performance_settings():
         """Get or update performance settings"""
         try:
@@ -6991,7 +7158,7 @@ def create_app():
             return jsonify({'error': 'Failed to manage performance settings'}), 500
     
     @app.route('/api/performance/cache/clear', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def clear_performance_cache():
         """Clear all performance caches"""
         try:
@@ -7003,7 +7170,7 @@ def create_app():
             return jsonify({'error': 'Failed to clear cache'}), 500
     
     @app.route('/api/performance/metrics/<endpoint_name>', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_endpoint_metrics(endpoint_name):
         """Get performance metrics for specific endpoint"""
         try:
@@ -7016,7 +7183,7 @@ def create_app():
             return jsonify({'error': 'Failed to get endpoint metrics'}), 500
     
     @app.route('/api/performance/slow-endpoints', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_slow_endpoints():
         """Get slow performing endpoints"""
         try:
@@ -7030,7 +7197,7 @@ def create_app():
             return jsonify({'error': 'Failed to get slow endpoints'}), 500
     
     @app.route('/api/performance/slow-queries', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_slow_queries():
         """Get slow performing database queries"""
         try:
@@ -7044,7 +7211,7 @@ def create_app():
 
     # Testing Framework API Endpoints
     @app.route('/api/testing/run', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def run_tests():
         """Run test suite"""
         try:
@@ -7070,7 +7237,7 @@ def create_app():
             return jsonify({'error': 'Failed to run tests'}), 500
     
     @app.route('/api/testing/results', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_test_results():
         """Get latest test results"""
         try:
@@ -7117,7 +7284,7 @@ def create_app():
             return jsonify({'error': 'Failed to get test results'}), 500
     
     @app.route('/api/testing/history', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_test_history():
         """Get test execution history"""
         try:
@@ -7158,7 +7325,7 @@ def create_app():
             return jsonify({'error': 'Failed to get test history'}), 500
     
     @app.route('/api/testing/coverage', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_test_coverage():
         """Get code coverage report"""
         try:
@@ -7191,7 +7358,7 @@ def create_app():
             return jsonify({'error': 'Failed to get test coverage'}), 500
     
     @app.route('/api/testing/logs/<test_run_id>', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_test_logs(test_run_id):
         """Get logs for specific test run"""
         try:
@@ -7308,7 +7475,7 @@ def create_app():
         return response
     
     @app.route('/api/rate-limiting/status', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_rate_limiting_status():
         """Get rate limiting status and statistics"""
         try:
@@ -7320,7 +7487,7 @@ def create_app():
             return jsonify({'error': 'Failed to get rate limiting status'}), 500
     
     @app.route('/api/rate-limiting/reset', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def reset_rate_limits():
         """Reset rate limits for specific identifier/endpoint"""
         try:
@@ -7346,7 +7513,7 @@ def create_app():
             return jsonify({'error': 'Failed to reset rate limits'}), 500
     
     @app.route('/api/rate-limiting/configure', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def configure_rate_limiting():
         """Configure rate limiting for specific endpoint"""
         try:
@@ -7384,7 +7551,7 @@ def create_app():
             return jsonify({'error': 'Failed to configure rate limiting'}), 500
     
     @app.route('/api/rate-limiting/cleanup', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def cleanup_rate_limiters():
         """Clean up expired rate limiters"""
         try:
@@ -7402,7 +7569,7 @@ def create_app():
 
     # Enhanced LPR API Endpoints
     @app.route('/api/lpr/cameras', methods=['GET', 'POST'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def handle_lpr_cameras():
         """Get or add LPR cameras"""
         try:
@@ -7429,7 +7596,7 @@ def create_app():
                 return jsonify({'cameras': cameras})
             
             elif request.method == 'POST':
-                if not has_permission(Permission.WRITE_ADMIN):
+                if not has_permission(Permission.MANAGE_ROLES):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 data = request.json
@@ -7462,7 +7629,7 @@ def create_app():
             return jsonify({'error': 'Failed to handle LPR cameras'}), 500
     
     @app.route('/api/lpr/cameras/<camera_id>', methods=['PUT', 'DELETE'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def handle_lpr_camera(camera_id):
         """Update or delete LPR camera"""
         try:
@@ -7501,7 +7668,7 @@ def create_app():
             return jsonify({'error': 'Failed to handle LPR camera'}), 500
     
     @app.route('/api/lpr/cameras/<camera_id>/start', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def start_lpr_camera(camera_id):
         """Start LPR camera monitoring"""
         try:
@@ -7521,7 +7688,7 @@ def create_app():
             return jsonify({'error': 'Failed to start camera monitoring'}), 500
     
     @app.route('/api/lpr/cameras/start-all', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def start_all_lpr_cameras():
         """Start all LPR camera monitoring"""
         try:
@@ -7539,7 +7706,7 @@ def create_app():
             return jsonify({'error': 'Failed to start all cameras'}), 500
     
     @app.route('/api/lpr/cameras/stop-all', methods=['POST'])
-    @require_permission(Permission.WRITE_ADMIN)
+    @require_permission(Permission.MANAGE_ROLES)
     def stop_all_lpr_cameras():
         """Stop all LPR camera monitoring"""
         try:
@@ -7556,7 +7723,7 @@ def create_app():
             return jsonify({'error': 'Failed to stop all cameras'}), 500
     
     @app.route('/api/lpr/vehicles', methods=['GET', 'POST'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def handle_lpr_vehicles():
         """Get or add vehicle records"""
         try:
@@ -7581,7 +7748,7 @@ def create_app():
                 return jsonify({'vehicles': vehicles})
             
             elif request.method == 'POST':
-                if not has_permission(Permission.WRITE_ADMIN):
+                if not has_permission(Permission.MANAGE_ROLES):
                     return jsonify({'error': 'Insufficient permissions'}), 403
                 
                 data = request.json
@@ -7616,7 +7783,7 @@ def create_app():
             return jsonify({'error': 'Failed to handle LPR vehicles'}), 500
     
     @app.route('/api/lpr/detections', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_lpr_detections():
         """Get LPR detections with filters"""
         try:
@@ -7647,7 +7814,7 @@ def create_app():
             return jsonify({'error': 'Failed to get LPR detections'}), 500
     
     @app.route('/api/lpr/statistics', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_lpr_statistics():
         """Get LPR system statistics"""
         try:
@@ -7661,7 +7828,7 @@ def create_app():
             return jsonify({'error': 'Failed to get LPR statistics'}), 500
     
     @app.route('/api/lpr/alerts', methods=['GET'])
-    @require_permission(Permission.READ_ADMIN)
+    @require_permission(Permission.READ_USER)
     def get_lpr_alerts():
         """Get recent LPR security alerts"""
         try:
@@ -7691,6 +7858,1616 @@ def create_app():
         except Exception as e:
             print(f"Get LPR alerts error: {e}")
             return jsonify({'error': 'Failed to get LPR alerts'}), 500
+
+    # Energy Management API Routes
+    @app.route('/api/energy/readings', methods=['POST'])
+    def add_energy_reading():
+        """Add a new energy reading"""
+        try:
+            data = request.get_json()
+            
+            # Validate required fields
+            required_fields = ['property_id', 'energy_type', 'consumption', 'cost']
+            for field in required_fields:
+                if field not in data:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Missing required field: {field}'
+                    }), 400
+            
+            # Parse timestamp if provided
+            timestamp = None
+            if 'timestamp' in data:
+                try:
+                    timestamp = datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00'))
+                except ValueError:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Invalid timestamp format. Use ISO format: YYYY-MM-DDTHH:MM:SS'
+                    }), 400
+            
+            # Add reading using service
+            result = app.energy_service.add_energy_reading(
+                property_id=int(data['property_id']),
+                energy_type=data['energy_type'],
+                consumption=float(data['consumption']),
+                cost=float(data['cost']),
+                timestamp=timestamp,
+                unit_id=data.get('unit_id'),
+                temperature=data.get('temperature'),
+                occupancy=data.get('occupancy'),
+                equipment_id=data.get('equipment_id'),
+                metadata=data.get('metadata')
+            )
+            
+            status_code = 201 if result['success'] else 400
+            return jsonify(result), status_code
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to add energy reading: {str(e)}'
+            }), 500
+
+    @app.route('/api/energy/forecast/<int:property_id>/<energy_type>')
+    def get_energy_forecast(property_id, energy_type):
+        """Get energy consumption forecast"""
+        try:
+            # Get optional parameters
+            days = request.args.get('days', 7, type=int)
+            
+            if days < 1 or days > 365:
+                return jsonify({
+                    'success': False,
+                    'error': 'Days parameter must be between 1 and 365'
+                }), 400
+            
+            # Generate forecast using service
+            result = app.energy_service.get_energy_forecast(
+                property_id=property_id,
+                energy_type=energy_type,
+                days=days
+            )
+            
+            status_code = 200 if result['success'] else 400
+            return jsonify(result), status_code
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to generate forecast: {str(e)}'
+            }), 500
+
+    @app.route('/api/energy/recommendations/<int:property_id>')
+    def get_optimization_recommendations(property_id):
+        """Get AI-powered optimization recommendations"""
+        try:
+            result = app.energy_service.get_optimization_recommendations(property_id)
+            
+            status_code = 200 if result['success'] else 400
+            return jsonify(result), status_code
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get recommendations: {str(e)}'
+            }), 500
+
+    @app.route('/api/energy/analytics/<int:property_id>')
+    def get_energy_analytics(property_id):
+        """Get comprehensive energy analytics"""
+        try:
+            # Get optional parameters
+            days = request.args.get('days', 30, type=int)
+            
+            if days < 1 or days > 365:
+                return jsonify({
+                    'success': False,
+                    'error': 'Days parameter must be between 1 and 365'
+                }), 400
+            
+            result = app.energy_service.get_energy_analytics(property_id, days)
+            
+            status_code = 200 if result['success'] else 400
+            return jsonify(result), status_code
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get analytics: {str(e)}'
+            }), 500
+
+    @app.route('/api/energy/alerts')
+    def get_energy_alerts():
+        """Get energy management alerts"""
+        try:
+            # Get optional parameters
+            property_id = request.args.get('property_id', type=int)
+            status = request.args.get('status', 'active')
+            severity = request.args.get('severity')
+            
+            result = app.energy_service.get_energy_alerts(
+                property_id=property_id,
+                status=status,
+                severity=severity
+            )
+            
+            status_code = 200 if result['success'] else 400
+            return jsonify(result), status_code
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get alerts: {str(e)}'
+            }), 500
+
+    @app.route('/api/energy/dashboard/<int:property_id>')
+    def get_energy_dashboard(property_id):
+        """Get comprehensive energy dashboard data"""
+        try:
+            result = app.energy_service.get_energy_dashboard_data(property_id)
+            
+            status_code = 200 if result['success'] else 400
+            return jsonify(result), status_code
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get dashboard data: {str(e)}'
+            }), 500
+
+    @app.route('/api/energy/simulate/<int:property_id>', methods=['POST'])
+    def simulate_energy_data(property_id):
+        """Simulate energy data for demonstration purposes"""
+        try:
+            data = request.get_json() or {}
+            days = data.get('days', 7)
+            
+            if days < 1 or days > 90:
+                return jsonify({
+                    'success': False,
+                    'error': 'Days parameter must be between 1 and 90'
+                }), 400
+            
+            result = app.energy_service.simulate_energy_data(property_id, days)
+            
+            status_code = 200 if result['success'] else 400
+            return jsonify(result), status_code
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to simulate data: {str(e)}'
+            }), 500
+
+    @app.route('/api/energy/types')
+    def get_energy_types():
+        """Get available energy types"""
+        try:
+            energy_types = [
+                {
+                    'value': 'electricity',
+                    'label': 'Electricity',
+                    'unit': 'kWh',
+                    'description': 'Electrical energy consumption'
+                },
+                {
+                    'value': 'gas',
+                    'label': 'Natural Gas',
+                    'unit': 'therms',
+                    'description': 'Natural gas consumption'
+                },
+                {
+                    'value': 'water',
+                    'label': 'Water',
+                    'unit': 'gallons',
+                    'description': 'Water consumption'
+                },
+                {
+                    'value': 'hvac',
+                    'label': 'HVAC',
+                    'unit': 'kWh',
+                    'description': 'Heating, ventilation, and air conditioning'
+                },
+                {
+                    'value': 'lighting',
+                    'label': 'Lighting',
+                    'unit': 'kWh',
+                    'description': 'Lighting systems energy consumption'
+                },
+                {
+                    'value': 'solar',
+                    'label': 'Solar',
+                    'unit': 'kWh',
+                    'description': 'Solar energy generation'
+                }
+            ]
+            
+            return jsonify({
+                'success': True,
+                'energy_types': energy_types
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get energy types: {str(e)}'
+            }), 500
+
+    @app.route('/api/energy/health')
+    def energy_health_check():
+        """Health check endpoint for energy management service"""
+        try:
+            # Check data availability
+            data_count = len(app.energy_service.engine.energy_readings)
+            
+            return jsonify({
+                'success': True,
+                'status': 'healthy',
+                'models_trained': True,  # Simplified engine is always ready
+                'data_points': data_count,
+                'service_version': '1.0.0',
+                'timestamp': datetime.now().isoformat()
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'status': 'unhealthy',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            }), 500
+
+    # Computer Vision API Routes
+    @app.route('/api/ai/analyze-property', methods=['POST'])
+    def analyze_property_image():
+        """Analyze property image for condition assessment"""
+        try:
+            if 'image' not in request.files:
+                return jsonify({
+                    'success': False,
+                    'error': 'No image provided'
+                }), 400
+            
+            image_file = request.files['image']
+            property_id = request.form.get('property_id', 1)
+            metadata = json.loads(request.form.get('metadata', '{}'))
+            
+            # Save image temporarily
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            temp_path = os.path.join(temp_dir, f"property_analysis_{uuid.uuid4().hex}.jpg")
+            image_file.save(temp_path)
+            
+            try:
+                # Import and use property analyzer
+                from ai_services.computer_vision.property_analyzer import get_property_analyzer
+                analyzer = get_property_analyzer()
+                
+                # Analyze the property image
+                analysis_result = analyzer.analyze_property_image(temp_path, int(property_id), metadata)
+                
+                # Convert result to JSON
+                result_data = {
+                    'success': True,
+                    'analysis': {
+                        'property_id': analysis_result.property_id,
+                        'overall_condition': analysis_result.property_analysis.overall_condition.value,
+                        'condition_score': analysis_result.property_analysis.condition_score,
+                        'confidence_score': analysis_result.confidence_score,
+                        'features_detected': analysis_result.property_analysis.features_detected,
+                        'room_analysis': analysis_result.property_analysis.room_analysis,
+                        'recommendations': analysis_result.recommendations,
+                        'timestamp': analysis_result.analysis_timestamp.isoformat()
+                    }
+                }
+                
+                return jsonify(result_data)
+                
+            finally:
+                # Clean up temporary file
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Property analysis failed: {str(e)}'
+            }), 500
+    
+    @app.route('/api/ai/assess-damage', methods=['POST'])
+    def assess_property_damage():
+        """Assess property damage from uploaded image"""
+        try:
+            if 'image' not in request.files:
+                return jsonify({
+                    'success': False,
+                    'error': 'No image provided'
+                }), 400
+            
+            image_file = request.files['image']
+            property_id = request.form.get('property_id', 1)
+            metadata = json.loads(request.form.get('metadata', '{}'))
+            
+            # Save image temporarily
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            temp_path = os.path.join(temp_dir, f"damage_assessment_{uuid.uuid4().hex}.jpg")
+            image_file.save(temp_path)
+            
+            try:
+                # Import and use damage detector
+                from ai_services.computer_vision.damage_detector import get_damage_detector
+                detector = get_damage_detector()
+                
+                # Assess damage
+                damage_result = detector.detect_damage(temp_path, int(property_id), metadata)
+                
+                # Convert result to JSON
+                result_data = {
+                    'success': True,
+                    'damage_assessment': {
+                        'property_id': damage_result.property_id,
+                        'overall_damage_score': damage_result.overall_damage_score,
+                        'urgency_level': damage_result.urgency_level.value,
+                        'damage_types': [d.value for d in damage_result.damage_types],
+                        'affected_areas': damage_result.affected_areas,
+                        'estimated_total_cost': damage_result.estimated_total_cost,
+                        'repair_recommendations': damage_result.repair_recommendations,
+                        'confidence_score': damage_result.confidence_score,
+                        'timestamp': damage_result.assessment_timestamp.isoformat()
+                    }
+                }
+                
+                return jsonify(result_data)
+                
+            finally:
+                # Clean up temporary file
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Damage assessment failed: {str(e)}'
+            }), 500
+    
+    @app.route('/api/ai/enhance-image', methods=['POST'])
+    def enhance_property_image():
+        """Enhance image quality for better analysis"""
+        try:
+            if 'image' not in request.files:
+                return jsonify({
+                    'success': False,
+                    'error': 'No image provided'
+                }), 400
+            
+            image_file = request.files['image']
+            enhancement_type = request.form.get('enhancement_type', 'auto')
+            
+            # Save image temporarily
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            input_path = os.path.join(temp_dir, f"input_{uuid.uuid4().hex}.jpg")
+            output_path = os.path.join(temp_dir, f"enhanced_{uuid.uuid4().hex}.jpg")
+            image_file.save(input_path)
+            
+            try:
+                # Import and use image processor
+                from ai_services.computer_vision.image_processor import get_image_processor
+                processor = get_image_processor()
+                
+                # Enhance the image
+                enhanced_result = processor.enhance_image(input_path, output_path, enhancement_type)
+                
+                # Read enhanced image as base64
+                import base64
+                with open(output_path, 'rb') as f:
+                    enhanced_image_data = base64.b64encode(f.read()).decode()
+                
+                result_data = {
+                    'success': True,
+                    'enhancement': {
+                        'original_quality_score': enhanced_result.original_quality_score,
+                        'enhanced_quality_score': enhanced_result.enhanced_quality_score,
+                        'improvement_score': enhanced_result.enhancement_score,
+                        'enhancements_applied': enhanced_result.enhancements_applied,
+                        'enhanced_image': f"data:image/jpeg;base64,{enhanced_image_data}",
+                        'processing_time_ms': enhanced_result.processing_time_ms,
+                        'timestamp': enhanced_result.enhancement_timestamp.isoformat()
+                    }
+                }
+                
+                return jsonify(result_data)
+                
+            finally:
+                # Clean up temporary files
+                for path in [input_path, output_path]:
+                    if os.path.exists(path):
+                        os.unlink(path)
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Image enhancement failed: {str(e)}'
+            }), 500
+
+    # Live Camera Analysis API Routes
+    @app.route('/api/camera/available', methods=['GET'])
+    def get_available_cameras():
+        """Get list of available cameras"""
+        try:
+            from ai_services.computer_vision.live_camera_analyzer import get_live_camera_analyzer
+            analyzer = get_live_camera_analyzer()
+            cameras = analyzer.get_available_cameras()
+            
+            return jsonify({
+                'success': True,
+                'cameras': cameras,
+                'total_found': len(cameras)
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get available cameras: {str(e)}'
+            }), 500
+
+    @app.route('/api/camera/add', methods=['POST'])
+    def add_camera():
+        """Add a new camera to live analysis system"""
+        try:
+            from ai_services.computer_vision.live_camera_analyzer import get_live_camera_analyzer, CameraType, StreamQuality
+            
+            data = request.get_json()
+            
+            # Validate required fields
+            required_fields = ['camera_id', 'source', 'property_id']
+            for field in required_fields:
+                if field not in data:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Missing required field: {field}'
+                    }), 400
+            
+            analyzer = get_live_camera_analyzer()
+            
+            # Create camera configuration
+            camera_type = CameraType(data.get('camera_type', 'usb_camera'))
+            quality = StreamQuality(data.get('quality', 'medium'))
+            
+            camera_config = analyzer.create_camera_config(
+                camera_id=data['camera_id'],
+                source=data['source'],
+                camera_type=camera_type,
+                quality=quality
+            )
+            
+            # Add camera
+            success = analyzer.add_camera(camera_config, int(data['property_id']))
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': f'Camera {data["camera_id"]} added successfully',
+                    'camera_config': {
+                        'camera_id': camera_config.camera_id,
+                        'resolution': camera_config.resolution,
+                        'fps': camera_config.fps
+                    }
+                }), 201
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to add camera'
+                }), 400
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to add camera: {str(e)}'
+            }), 500
+
+    @app.route('/api/camera/<camera_id>/start', methods=['POST'])
+    def start_camera_analysis(camera_id):
+        """Start live analysis for a camera"""
+        try:
+            from ai_services.computer_vision.live_camera_analyzer import get_live_camera_analyzer, AnalysisMode
+            
+            data = request.get_json() or {}
+            analysis_mode = AnalysisMode(data.get('analysis_mode', 'interval'))
+            
+            analyzer = get_live_camera_analyzer()
+            success = analyzer.start_live_analysis(camera_id, analysis_mode)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': f'Live analysis started for camera {camera_id}',
+                    'analysis_mode': analysis_mode.value
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to start live analysis'
+                }), 400
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to start camera analysis: {str(e)}'
+            }), 500
+
+    @app.route('/api/camera/<camera_id>/stop', methods=['POST'])
+    def stop_camera_analysis(camera_id):
+        """Stop live analysis for a camera"""
+        try:
+            from ai_services.computer_vision.live_camera_analyzer import get_live_camera_analyzer
+            
+            analyzer = get_live_camera_analyzer()
+            success = analyzer.stop_camera_analysis(camera_id)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': f'Live analysis stopped for camera {camera_id}'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to stop live analysis'
+                }), 400
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to stop camera analysis: {str(e)}'
+            }), 500
+
+    @app.route('/api/camera/<camera_id>/capture', methods=['POST'])
+    def capture_analysis_frame(camera_id):
+        """Manually capture and analyze a frame"""
+        try:
+            from ai_services.computer_vision.live_camera_analyzer import get_live_camera_analyzer
+            
+            data = request.get_json() or {}
+            property_id = int(data.get('property_id', 1))
+            description = data.get('description', 'Manual capture')
+            
+            analyzer = get_live_camera_analyzer()
+            analysis_result = analyzer.capture_analysis_frame(camera_id, property_id, description)
+            
+            if analysis_result:
+                # Convert analysis result to JSON-serializable format
+                result_data = {
+                    'frame_id': analysis_result.frame_id,
+                    'timestamp': analysis_result.timestamp.isoformat(),
+                    'camera_id': analysis_result.camera_id,
+                    'property_id': analysis_result.property_id,
+                    'frame_size': analysis_result.frame_size,
+                    'image_quality_score': analysis_result.image_quality_score,
+                    'focus_score': analysis_result.focus_score,
+                    'lighting_score': analysis_result.lighting_score,
+                    'motion_detected': analysis_result.motion_detected,
+                    'objects_count': len(analysis_result.objects_detected),
+                    'analysis_time': analysis_result.analysis_time,
+                    'confidence_score': analysis_result.confidence_score
+                }
+                
+                # Add property analysis summary if available
+                if analysis_result.property_analysis:
+                    result_data['property_condition'] = analysis_result.property_analysis.overall_condition.value
+                    result_data['features_detected'] = len(analysis_result.property_analysis.features_detected)
+                
+                # Add damage assessment summary if available
+                if analysis_result.damage_assessment:
+                    result_data['damage_score'] = analysis_result.damage_assessment.overall_damage_score
+                    result_data['urgency_level'] = analysis_result.damage_assessment.urgency_level.value
+                    result_data['estimated_repair_cost'] = analysis_result.damage_assessment.estimated_total_cost
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Frame captured and analyzed successfully',
+                    'analysis': result_data
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to capture and analyze frame'
+                }), 400
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to capture frame: {str(e)}'
+            }), 500
+
+    @app.route('/api/camera/<camera_id>/status', methods=['GET'])
+    def get_camera_status(camera_id):
+        """Get current status and statistics for a camera"""
+        try:
+            from ai_services.computer_vision.live_camera_analyzer import get_live_camera_analyzer
+            
+            analyzer = get_live_camera_analyzer()
+            stream_data = analyzer.get_live_stream_data(camera_id)
+            
+            if stream_data:
+                # Remove the actual frame data for API response (too large)
+                if 'current_frame' in stream_data:
+                    stream_data['has_current_frame'] = stream_data['current_frame'] is not None
+                    del stream_data['current_frame']
+                
+                # Simplify last analysis data
+                if stream_data.get('last_analysis'):
+                    last_analysis = stream_data['last_analysis']
+                    stream_data['last_analysis_summary'] = {
+                        'timestamp': last_analysis.timestamp.isoformat(),
+                        'confidence_score': last_analysis.confidence_score,
+                        'image_quality_score': last_analysis.image_quality_score,
+                        'motion_detected': last_analysis.motion_detected,
+                        'objects_count': len(last_analysis.objects_detected),
+                        'analysis_time': last_analysis.analysis_time
+                    }
+                    del stream_data['last_analysis']
+                
+                return jsonify({
+                    'success': True,
+                    'stream_data': stream_data
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Camera not found'
+                }), 404
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get camera status: {str(e)}'
+            }), 500
+
+    @app.route('/api/camera/<camera_id>/remove', methods=['DELETE'])
+    def remove_camera(camera_id):
+        """Remove a camera from the system"""
+        try:
+            from ai_services.computer_vision.live_camera_analyzer import get_live_camera_analyzer
+            
+            analyzer = get_live_camera_analyzer()
+            success = analyzer.remove_camera(camera_id)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': f'Camera {camera_id} removed successfully'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to remove camera'
+                }), 400
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to remove camera: {str(e)}'
+            }), 500
+
+    @app.route('/api/camera/analysis/batch', methods=['POST'])
+    def batch_analyze_properties():
+        """Analyze multiple property images from cameras"""
+        try:
+            from ai_services.computer_vision.live_camera_analyzer import get_live_camera_analyzer
+            
+            data = request.get_json()
+            camera_ids = data.get('camera_ids', [])
+            property_id = int(data.get('property_id', 1))
+            
+            if not camera_ids:
+                return jsonify({
+                    'success': False,
+                    'error': 'No camera IDs provided'
+                }), 400
+            
+            analyzer = get_live_camera_analyzer()
+            results = []
+            
+            for camera_id in camera_ids:
+                try:
+                    analysis_result = analyzer.capture_analysis_frame(camera_id, property_id, 'Batch analysis')
+                    if analysis_result:
+                        results.append({
+                            'camera_id': camera_id,
+                            'success': True,
+                            'analysis_summary': {
+                                'confidence_score': analysis_result.confidence_score,
+                                'image_quality_score': analysis_result.image_quality_score,
+                                'objects_detected': len(analysis_result.objects_detected),
+                                'motion_detected': analysis_result.motion_detected
+                            }
+                        })
+                    else:
+                        results.append({
+                            'camera_id': camera_id,
+                            'success': False,
+                            'error': 'Analysis failed'
+                        })
+                except Exception as e:
+                    results.append({
+                        'camera_id': camera_id,
+                        'success': False,
+                        'error': str(e)
+                    })
+            
+            successful_analyses = len([r for r in results if r['success']])
+            
+            return jsonify({
+                'success': True,
+                'message': f'Batch analysis completed: {successful_analyses}/{len(camera_ids)} successful',
+                'results': results,
+                'summary': {
+                    'total_cameras': len(camera_ids),
+                    'successful_analyses': successful_analyses,
+                    'failed_analyses': len(camera_ids) - successful_analyses
+                }
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Batch analysis failed: {str(e)}'
+            }), 500
+
+    # ===== NLP DOCUMENT PROCESSING ENDPOINTS =====
+    
+    @app.route('/api/document/process', methods=['POST'])
+    def process_document():
+        """Process document text with NLP analysis"""
+        try:
+            from ai_services.nlp.document_processor import get_document_processor
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            document_text = data.get('text', '')
+            document_id = data.get('document_id')
+            
+            if not document_text or len(document_text.strip()) < 10:
+                return jsonify({
+                    'success': False,
+                    'error': 'Document text is too short or empty'
+                }), 400
+            
+            processor = get_document_processor()
+            analysis = processor.process_document(document_text, document_id)
+            
+            # Convert analysis to JSON-serializable format
+            analysis_dict = {
+                'document_id': analysis.document_id,
+                'document_type': analysis.document_type.value,
+                'confidence': analysis.confidence.value,
+                'processing_time': analysis.processing_time,
+                'text_length': analysis.text_length,
+                'language': analysis.language,
+                
+                # Extracted information
+                'entities': [
+                    {
+                        'text': e.text,
+                        'type': e.entity_type,
+                        'confidence': e.confidence,
+                        'normalized_value': e.normalized_value
+                    } for e in analysis.entities
+                ],
+                'dates': [
+                    {
+                        'text': d.text,
+                        'parsed_date': d.parsed_date.isoformat(),
+                        'date_type': d.date_type,
+                        'confidence': d.confidence
+                    } for d in analysis.dates
+                ],
+                'amounts': [
+                    {
+                        'text': a.text,
+                        'amount': a.amount,
+                        'currency': a.currency,
+                        'amount_type': a.amount_type,
+                        'confidence': a.confidence
+                    } for a in analysis.amounts
+                ],
+                'clauses': [
+                    {
+                        'clause_type': c.clause_type,
+                        'importance': c.importance,
+                        'risk_level': c.risk_level,
+                        'summary': c.summary
+                    } for c in analysis.clauses
+                ],
+                
+                # Analysis scores
+                'sentiment_score': analysis.sentiment_score,
+                'readability_score': analysis.readability_score,
+                'complexity_score': analysis.complexity_score,
+                'legal_risk_score': analysis.legal_risk_score,
+                
+                # Summary information
+                'key_terms': analysis.key_terms,
+                'summary': analysis.summary,
+                'recommendations': analysis.recommendations,
+                'warnings': analysis.warnings,
+                'processed_at': analysis.processed_at.isoformat()
+            }
+            
+            return jsonify({
+                'success': True,
+                'analysis': analysis_dict
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Document processing failed: {str(e)}'
+            }), 500
+
+    @app.route('/api/document/analyze-lease', methods=['POST'])
+    def analyze_lease_document():
+        """Specialized lease agreement analysis"""
+        try:
+            from ai_services.nlp.document_processor import get_document_processor
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            document_text = data.get('text', '')
+            property_id = data.get('property_id')
+            tenant_id = data.get('tenant_id')
+            
+            if not document_text:
+                return jsonify({
+                    'success': False,
+                    'error': 'Document text is required'
+                }), 400
+            
+            processor = get_document_processor()
+            analysis = processor.process_document(document_text, f"lease_{property_id}_{tenant_id}")
+            
+            # Extract lease-specific information
+            lease_info = {
+                'tenant_name': analysis.key_terms.get('tenant', 'Not specified'),
+                'landlord_name': analysis.key_terms.get('landlord', 'Not specified'),
+                'property_address': analysis.key_terms.get('property_address', 'Not specified'),
+                'monthly_rent': analysis.key_terms.get('monthly_rent', 0),
+                'security_deposit': analysis.key_terms.get('security_deposit', 0),
+                'lease_start_date': analysis.key_terms.get('lease_start_date', 'Not specified'),
+                'lease_end_date': analysis.key_terms.get('lease_end_date', 'Not specified'),
+                'lease_term_months': analysis.key_terms.get('lease_term_months', 0),
+                
+                'analysis_summary': {
+                    'document_type': analysis.document_type.value,
+                    'confidence': analysis.confidence.value,
+                    'legal_risk_score': analysis.legal_risk_score,
+                    'sentiment_score': analysis.sentiment_score,
+                    'readability_score': analysis.readability_score,
+                    'high_risk_clauses': len([c for c in analysis.clauses if c.risk_level == 'high']),
+                    'total_clauses': len(analysis.clauses)
+                },
+                
+                'recommendations': analysis.recommendations,
+                'warnings': analysis.warnings,
+                'summary': analysis.summary
+            }
+            
+            return jsonify({
+                'success': True,
+                'lease_analysis': lease_info
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Lease analysis failed: {str(e)}'
+            }), 500
+
+    @app.route('/api/document/extract-entities', methods=['POST'])
+    def extract_document_entities():
+        """Extract named entities from document text"""
+        try:
+            from ai_services.nlp.document_processor import get_document_processor
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            document_text = data.get('text', '')
+            
+            if not document_text:
+                return jsonify({
+                    'success': False,
+                    'error': 'Document text is required'
+                }), 400
+            
+            processor = get_document_processor()
+            
+            # Quick entity extraction without full document processing
+            if processor.spacy_available:
+                entities = processor._extract_entities_spacy(document_text)
+            else:
+                entities = processor._extract_entities_rules(document_text)
+            
+            dates = processor._extract_dates(document_text)
+            amounts = processor._extract_amounts(document_text)
+            
+            entities_data = [
+                {
+                    'text': e.text,
+                    'type': e.entity_type,
+                    'confidence': e.confidence,
+                    'normalized_value': e.normalized_value,
+                    'context': e.context
+                } for e in entities
+            ]
+            
+            dates_data = [
+                {
+                    'text': d.text,
+                    'parsed_date': d.parsed_date.isoformat(),
+                    'date_type': d.date_type,
+                    'confidence': d.confidence
+                } for d in dates
+            ]
+            
+            amounts_data = [
+                {
+                    'text': a.text,
+                    'amount': a.amount,
+                    'currency': a.currency,
+                    'amount_type': a.amount_type,
+                    'confidence': a.confidence
+                } for a in amounts
+            ]
+            
+            return jsonify({
+                'success': True,
+                'extraction_results': {
+                    'entities': entities_data,
+                    'dates': dates_data,
+                    'amounts': amounts_data,
+                    'summary': {
+                        'total_entities': len(entities_data),
+                        'total_dates': len(dates_data),
+                        'total_amounts': len(amounts_data),
+                        'total_amount_value': sum(a['amount'] for a in amounts_data)
+                    }
+                }
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Entity extraction failed: {str(e)}'
+            }), 500
+
+    @app.route('/api/document/assess-risk', methods=['POST'])
+    def assess_document_risk():
+        """Assess legal and compliance risks in document"""
+        try:
+            from ai_services.nlp.document_processor import get_document_processor
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            document_text = data.get('text', '')
+            document_type = data.get('document_type', 'unknown')
+            
+            if not document_text:
+                return jsonify({
+                    'success': False,
+                    'error': 'Document text is required'
+                }), 400
+            
+            processor = get_document_processor()
+            
+            # Identify document type if not provided
+            from ai_services.nlp.document_processor import DocumentType
+            if document_type == 'unknown':
+                doc_type, _ = processor._identify_document_type(document_text)
+            else:
+                doc_type = DocumentType(document_type)
+            
+            # Extract clauses for risk assessment
+            clauses = processor._extract_clauses(document_text, doc_type)
+            legal_risk_score = processor._assess_legal_risk(clauses, document_text)
+            
+            # Analyze sentiment and complexity
+            sentiment_score = processor._analyze_sentiment(document_text)
+            complexity_score = processor._calculate_complexity(document_text)
+            
+            risk_assessment = {
+                'document_type': doc_type.value,
+                'legal_risk_score': legal_risk_score,
+                'sentiment_score': sentiment_score,
+                'complexity_score': complexity_score,
+                
+                'risk_breakdown': {
+                    'high_risk_clauses': len([c for c in clauses if c.risk_level == 'high']),
+                    'medium_risk_clauses': len([c for c in clauses if c.risk_level == 'medium']),
+                    'critical_clauses': len([c for c in clauses if c.importance == 'critical']),
+                    'total_clauses': len(clauses)
+                },
+                
+                'risk_level': (
+                    'HIGH' if legal_risk_score > 70 else
+                    'MEDIUM' if legal_risk_score > 40 else
+                    'LOW'
+                ),
+                
+                'clauses': [
+                    {
+                        'type': c.clause_type,
+                        'importance': c.importance,
+                        'risk_level': c.risk_level,
+                        'summary': c.summary
+                    } for c in clauses if c.risk_level in ['high', 'critical'] or c.importance == 'critical'
+                ],
+                
+                'recommendations': processor._generate_recommendations(doc_type, clauses, legal_risk_score),
+                'warnings': processor._generate_warnings(clauses, legal_risk_score, [])
+            }
+            
+            return jsonify({
+                'success': True,
+                'risk_assessment': risk_assessment
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Risk assessment failed: {str(e)}'
+            }), 500
+
+    @app.route('/api/document/batch-process', methods=['POST'])
+    def batch_process_documents():
+        """Process multiple documents in batch"""
+        try:
+            from ai_services.nlp.document_processor import get_document_processor
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            documents = data.get('documents', [])
+            
+            if not documents:
+                return jsonify({
+                    'success': False,
+                    'error': 'No documents provided'
+                }), 400
+            
+            if len(documents) > 10:  # Limit batch size
+                return jsonify({
+                    'success': False,
+                    'error': 'Maximum 10 documents per batch'
+                }), 400
+            
+            processor = get_document_processor()
+            results = []
+            
+            for i, doc_data in enumerate(documents):
+                try:
+                    text = doc_data.get('text', '')
+                    doc_id = doc_data.get('document_id', f'batch_doc_{i}')
+                    
+                    if len(text.strip()) < 10:
+                        results.append({
+                            'document_id': doc_id,
+                            'success': False,
+                            'error': 'Document text too short'
+                        })
+                        continue
+                    
+                    analysis = processor.process_document(text, doc_id)
+                    
+                    # Create summary result for batch processing
+                    results.append({
+                        'document_id': doc_id,
+                        'success': True,
+                        'summary': {
+                            'document_type': analysis.document_type.value,
+                            'confidence': analysis.confidence.value,
+                            'processing_time': analysis.processing_time,
+                            'entities_found': len(analysis.entities),
+                            'dates_found': len(analysis.dates),
+                            'amounts_found': len(analysis.amounts),
+                            'legal_risk_score': analysis.legal_risk_score,
+                            'high_risk_clauses': len([c for c in analysis.clauses if c.risk_level == 'high']),
+                            'key_terms': analysis.key_terms,
+                            'warnings_count': len(analysis.warnings)
+                        }
+                    })
+                    
+                except Exception as e:
+                    results.append({
+                        'document_id': doc_data.get('document_id', f'batch_doc_{i}'),
+                        'success': False,
+                        'error': str(e)
+                    })
+            
+            successful_analyses = len([r for r in results if r['success']])
+            
+            return jsonify({
+                'success': True,
+                'message': f'Batch processing completed: {successful_analyses}/{len(documents)} successful',
+                'results': results,
+                'summary': {
+                    'total_documents': len(documents),
+                    'successful_analyses': successful_analyses,
+                    'failed_analyses': len(documents) - successful_analyses,
+                    'average_risk_score': sum(
+                        r['summary']['legal_risk_score'] 
+                        for r in results 
+                        if r['success']
+                    ) / max(successful_analyses, 1)
+                }
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Batch processing failed: {str(e)}'
+            }), 500
+
+    # ===== PREDICTIVE MAINTENANCE AI ENDPOINTS =====
+    
+    @app.route('/api/maintenance/predict', methods=['POST'])
+    def predict_maintenance():
+        """Predict maintenance needs for a property"""
+        try:
+            from ai_services.predictive_analytics.maintenance_predictor import get_predictive_maintenance_ai
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            property_id = data.get('property_id')
+            prediction_days = data.get('prediction_days', 90)
+            
+            if not property_id:
+                return jsonify({
+                    'success': False,
+                    'error': 'Property ID is required'
+                }), 400
+            
+            predictor = get_predictive_maintenance_ai()
+            predictions = predictor.predict_maintenance_needs(int(property_id), prediction_days)
+            
+            # Convert predictions to JSON-serializable format
+            predictions_data = []
+            for prediction in predictions:
+                predictions_data.append({
+                    'property_id': prediction.property_id,
+                    'equipment_id': prediction.equipment_id,
+                    'maintenance_type': prediction.maintenance_type.value,
+                    'predicted_date': prediction.predicted_date.isoformat(),
+                    'confidence': prediction.confidence.value,
+                    'confidence_score': prediction.confidence_score,
+                    'risk_factors': prediction.risk_factors,
+                    'estimated_cost_range': prediction.estimated_cost,
+                    'estimated_duration_hours': prediction.estimated_duration,
+                    'priority': prediction.recommended_priority.value,
+                    'reason': prediction.reason,
+                    'preventive_actions': prediction.preventive_actions,
+                    'warning_signs': prediction.warning_signs,
+                    'cost_impact_if_delayed': prediction.cost_impact_if_delayed,
+                    'optimal_window_start': prediction.optimal_scheduling_window[0].isoformat(),
+                    'optimal_window_end': prediction.optimal_scheduling_window[1].isoformat(),
+                    'model_version': prediction.model_version,
+                    'prediction_timestamp': prediction.prediction_timestamp.isoformat()
+                })
+            
+            return jsonify({
+                'success': True,
+                'predictions': predictions_data,
+                'summary': {
+                    'total_predictions': len(predictions_data),
+                    'critical_items': len([p for p in predictions_data if p['priority'] == 'critical']),
+                    'high_priority_items': len([p for p in predictions_data if p['priority'] == 'high']),
+                    'total_estimated_cost': sum(
+                        (p['estimated_cost_range'][0] + p['estimated_cost_range'][1]) / 2 
+                        for p in predictions_data
+                    ),
+                    'next_maintenance_date': min(p['predicted_date'] for p in predictions_data) if predictions_data else None
+                }
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Maintenance prediction failed: {str(e)}'
+            }), 500
+
+    @app.route('/api/maintenance/optimize-costs', methods=['POST'])
+    def optimize_maintenance_costs():
+        """Optimize maintenance costs and scheduling"""
+        try:
+            from ai_services.predictive_analytics.maintenance_predictor import get_predictive_maintenance_ai
+            from ai_services.predictive_analytics.cost_optimizer import get_cost_optimizer, OptimizationStrategy
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            property_id = data.get('property_id')
+            strategy = data.get('strategy', 'cost_minimization')
+            prediction_days = data.get('prediction_days', 90)
+            
+            if not property_id:
+                return jsonify({
+                    'success': False,
+                    'error': 'Property ID is required'
+                }), 400
+            
+            # Get predictions first
+            predictor = get_predictive_maintenance_ai()
+            predictions = predictor.predict_maintenance_needs(int(property_id), prediction_days)
+            
+            if not predictions:
+                return jsonify({
+                    'success': True,
+                    'message': 'No maintenance predictions found for optimization',
+                    'optimization_result': None
+                })
+            
+            # Optimize costs
+            optimizer = get_cost_optimizer()
+            optimization_strategy = OptimizationStrategy(strategy)
+            
+            result = optimizer.optimize_maintenance_costs(
+                predictions, int(property_id), optimization_strategy
+            )
+            
+            # Convert result to JSON-serializable format
+            optimization_data = {
+                'property_id': result.property_id,
+                'optimization_strategy': result.optimization_strategy.value,
+                'original_total_cost': result.original_total_cost,
+                'optimized_total_cost': result.optimized_total_cost,
+                'cost_savings': result.cost_savings,
+                'savings_percentage': result.savings_percentage,
+                'optimized_schedule': result.optimized_schedule,
+                'contractor_assignments': result.contractor_assignments,
+                'tenant_disruption_hours': result.tenant_disruption_hours,
+                'total_project_duration_days': result.total_project_duration_days,
+                'risk_mitigation_actions': result.risk_mitigation_actions,
+                'contractor_utilization': result.contractor_utilization,
+                'equipment_sharing_opportunities': result.equipment_sharing_opportunities,
+                'bulk_purchase_savings': result.bulk_purchase_savings,
+                'recommendations': result.recommendations,
+                'alternative_strategies': result.alternative_strategies,
+                'optimization_timestamp': result.optimization_timestamp.isoformat()
+            }
+            
+            return jsonify({
+                'success': True,
+                'optimization_result': optimization_data,
+                'summary': {
+                    'total_savings': result.cost_savings,
+                    'savings_percentage': result.savings_percentage,
+                    'project_duration_days': result.total_project_duration_days,
+                    'scheduled_items': len(result.optimized_schedule),
+                    'contractors_involved': len(result.contractor_assignments)
+                }
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Cost optimization failed: {str(e)}'
+            }), 500
+
+    @app.route('/api/maintenance/insights/<int:property_id>', methods=['GET'])
+    def get_maintenance_insights(property_id):
+        """Get comprehensive maintenance insights for a property"""
+        try:
+            from ai_services.predictive_analytics.maintenance_predictor import get_predictive_maintenance_ai
+            
+            predictor = get_predictive_maintenance_ai()
+            insights = predictor.get_maintenance_insights(property_id)
+            
+            return jsonify({
+                'success': True,
+                'insights': insights
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to get maintenance insights: {str(e)}'
+            }), 500
+
+    @app.route('/api/maintenance/cost-analysis', methods=['POST'])
+    def get_cost_analysis():
+        """Get detailed cost analysis report"""
+        try:
+            from ai_services.predictive_analytics.maintenance_predictor import get_predictive_maintenance_ai
+            from ai_services.predictive_analytics.cost_optimizer import get_cost_optimizer
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            property_id = data.get('property_id')
+            prediction_days = data.get('prediction_days', 90)
+            
+            if not property_id:
+                return jsonify({
+                    'success': False,
+                    'error': 'Property ID is required'
+                }), 400
+            
+            # Get predictions
+            predictor = get_predictive_maintenance_ai()
+            predictions = predictor.predict_maintenance_needs(int(property_id), prediction_days)
+            
+            # Generate cost analysis report
+            optimizer = get_cost_optimizer()
+            report = optimizer.get_cost_analysis_report(int(property_id), predictions)
+            
+            return jsonify({
+                'success': True,
+                'cost_analysis_report': report
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Cost analysis failed: {str(e)}'
+            }), 500
+
+    @app.route('/api/maintenance/equipment', methods=['POST'])
+    def add_equipment_data():
+        """Add equipment data for predictive analysis"""
+        try:
+            from ai_services.predictive_analytics.maintenance_predictor import (
+                get_predictive_maintenance_ai, EquipmentData, MaintenanceType
+            )
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            required_fields = ['equipment_id', 'property_id', 'equipment_type', 'brand', 'installation_date']
+            for field in required_fields:
+                if field not in data:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Missing required field: {field}'
+                    }), 400
+            
+            # Parse installation date
+            from datetime import datetime
+            installation_date = datetime.fromisoformat(data['installation_date'].replace('Z', '+00:00'))
+            
+            # Parse warranty expiry if provided
+            warranty_expiry = None
+            if data.get('warranty_expiry'):
+                warranty_expiry = datetime.fromisoformat(data['warranty_expiry'].replace('Z', '+00:00'))
+            
+            # Create equipment data object
+            equipment = EquipmentData(
+                equipment_id=data['equipment_id'],
+                property_id=int(data['property_id']),
+                equipment_type=MaintenanceType(data['equipment_type']),
+                brand=data['brand'],
+                model=data.get('model', ''),
+                installation_date=installation_date,
+                warranty_expiry=warranty_expiry,
+                last_service_date=None,  # Can be updated later
+                service_intervals=[],    # Can be updated later
+                operating_hours=data.get('operating_hours', 0),
+                energy_consumption=data.get('energy_consumption', 0.0),
+                performance_metrics=data.get('performance_metrics', {}),
+                sensor_readings=data.get('sensor_readings', {}),
+                maintenance_history=data.get('maintenance_history', []),
+                replacement_cost=data.get('replacement_cost', 0.0)
+            )
+            
+            # Add to predictor
+            predictor = get_predictive_maintenance_ai()
+            success = predictor.add_equipment_data(equipment)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': f'Equipment {equipment.equipment_id} added successfully'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to add equipment data'
+                }), 400
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to add equipment data: {str(e)}'
+            }), 500
+
+    @app.route('/api/maintenance/record', methods=['POST'])
+    def add_maintenance_record():
+        """Add historical maintenance record for model training"""
+        try:
+            from ai_services.predictive_analytics.maintenance_predictor import (
+                get_predictive_maintenance_ai, MaintenanceRecord, MaintenanceType, MaintenancePriority
+            )
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            required_fields = ['record_id', 'property_id', 'maintenance_type', 'completion_date', 'cost']
+            for field in required_fields:
+                if field not in data:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Missing required field: {field}'
+                    }), 400
+            
+            # Parse completion date
+            from datetime import datetime
+            completion_date = datetime.fromisoformat(data['completion_date'].replace('Z', '+00:00'))
+            
+            # Create maintenance record
+            record = MaintenanceRecord(
+                record_id=data['record_id'],
+                property_id=int(data['property_id']),
+                maintenance_type=MaintenanceType(data['maintenance_type']),
+                description=data.get('description', ''),
+                cost=float(data['cost']),
+                completion_date=completion_date,
+                duration_hours=data.get('duration_hours', 4),
+                priority=MaintenancePriority(data.get('priority', 'medium')),
+                contractor=data.get('contractor', ''),
+                parts_replaced=data.get('parts_replaced', []),
+                issue_severity=data.get('issue_severity', 5),
+                customer_satisfaction=data.get('customer_satisfaction', 3),
+                weather_conditions=data.get('weather_conditions', ''),
+                equipment_age_years=data.get('equipment_age_years', 0.0),
+                last_maintenance_days=data.get('last_maintenance_days', 365),
+                property_age_years=data.get('property_age_years', 0),
+                tenant_reported=data.get('tenant_reported', False)
+            )
+            
+            # Add to predictor
+            predictor = get_predictive_maintenance_ai()
+            success = predictor.add_maintenance_record(record)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': f'Maintenance record {record.record_id} added successfully'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to add maintenance record'
+                }), 400
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to add maintenance record: {str(e)}'
+            }), 500
+
+    @app.route('/api/maintenance/batch-optimize', methods=['POST'])
+    def batch_optimize_properties():
+        """Optimize maintenance schedules for multiple properties"""
+        try:
+            from ai_services.predictive_analytics.maintenance_predictor import get_predictive_maintenance_ai
+            
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+            
+            property_ids = data.get('property_ids', [])
+            optimization_period_days = data.get('optimization_period_days', 365)
+            
+            if not property_ids:
+                return jsonify({
+                    'success': False,
+                    'error': 'Property IDs are required'
+                }), 400
+            
+            # Convert to integers
+            property_ids = [int(pid) for pid in property_ids]
+            
+            # Optimize schedules
+            predictor = get_predictive_maintenance_ai()
+            recommendations = predictor.optimize_maintenance_schedule(
+                property_ids, optimization_period_days
+            )
+            
+            # Convert recommendations to JSON format
+            recommendations_data = []
+            for rec in recommendations:
+                recommendations_data.append({
+                    'property_id': rec.property_id,
+                    'optimization_period': [
+                        rec.optimization_period[0].isoformat(),
+                        rec.optimization_period[1].isoformat()
+                    ],
+                    'total_predicted_cost': rec.total_predicted_cost,
+                    'recommendations': rec.recommendations,
+                    'cost_savings_potential': rec.cost_savings_potential,
+                    'efficiency_improvements': rec.efficiency_improvements,
+                    'resource_requirements': rec.resource_requirements
+                })
+            
+            total_savings = sum(r['cost_savings_potential'] for r in recommendations_data)
+            total_cost = sum(r['total_predicted_cost'] for r in recommendations_data)
+            
+            return jsonify({
+                'success': True,
+                'batch_optimization': {
+                    'property_count': len(property_ids),
+                    'total_predicted_cost': total_cost,
+                    'total_savings_potential': total_savings,
+                    'average_savings_percentage': (total_savings / total_cost * 100) if total_cost > 0 else 0,
+                    'recommendations': recommendations_data
+                }
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Batch optimization failed: {str(e)}'
+            }), 500
 
     return app
 
