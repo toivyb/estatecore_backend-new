@@ -1,0 +1,1 @@
+export default function Textarea(props){return <textarea className='ec-textarea' {...props}/>}

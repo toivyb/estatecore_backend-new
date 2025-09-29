@@ -1,0 +1,1 @@
+export async function loadApiBase(){ try{ const r=await fetch('/config.json',{cache:'no-store'}); if(r.ok){ const c=await r.json(); if(c&&c.apiBase) return String(c.apiBase).replace(/\/$/,'') } }catch{}; if(import.meta.env.VITE_API) return String(import.meta.env.VITE_API).replace(/\/$/,''); return '/api' }

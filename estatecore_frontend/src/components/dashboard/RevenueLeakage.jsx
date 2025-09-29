@@ -1,0 +1,1 @@
+import {useEffect,useState} from "react";export default function RevenueLeakage({propertyId}){const[l,setL]=useState([]);useEffect(()=>{fetch(`/api/revenue-leakage/${propertyId}`).then(r=>r.json()).then(d=>setL(d.leaks));},[]);return <div>{l.map((x,i)=><p key={i}>{x.unit}: {x.issue}</p>)}</div>;}

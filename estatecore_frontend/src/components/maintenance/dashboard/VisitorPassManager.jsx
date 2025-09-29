@@ -1,0 +1,1 @@
+import {useState} from "react";import axios from "axios";export default function VisitorPassManager({propertyId}){const[code,setCode]=useState(null);const generate=async()=>{const res=await axios.post("/api/visitor-pass",{property_id:propertyId});setCode(res.data.code);};return <div><button onClick={generate}>Generate Visitor Pass</button>{code&&<p>Pass: {code}</p>}</div>;}

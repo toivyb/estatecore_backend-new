@@ -1,0 +1,20 @@
+{
+  "name": "estatecore-project",
+  "version": "1.0.0",
+  "description": "EstateCore Property Management Platform",
+  "main": "app.py",
+  "scripts": {
+    "build": "cd estatecore_frontend && npm install && npm run build",
+    "dev": "cd estatecore_frontend && npm run dev",
+    "install-frontend": "cd estatecore_frontend && npm install"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/estatecore"
+  },
+  "keywords": ["property-management", "react", "flask", "saas"],
+  "license": "MIT"
+}

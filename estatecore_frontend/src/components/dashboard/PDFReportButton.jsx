@@ -1,0 +1,1 @@
+export default function PDFReportButton(){return <button onClick={()=>window.open("/api/pdf-report","_blank")}>Download PDF</button>;}

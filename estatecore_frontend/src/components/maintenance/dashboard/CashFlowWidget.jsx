@@ -1,0 +1,1 @@
+import {useEffect,useState} from "react";export default function CashFlowWidget({propertyId}){const[data,setData]=useState({});useEffect(()=>{fetch(`/api/cash-flow/${propertyId}`).then(r=>r.json()).then(setData);},[]);return <div>Projected Next Month: ${data.next_month_projection||0}</div>;}

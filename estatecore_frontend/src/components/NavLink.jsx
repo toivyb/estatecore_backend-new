@@ -1,0 +1,1 @@
+import {NavLink as R} from 'react-router-dom';export default function NavLink({to,children}){return <R to={to} className={({isActive})=>`flex items-center gap-2 px-3 py-2 rounded-xl transition hover:bg-white/5 ${isActive?'bg-white/10 text-white':'text-slate-300'}`}>{children}</R>}

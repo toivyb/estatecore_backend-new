@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Received</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .payment-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .amount { font-size: 24px; font-weight: bold; color: #059669; text-align: center; margin: 20px 0; }
+        .button { background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; }
+        .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Payment Received</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ tenant_name }},</p>
+            
+            <p>Thank you! Your payment has been successfully processed.</p>
+            
+            <div class="payment-details">
+                <h3>Payment Details</h3>
+                <p><strong>Amount:</strong> <span class="amount">${{ amount }}</span></p>
+                <p><strong>Payment Date:</strong> {{ payment_date }}</p>
+                <p><strong>Property:</strong> {{ property_address }}</p>
+                <p><strong>Payment Type:</strong> {{ payment_type }}</p>
+                <p><strong>Payment Method:</strong> {{ payment_method }}</p>
+                <p><strong>Transaction ID:</strong> {{ transaction_id }}</p>
+            </div>
+            
+            <p>Your receipt is available in your tenant portal:</p>
+            <p style="text-align: center;">
+                <a href="{{ portal_url }}" class="button">View Receipt</a>
+            </p>
+            
+            <p>If you have any questions about this payment, please contact your property manager.</p>
+            
+            <p>Best regards,<br>
+            {{ property_manager_name }}<br>
+            {{ property_company }}</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message from EstateCore Property Management Platform</p>
+        </div>
+    </div>
+</body>
+</html>

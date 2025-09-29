@@ -1,0 +1,1 @@
+import {useEffect,useState} from "react";export default function AdminAnalytics(){const[d,setD]=useState({});useEffect(()=>{fetch("/api/admin-stats").then(r=>r.json()).then(setD);},[]);return <div>Rent: ${d.rent_collected||0}</div>;}

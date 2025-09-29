@@ -1,0 +1,1 @@
+import {useState,useEffect} from "react";import axios from "axios";export default function VideoInspection({propertyId}){const[videos,setVideos]=useState([]);useEffect(()=>{axios.get(`/api/video-inspections/${propertyId}`).then(res=>setVideos(res.data));},[]);return <div>{videos.map(v=><video key={v.id} src={v.video_url} controls width="200"/> )}</div>;}

@@ -1,0 +1,16 @@
+{
+  "name": "EstateCore - Property Management",
+  "short_name": "EstateCore",
+  "description": "Professional property management platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "placeholder.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

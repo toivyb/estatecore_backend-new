@@ -1,0 +1,1 @@
+import {useEffect,useState} from "react";export default function SuperAdminToggles(){const[t,setT]=useState({});useEffect(()=>{fetch("/api/super-admin/toggles").then(r=>r.json()).then(setT);},[]);return <div>{Object.entries(t).map(([k,v])=><div key={k}>{k}: {v?"On":"Off"}</div>)}</div>;}

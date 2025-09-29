@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Maintenance Request</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #f59e0b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .request-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .priority { padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .priority-high { background: #fef2f2; color: #dc2626; }
+        .priority-medium { background: #fffbeb; color: #d97706; }
+        .priority-low { background: #f0f9ff; color: #0369a1; }
+        .button { background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; }
+        .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 New Maintenance Request</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ manager_name }},</p>
+            
+            <p>A new maintenance request has been submitted by {{ tenant_name }}.</p>
+            
+            <div class="request-details">
+                <h3>Request Details</h3>
+                <p><strong>Property:</strong> {{ property_address }}</p>
+                <p><strong>Unit:</strong> {{ unit_number }}</p>
+                <p><strong>Tenant:</strong> {{ tenant_name }} ({{ tenant_email }})</p>
+                <p><strong>Category:</strong> {{ category }}</p>
+                <p><strong>Priority:</strong> <span class="priority priority-{{ priority.lower() }}">{{ priority }}</span></p>
+                <p><strong>Submitted:</strong> {{ submission_date }}</p>
+                
+                <h4>Issue Description:</h4>
+                <p>{{ description }}</p>
+                
+                {% if photos %}
+                <h4>Photos Attached:</h4>
+                <p>{{ photos|length }} photo(s) attached to this request</p>
+                {% endif %}
+            </div>
+            
+            <p>Please review and assign this request to the appropriate maintenance staff:</p>
+            <p style="text-align: center;">
+                <a href="{{ management_url }}" class="button">Manage Request</a>
+            </p>
+            
+            {% if priority == 'High' %}
+            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <strong>⚠️ High Priority Request</strong><br>
+                This request requires immediate attention. Please assign and schedule promptly.
+            </div>
+            {% endif %}
+            
+            <p>Best regards,<br>
+            EstateCore Maintenance System</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated notification from EstateCore Property Management Platform</p>
+        </div>
+    </div>
+</body>
+</html>

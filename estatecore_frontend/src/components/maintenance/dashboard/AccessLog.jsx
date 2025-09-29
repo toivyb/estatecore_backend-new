@@ -1,0 +1,1 @@
+import {useEffect,useState} from "react";import axios from "axios";export default function AccessLog({propertyId}){const[logs,setLogs]=useState([]);useEffect(()=>{axios.get(`/api/access-log/${propertyId}`).then(res=>setLogs(res.data));},[]);return <div>{logs.map(l=><p key={l.id}>{l.gate_name}: {l.result}</p>)}</div>;}

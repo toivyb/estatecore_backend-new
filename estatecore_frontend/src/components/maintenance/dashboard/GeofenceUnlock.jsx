@@ -1,0 +1,1 @@
+export default function GeofenceUnlock(){const unlock=()=>{fetch("/api/unlock-by-location",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lat:40.7,lng:-74})}).then(r=>r.json()).then(d=>alert(d.unlocked?"Unlocked":"Denied"));};return <button onClick={unlock}>Unlock via GPS</button>;}

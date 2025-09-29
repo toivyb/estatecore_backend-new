@@ -1,9 +1,19 @@
+# EstateCore React Frontend Deployment Configuration
+# This is NOT a Hugo site - it's a React/Vite application
 [build]
-  base = "estatecore_frontend"
   publish = "estatecore_frontend/dist"
   command = "npm run build"
-
+  
 [build.environment]
+  NODE_VERSION = "18"
+  VITE_API_BASE_URL = "https://estatecore-backend-sujs.onrender.com"
+
+# Force production context
+[context.production]
+  publish = "estatecore_frontend/dist"
+  command = "npm run build"
+  
+[context.production.environment]
   NODE_VERSION = "18"
   VITE_API_BASE_URL = "https://estatecore-backend-sujs.onrender.com"
 

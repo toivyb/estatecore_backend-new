@@ -1,0 +1,1 @@
+import {useEffect,useState} from "react";export default function RegulatoryDocs({propertyId}){const[d,setD]=useState([]);useEffect(()=>{fetch(`/api/regulatory-docs/${propertyId}`).then(r=>r.json()).then(setD);},[]);return <div>{d.map((x,i)=><p key={i}>{x.type}: {x.expires_on}</p>)}</div>;}
