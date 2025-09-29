@@ -158,11 +158,12 @@ def handle_preflight():
 
 @app.route('/')
 def home():
+    environment = 'Production' if os.environ.get('RENDER') else 'Development'
     return jsonify({
-        'message': 'EstateCore API v6.0 - Production Ready', 
+        'message': f'EstateCore API v6.0 - {environment} Ready', 
         'status': 'running',
         'database': 'Connected',
-        'environment': 'Production'
+        'environment': environment
     })
 
 @app.route('/api/dashboard', methods=['GET'])
