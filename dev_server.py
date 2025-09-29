@@ -17,7 +17,7 @@ from database_connection import DatabaseManager, Company, User, hash_password
 
 # Create Flask app
 app = Flask(__name__)
-CORS(app, origins=['*'],  # Allow all origins for production
+CORS(app, origins=['http://localhost:3000', 'http://localhost:5173', 'http://localhost:4173', 'http://localhost:3006'], 
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
      allow_headers=['Content-Type', 'Authorization'])
 
@@ -158,13 +158,7 @@ def handle_preflight():
 
 @app.route('/')
 def home():
-    environment = 'Production' if os.environ.get('RENDER') else 'Development'
-    return jsonify({
-        'message': f'EstateCore API v6.0 - {environment} Ready', 
-        'status': 'running',
-        'database': 'Connected',
-        'environment': environment
-    })
+    return jsonify({'message': 'EstateCore API v6.0 - Database Enabled', 'status': 'running'})
 
 @app.route('/api/dashboard', methods=['GET'])
 def get_dashboard():
@@ -237,23 +231,13 @@ def create_company():
     try:
         data = request.get_json()
         
-        # Log incoming data for debugging
-        print(f"Received company data: {data}")
-        
         # Validate required fields
-        if not data or not data.get('name') or not data.get('billing_email'):
+        if not data.get('name') or not data.get('billing_email'):
             return jsonify({'success': False, 'error': 'Name and billing email are required'}), 400
-        
-        # Set defaults for optional fields
-        data.setdefault('subscription_plan', 'trial')
-        data.setdefault('status', 'active')
-        data.setdefault('auto_billing', True)
-        data.setdefault('payment_method', 'card')
         
         # Add timestamp
         data['created_at'] = datetime.now().isoformat()
         
-        # Create company in database
         company_id = DatabaseManager.create_company(data)
         
         return jsonify({
@@ -262,8 +246,6 @@ def create_company():
             'company_id': company_id
         })
     except Exception as e:
-        print(f"Error creating company: {str(e)}")
-        print(f"Company data: {data if 'data' in locals() else 'No data received'}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/companies/<int:company_id>', methods=['PUT'])
@@ -704,154 +686,11 @@ def set_password():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# Authentication and user routes
-@app.route('/api/auth/user', methods=['GET'])
-def get_current_user_info():
-    """Get current authenticated user info"""
-    try:
-        user = get_current_user()
-        if not user:
-            return jsonify({'success': False, 'error': 'User not authenticated'}), 401
-        
-        # Get company information
-        company_data = None
-        if user.company_id:
-            company_data = DatabaseManager.get_company_by_id(user.company_id)
-        
-        return jsonify({
-            'success': True,
-            'user': {
-                'id': user.id,
-                'name': user.name,
-                'email': user.email,
-                'role': user.role,
-                'company_id': user.company_id,
-                'company_name': company_data['name'] if company_data else 'No Company',
-                'status': user.status
-            }
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-# Company analytics routes
-@app.route('/api/companies/analytics', methods=['GET'])
-def get_companies_analytics():
-    """Get platform-wide company analytics"""
-    try:
-        companies_data = DatabaseManager.get_companies()
-        
-        total_companies = len(companies_data)
-        active_companies = len([c for c in companies_data if c['status'] == 'active'])
-        
-        # Calculate total MRR and units
-        total_mrr = 0
-        total_units = 0
-        plan_distribution = {'trial': 0, 'basic': 0, 'premium': 0, 'enterprise': 0}
-        
-        for company in companies_data:
-            company_obj = Company(company)
-            total_mrr += company_obj.monthly_fee
-            
-            properties = DatabaseManager.get_properties_by_company(company['id'])
-            company_units = sum(p['units'] for p in properties)
-            total_units += company_units
-            
-            plan = company['subscription_plan']
-            if plan in plan_distribution:
-                plan_distribution[plan] += 1
-        
-        # Calculate growth metrics (mock data for demo)
-        growth_data = [
-            {'month': 'Jan', 'companies': 1, 'mrr': 150},
-            {'month': 'Feb', 'companies': 2, 'mrr': 450},
-            {'month': 'Mar', 'companies': 3, 'mrr': 750},
-            {'month': 'Apr', 'companies': 4, 'mrr': total_mrr}
-        ]
-        
-        return jsonify({
-            'success': True,
-            'analytics': {
-                'total_companies': total_companies,
-                'active_companies': active_companies,
-                'total_mrr': total_mrr,
-                'total_units': total_units,
-                'plan_distribution': plan_distribution,
-                'growth_data': growth_data,
-                'avg_units_per_company': round(total_units / max(total_companies, 1), 1),
-                'avg_mrr_per_company': round(total_mrr / max(active_companies, 1), 2)
-            }
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/companies/<int:company_id>/analytics', methods=['GET'])
-def get_company_analytics(company_id):
-    """Get analytics for a specific company"""
-    try:
-        company = DatabaseManager.get_company_by_id(company_id)
-        if not company:
-            return jsonify({'success': False, 'error': 'Company not found'}), 404
-        
-        properties = DatabaseManager.get_properties_by_company(company_id)
-        
-        total_properties = len(properties)
-        total_units = sum(p['units'] for p in properties)
-        occupied_units = sum(p['occupied_units'] for p in properties)
-        
-        # Get tenants for revenue calculation
-        total_revenue = 0
-        total_tenants = 0
-        for prop in properties:
-            tenants = DatabaseManager.get_tenants_by_property(prop['id'])
-            total_tenants += len(tenants)
-            total_revenue += sum(t['rent_amount'] for t in tenants if t['rent_amount'])
-        
-        occupancy_rate = round((occupied_units / max(total_units, 1)) * 100, 1)
-        
-        company_obj = Company(company)
-        monthly_fee = company_obj.monthly_fee
-        
-        return jsonify({
-            'success': True,
-            'analytics': {
-                'company_id': company_id,
-                'company_name': company['name'],
-                'total_properties': total_properties,
-                'total_units': total_units,
-                'occupied_units': occupied_units,
-                'total_tenants': total_tenants,
-                'total_revenue': total_revenue,
-                'monthly_fee': monthly_fee,
-                'occupancy_rate': occupancy_rate,
-                'subscription_plan': company['subscription_plan'],
-                'status': company['status']
-            }
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-# Health check for Render
-@app.route('/health')
-def health_check():
-    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
-
 if __name__ == '__main__':
-    # Initialize database if it doesn't exist
-    if not os.path.exists('estatecore.db'):
-        print("Initializing database...")
-        os.system('python database_setup.py')
-    
-    # Get port from environment variable (Render sets this)
-    port = int(os.environ.get('PORT', 5001))
-    
-    print("Starting EstateCore Production Server...")
-    print(f"Environment: {'Production' if os.environ.get('RENDER') else 'Development'}")
-    print(f"Port: {port}")
-    print("API Endpoints:")
-    print("  Dashboard: /api/dashboard")
-    print("  Companies: /api/companies")
-    print("  Properties: /api/properties")
-    print("  Users: /api/users")
-    print("  Health: /health")
-    
-    app.run(debug=False, host='0.0.0.0', port=port)
+    print("Starting EstateCore API with Database Integration...")
+    print("Dashboard: http://localhost:5001/api/dashboard")
+    print("Companies: http://localhost:5001/api/companies")
+    print("Properties: http://localhost:5001/api/properties")
+    print("Users: http://localhost:5001/api/users")
+    print("Database: SQLite (estatecore.db)")
+    app.run(debug=True, host='0.0.0.0', port=5001)

@@ -69,28 +69,33 @@ class DatabaseManager:
     @staticmethod
     def create_company(company_data: Dict) -> int:
         """Create a new company"""
-        query = """
-            INSERT INTO companies (name, subscription_plan, billing_email, created_at, status, 
-                                 trial_ends_at, custom_domain, logo_url, phone, address, 
-                                 payment_method, auto_billing, mrr_override)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """
-        params = (
-            company_data['name'],
-            company_data.get('subscription_plan', 'basic'),
-            company_data['billing_email'],
-            company_data.get('created_at', datetime.now().isoformat()),
-            company_data.get('status', 'active'),
-            company_data.get('trial_ends_at'),
-            company_data.get('custom_domain'),
-            company_data.get('logo_url'),
-            company_data.get('phone'),
-            company_data.get('address'),
-            company_data.get('payment_method', 'card'),
-            company_data.get('auto_billing', True),
-            company_data.get('mrr_override')
-        )
-        return DatabaseManager.execute_query(query, params)
+        try:
+            query = """
+                INSERT INTO companies (name, subscription_plan, billing_email, created_at, status, 
+                                     trial_ends_at, custom_domain, logo_url, phone, address, 
+                                     payment_method, auto_billing, mrr_override)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            params = (
+                company_data['name'],
+                company_data.get('subscription_plan', 'basic'),
+                company_data['billing_email'],
+                company_data.get('created_at', datetime.now().isoformat()),
+                company_data.get('status', 'active'),
+                company_data.get('trial_ends_at'),
+                company_data.get('custom_domain'),
+                company_data.get('logo_url'),
+                company_data.get('phone'),
+                company_data.get('address'),
+                company_data.get('payment_method', 'card'),
+                company_data.get('auto_billing', True),
+                company_data.get('mrr_override')
+            )
+            print(f"Creating company with params: {params}")
+            return DatabaseManager.execute_query(query, params)
+        except Exception as e:
+            print(f"Database error in create_company: {str(e)}")
+            raise Exception(f"Failed to create company: {str(e)}")
     
     @staticmethod
     def update_company(company_id: int, company_data: Dict) -> bool:

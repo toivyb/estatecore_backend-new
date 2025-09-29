@@ -55,7 +55,9 @@
       "Bash(npm run:*)",
       "WebFetch(domain:app.myestatecore.com)",
       "Bash(mkdir:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(pkill:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": [],
     "ask": []
