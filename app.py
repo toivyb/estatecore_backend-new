@@ -692,6 +692,132 @@ def set_password():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# Authentication and user routes
+@app.route('/api/auth/user', methods=['GET'])
+def get_current_user_info():
+    """Get current authenticated user info"""
+    try:
+        user = get_current_user()
+        if not user:
+            return jsonify({'success': False, 'error': 'User not authenticated'}), 401
+        
+        # Get company information
+        company_data = None
+        if user.company_id:
+            company_data = DatabaseManager.get_company_by_id(user.company_id)
+        
+        return jsonify({
+            'success': True,
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'email': user.email,
+                'role': user.role,
+                'company_id': user.company_id,
+                'company_name': company_data['name'] if company_data else 'No Company',
+                'status': user.status
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Company analytics routes
+@app.route('/api/companies/analytics', methods=['GET'])
+def get_companies_analytics():
+    """Get platform-wide company analytics"""
+    try:
+        companies_data = DatabaseManager.get_companies()
+        
+        total_companies = len(companies_data)
+        active_companies = len([c for c in companies_data if c['status'] == 'active'])
+        
+        # Calculate total MRR and units
+        total_mrr = 0
+        total_units = 0
+        plan_distribution = {'trial': 0, 'basic': 0, 'premium': 0, 'enterprise': 0}
+        
+        for company in companies_data:
+            company_obj = Company(company)
+            total_mrr += company_obj.monthly_fee
+            
+            properties = DatabaseManager.get_properties_by_company(company['id'])
+            company_units = sum(p['units'] for p in properties)
+            total_units += company_units
+            
+            plan = company['subscription_plan']
+            if plan in plan_distribution:
+                plan_distribution[plan] += 1
+        
+        # Calculate growth metrics (mock data for demo)
+        growth_data = [
+            {'month': 'Jan', 'companies': 1, 'mrr': 150},
+            {'month': 'Feb', 'companies': 2, 'mrr': 450},
+            {'month': 'Mar', 'companies': 3, 'mrr': 750},
+            {'month': 'Apr', 'companies': 4, 'mrr': total_mrr}
+        ]
+        
+        return jsonify({
+            'success': True,
+            'analytics': {
+                'total_companies': total_companies,
+                'active_companies': active_companies,
+                'total_mrr': total_mrr,
+                'total_units': total_units,
+                'plan_distribution': plan_distribution,
+                'growth_data': growth_data,
+                'avg_units_per_company': round(total_units / max(total_companies, 1), 1),
+                'avg_mrr_per_company': round(total_mrr / max(active_companies, 1), 2)
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/companies/<int:company_id>/analytics', methods=['GET'])
+def get_company_analytics(company_id):
+    """Get analytics for a specific company"""
+    try:
+        company = DatabaseManager.get_company_by_id(company_id)
+        if not company:
+            return jsonify({'success': False, 'error': 'Company not found'}), 404
+        
+        properties = DatabaseManager.get_properties_by_company(company_id)
+        
+        total_properties = len(properties)
+        total_units = sum(p['units'] for p in properties)
+        occupied_units = sum(p['occupied_units'] for p in properties)
+        
+        # Get tenants for revenue calculation
+        total_revenue = 0
+        total_tenants = 0
+        for prop in properties:
+            tenants = DatabaseManager.get_tenants_by_property(prop['id'])
+            total_tenants += len(tenants)
+            total_revenue += sum(t['rent_amount'] for t in tenants if t['rent_amount'])
+        
+        occupancy_rate = round((occupied_units / max(total_units, 1)) * 100, 1)
+        
+        company_obj = Company(company)
+        monthly_fee = company_obj.monthly_fee
+        
+        return jsonify({
+            'success': True,
+            'analytics': {
+                'company_id': company_id,
+                'company_name': company['name'],
+                'total_properties': total_properties,
+                'total_units': total_units,
+                'occupied_units': occupied_units,
+                'total_tenants': total_tenants,
+                'total_revenue': total_revenue,
+                'monthly_fee': monthly_fee,
+                'occupancy_rate': occupancy_rate,
+                'subscription_plan': company['subscription_plan'],
+                'status': company['status']
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # Health check for Render
 @app.route('/health')
 def health_check():
