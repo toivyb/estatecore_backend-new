@@ -235,14 +235,19 @@ def get_companies():
 def create_company():
     """Create a new company"""
     try:
-        data = request.get_json()
+        print(f"=== Company Creation Request ===")
+        print(f"Method: {request.method}")
+        print(f"Content-Type: {request.content_type}")
+        print(f"Raw data: {request.get_data()}")
         
-        # Log incoming data for debugging
-        print(f"Received company data: {data}")
+        data = request.get_json()
+        print(f"Parsed JSON data: {data}")
         
         # Validate required fields
         if not data or not data.get('name') or not data.get('billing_email'):
-            return jsonify({'success': False, 'error': 'Name and billing email are required'}), 400
+            error_msg = 'Name and billing email are required'
+            print(f"Validation error: {error_msg}")
+            return jsonify({'success': False, 'error': error_msg}), 400
         
         # Set defaults for optional fields
         data.setdefault('subscription_plan', 'trial')
@@ -252,19 +257,34 @@ def create_company():
         
         # Add timestamp
         data['created_at'] = datetime.now().isoformat()
+        print(f"Final data to create: {data}")
         
         # Create company in database
+        print("Calling DatabaseManager.create_company...")
         company_id = DatabaseManager.create_company(data)
+        print(f"Company created with ID: {company_id}")
         
-        return jsonify({
+        response = {
             'success': True,
             'message': f'Company "{data["name"]}" created successfully',
             'company_id': company_id
-        })
+        }
+        print(f"Success response: {response}")
+        return jsonify(response)
+        
     except Exception as e:
-        print(f"Error creating company: {str(e)}")
-        print(f"Company data: {data if 'data' in locals() else 'No data received'}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        import traceback
+        error_msg = str(e)
+        error_trace = traceback.format_exc()
+        print(f"ERROR creating company: {error_msg}")
+        print(f"Full traceback: {error_trace}")
+        print(f"Request data: {data if 'data' in locals() else 'No data received'}")
+        
+        return jsonify({
+            'success': False, 
+            'error': error_msg,
+            'details': 'Check server logs for full error trace'
+        }), 500
 
 @app.route('/api/companies/<int:company_id>', methods=['PUT'])
 def update_company(company_id):
@@ -289,6 +309,123 @@ def update_company(company_id):
             return jsonify({'success': False, 'error': 'Failed to update company'}), 500
             
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/companies/<int:company_id>/trial', methods=['POST'])
+def extend_trial(company_id):
+    """Extend company trial period"""
+    try:
+        data = request.get_json() or {}
+        
+        # Get company
+        company = DatabaseManager.get_company_by_id(company_id)
+        if not company:
+            return jsonify({'success': False, 'error': 'Company not found'}), 404
+        
+        # Calculate new trial end date (default 30 days from now)
+        from datetime import datetime, timedelta
+        days_to_extend = data.get('days', 30)
+        new_trial_end = (datetime.now() + timedelta(days=days_to_extend)).isoformat()
+        
+        # Update company trial
+        update_data = {
+            'name': company['name'],
+            'subscription_plan': 'trial',  # Set to trial
+            'billing_email': company['billing_email'],
+            'status': 'active',
+            'trial_ends_at': new_trial_end,
+            'custom_domain': company.get('custom_domain'),
+            'logo_url': company.get('logo_url'),
+            'phone': company.get('phone'),
+            'address': company.get('address'),
+            'payment_method': company.get('payment_method', 'card'),
+            'auto_billing': company.get('auto_billing', True),
+            'mrr_override': company.get('mrr_override')
+        }
+        
+        success = DatabaseManager.update_company(company_id, update_data)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'Trial extended for {days_to_extend} days',
+                'trial_ends_at': new_trial_end
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to extend trial'}), 500
+            
+    except Exception as e:
+        print(f"Error extending trial for company {company_id}: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/companies/<int:company_id>/suspend', methods=['POST'])
+def suspend_company(company_id):
+    """Suspend a company and deactivate all users"""
+    try:
+        # Get company
+        company = DatabaseManager.get_company_by_id(company_id)
+        if not company:
+            return jsonify({'success': False, 'error': 'Company not found'}), 404
+        
+        # Update company status to suspended
+        update_data = dict(company)
+        update_data['status'] = 'suspended'
+        
+        success = DatabaseManager.update_company(company_id, update_data)
+        
+        if success:
+            # Deactivate all company users
+            users = DatabaseManager.get_users()
+            for user in users:
+                if user['company_id'] == company_id and user['status'] == 'active':
+                    user_update = dict(user)
+                    user_update['status'] = 'suspended'
+                    DatabaseManager.update_user(user['id'], user_update)
+            
+            return jsonify({
+                'success': True,
+                'message': f'Company "{company["name"]}" suspended and all users deactivated'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to suspend company'}), 500
+            
+    except Exception as e:
+        print(f"Error suspending company {company_id}: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/companies/<int:company_id>/activate', methods=['POST'])
+def activate_company(company_id):
+    """Activate a suspended company and reactivate all users"""
+    try:
+        # Get company
+        company = DatabaseManager.get_company_by_id(company_id)
+        if not company:
+            return jsonify({'success': False, 'error': 'Company not found'}), 404
+        
+        # Update company status to active
+        update_data = dict(company)
+        update_data['status'] = 'active'
+        
+        success = DatabaseManager.update_company(company_id, update_data)
+        
+        if success:
+            # Reactivate all company users
+            users = DatabaseManager.get_users()
+            for user in users:
+                if user['company_id'] == company_id and user['status'] == 'suspended':
+                    user_update = dict(user)
+                    user_update['status'] = 'active'
+                    DatabaseManager.update_user(user['id'], user_update)
+            
+            return jsonify({
+                'success': True,
+                'message': f'Company "{company["name"]}" activated and all users reactivated'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to activate company'}), 500
+            
+    except Exception as e:
+        print(f"Error activating company {company_id}: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/users', methods=['GET'])
