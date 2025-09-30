@@ -1554,6 +1554,7 @@ if __name__ == '__main__':
     print("  Dashboard: /api/dashboard")
     print("  Companies: /api/companies")
     print("  Properties: /api/properties")
+    print("  Units: /api/units")
     print("  Users: /api/users")
     print("  Health: /health")
     
