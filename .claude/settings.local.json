@@ -57,7 +57,12 @@
       "Bash(mkdir:*)",
       "Bash(rg:*)",
       "Bash(pkill:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(true)",
+      "Bash(git config:*)",
+      "Bash(git submodule:*)",
+      "Bash(git rm:*)",
+      "Bash(bash:*)"
     ],
     "deny": [],
     "ask": []

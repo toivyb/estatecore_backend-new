@@ -22,7 +22,7 @@ CORS(app, origins=['*'],  # Allow all origins for production
      allow_headers=['Content-Type', 'Authorization'])
 
 # Global current user for authentication simulation
-current_user_id = 1  # Default to a valid user
+current_user_id = 0  # System Admin (super_admin) - can see all properties
 
 def get_current_user():
     """Get current authenticated user from database"""
@@ -302,30 +302,80 @@ def create_company():
             'details': 'Check server logs for full error trace'
         }), 500
 
-@app.route('/api/companies/<int:company_id>', methods=['PUT'])
-def update_company(company_id):
-    """Update company information"""
-    try:
-        data = request.get_json()
-        
-        # Check if company exists
-        existing_company = DatabaseManager.get_company_by_id(company_id)
-        if not existing_company:
-            return jsonify({'success': False, 'error': 'Company not found'}), 404
-        
-        # Update company
-        success = DatabaseManager.update_company(company_id, data)
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'message': f'Company updated successfully'
-            })
-        else:
-            return jsonify({'success': False, 'error': 'Failed to update company'}), 500
+@app.route('/api/companies/<int:company_id>', methods=['PUT', 'DELETE'])
+def handle_company(company_id):
+    """Handle company update and delete operations"""
+    if request.method == 'PUT':
+        # Update company information
+        try:
+            data = request.get_json()
             
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+            # Check if company exists
+            existing_company = DatabaseManager.get_company_by_id(company_id)
+            if not existing_company:
+                return jsonify({'success': False, 'error': 'Company not found'}), 404
+            
+            # Update company
+            success = DatabaseManager.update_company(company_id, data)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': f'Company updated successfully'
+                })
+            else:
+                return jsonify({'success': False, 'error': 'Failed to update company'}), 500
+                
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
+    elif request.method == 'DELETE':
+        # Delete company and all associated data
+        try:
+            # Get company first to check if it exists
+            company = DatabaseManager.get_company_by_id(company_id)
+            if not company:
+                return jsonify({'success': False, 'error': 'Company not found'}), 404
+            
+            company_name = company['name']
+            
+            # Get all users associated with this company
+            users = DatabaseManager.get_users()
+            company_users = [user for user in users if user['company_id'] == company_id]
+            
+            # Get all properties associated with this company
+            properties = DatabaseManager.get_properties_by_company(company_id)
+            
+            # Delete all tenants from company properties
+            for prop in properties:
+                tenants = DatabaseManager.get_tenants_by_property(prop['id'])
+                for tenant in tenants:
+                    DatabaseManager.delete_tenant(tenant['id'])
+            
+            # Delete all properties
+            for prop in properties:
+                DatabaseManager.delete_property(prop['id'])
+            
+            # Delete all users (this will handle property access cleanup)
+            for user in company_users:
+                DatabaseManager.delete_user(user['id'])
+            
+            # Finally delete the company
+            success = DatabaseManager.delete_company(company_id)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': f'Company "{company_name}" and all associated data deleted successfully',
+                    'deleted_users': len(company_users),
+                    'deleted_properties': len(properties)
+                })
+            else:
+                return jsonify({'success': False, 'error': 'Failed to delete company'}), 500
+                
+        except Exception as e:
+            print(f"Error deleting company {company_id}: {str(e)}")
+            return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/companies/<int:company_id>/trial', methods=['POST'])
 def extend_trial(company_id):
@@ -443,6 +493,7 @@ def activate_company(company_id):
     except Exception as e:
         print(f"Error activating company {company_id}: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/users', methods=['GET'])
 def get_users():
@@ -921,6 +972,109 @@ def set_password():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/users/<int:user_id>/reset-password', methods=['POST'])
+def reset_password(user_id):
+    """Reset user password and generate new OTP"""
+    try:
+        # Check if user exists
+        user_data = DatabaseManager.get_user_by_id(user_id)
+        if not user_data:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        # Generate new OTP
+        import secrets
+        import string
+        otp = ''.join(secrets.choice(string.digits) for _ in range(6))
+        
+        # Update user with new OTP and reset password
+        update_data = dict(user_data)
+        update_data['otp'] = otp
+        update_data['is_first_login'] = True
+        update_data['password_hash'] = None  # Clear password to force reset
+        
+        success = DatabaseManager.update_user(user_id, update_data)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'Password reset for {user_data["name"]}. New OTP: {otp}',
+                'otp': otp  # In production, send via email instead
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to reset password'}), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/<int:user_id>/set-password', methods=['POST'])
+def set_user_password(user_id):
+    """Administratively set a user's password"""
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('password'):
+            return jsonify({'success': False, 'error': 'Password is required'}), 400
+        
+        password = data['password']
+        if len(password) < 6:
+            return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+        
+        # Check if user exists
+        user_data = DatabaseManager.get_user_by_id(user_id)
+        if not user_data:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        # Hash the new password
+        password_hash = hash_password(password)
+        
+        # Update user with new password
+        update_data = dict(user_data)
+        update_data['password_hash'] = password_hash
+        update_data['is_first_login'] = False  # Mark as not first login since password is set
+        update_data['otp'] = None  # Clear OTP
+        
+        success = DatabaseManager.update_user(user_id, update_data)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'Password set successfully for {user_data["name"]}'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to set password'}), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Demo endpoint for switching users (development only)
+@app.route('/api/demo/switch-user/<int:user_id>', methods=['POST'])
+def switch_user(user_id):
+    """Switch current user for demo purposes (development only)"""
+    global current_user_id
+    try:
+        # Check if user exists
+        user_data = DatabaseManager.get_user_by_id(user_id)
+        if not user_data:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        # Switch to the user
+        current_user_id = user_id
+        
+        return jsonify({
+            'success': True,
+            'message': f'Switched to user: {user_data["name"]}',
+            'user': {
+                'id': user_data['id'],
+                'name': user_data['name'],
+                'email': user_data['email'],
+                'role': user_data['role'],
+                'company_id': user_data['company_id']
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # Authentication and user routes
 @app.route('/api/auth/user', methods=['GET'])
 def get_current_user_info():
@@ -1235,6 +1389,39 @@ def assess_damage():
 @app.route('/health')
 def health_check():
     return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
+
+# Test DELETE endpoint
+@app.route('/api/test-delete/<int:test_id>', methods=['DELETE'])
+def test_delete(test_id):
+    return jsonify({'success': True, 'message': f'DELETE test successful for ID {test_id}'})
+
+# Debug endpoint to get ALL properties without access control
+@app.route('/api/properties/all', methods=['GET'])
+def get_all_properties():
+    """Get ALL properties without access control - for debugging"""
+    try:
+        properties = DatabaseManager.get_properties()
+        
+        # Add additional information to each property
+        for prop in properties:
+            # Get tenant count
+            tenants = DatabaseManager.get_tenants_by_property(prop['id'])
+            prop['tenant_count'] = len(tenants)
+            
+            # Get company name
+            company = DatabaseManager.get_company_by_id(prop['company_id'])
+            prop['company_name'] = company['name'] if company else 'Unknown'
+            
+            # Get property manager name
+            if prop.get('property_manager_id'):
+                manager = DatabaseManager.get_user_by_id(prop['property_manager_id'])
+                prop['property_manager_name'] = manager['name'] if manager else 'Unknown'
+            else:
+                prop['property_manager_name'] = 'Unassigned'
+        
+        return jsonify(properties)
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     # Initialize database if it doesn't exist

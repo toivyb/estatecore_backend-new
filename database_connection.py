@@ -128,6 +128,13 @@ class DatabaseManager:
         return True
     
     @staticmethod
+    def delete_company(company_id: int) -> bool:
+        """Delete a company"""
+        query = "DELETE FROM companies WHERE id = ?"
+        DatabaseManager.execute_query(query, (company_id,))
+        return True
+    
+    @staticmethod
     def get_users() -> List[Dict]:
         """Get all users"""
         query = "SELECT * FROM users ORDER BY name"
@@ -316,6 +323,13 @@ class DatabaseManager:
         """Get payments for a specific tenant"""
         query = "SELECT * FROM payments WHERE tenant_id = ? ORDER BY payment_date DESC"
         return DatabaseManager.execute_query(query, (tenant_id,), fetch_all=True)
+    
+    @staticmethod
+    def delete_tenant(tenant_id: int) -> bool:
+        """Delete a tenant"""
+        query = "DELETE FROM tenants WHERE id = ?"
+        DatabaseManager.execute_query(query, (tenant_id,))
+        return True
     
     @staticmethod
     def create_payment(payment_data: Dict) -> int:

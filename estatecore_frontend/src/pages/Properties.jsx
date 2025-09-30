@@ -37,14 +37,11 @@ const Properties = () => {
   const fetchData = async () => {
     try {
       setLoading(true)
-      // Fetch both properties and companies
-      const [propertiesResponse, companiesResponse] = await Promise.all([
-        fetch(`/api/properties`),
-        fetch(`/api/companies`)
+      // Fetch both properties and companies using api client
+      const [propertiesData, companiesData] = await Promise.all([
+        api.get('/api/properties'),
+        api.get('/api/companies')
       ])
-      
-      const propertiesData = await propertiesResponse.json()
-      const companiesData = await companiesResponse.json()
       
       setProperties(Array.isArray(propertiesData) ? propertiesData : propertiesData.properties || [])
       setCompanies(Array.isArray(companiesData) ? companiesData : companiesData.companies || [])
@@ -59,8 +56,7 @@ const Properties = () => {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`/api/properties`)
-      const data = await response.json()
+      const data = await api.get('/api/properties')
       setProperties(Array.isArray(data) ? data : data.properties || [])
     } catch (error) {
       console.error('Error fetching properties:', error)
@@ -71,17 +67,37 @@ const Properties = () => {
   const handleCreateProperty = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch(`/api/properties`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProperty)
-      })
+      // Validate required fields
+      if (!newProperty.name.trim()) {
+        alert('Property name is required')
+        return
+      }
+      if (!newProperty.address.trim()) {
+        alert('Property address is required')
+        return
+      }
+      if (!newProperty.company_id) {
+        alert('Please select a company')
+        return
+      }
+
+      // Map frontend field names to backend field names
+      const propertyData = {
+        name: newProperty.name.trim(),
+        address: newProperty.address.trim(),
+        type: newProperty.type || 'apartment',
+        description: newProperty.description.trim() || null,
+        rent_amount: newProperty.rent ? parseFloat(newProperty.rent) : null,
+        units: parseInt(newProperty.units) || 1,
+        bedrooms: newProperty.bedrooms ? parseInt(newProperty.bedrooms) : null,
+        bathrooms: newProperty.bathrooms ? parseInt(newProperty.bathrooms) : null,
+        company_id: parseInt(newProperty.company_id)
+      }
       
-      const data = await response.json()
+      console.log('Sending property data:', propertyData) // Debug log
+      const data = await api.post('/api/properties', propertyData)
       
-      if (response.ok) {
+      if (data.success) {
         setNewProperty({
           name: '', address: '', type: '', bedrooms: '', bathrooms: '', 
           rent: '', units: '', description: '', company_id: ''
@@ -108,17 +124,9 @@ const Properties = () => {
   const handleUpdateProperty = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch(`/api/properties/${editingProperty.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editingProperty)
-      })
+      const data = await api.put(`/api/properties/${editingProperty.id}`, editingProperty)
       
-      const data = await response.json()
-      
-      if (response.ok) {
+      if (data.success) {
         setEditingProperty(null)
         fetchProperties()
         alert('Property updated successfully!')
@@ -134,13 +142,9 @@ const Properties = () => {
   const handleDeleteProperty = async (propertyId) => {
     if (confirm('Are you sure you want to delete this property? This will also delete all related units and inactive tenants.')) {
       try {
-        const response = await fetch(`/api/properties/${propertyId}`, {
-          method: 'DELETE'
-        })
+        const data = await api.delete(`/api/properties/${propertyId}`)
         
-        const data = await response.json()
-        
-        if (response.ok) {
+        if (data.success) {
           fetchProperties()
           alert('Property deleted successfully!')
         } else {
@@ -156,8 +160,7 @@ const Properties = () => {
 
   const fetchUnits = async (propertyId) => {
     try {
-      const response = await fetch(`/api/units?property_id=${propertyId}`)
-      const data = await response.json()
+      const data = await api.get(`/api/units?property_id=${propertyId}`)
       
       // Validate that data is an array before setting it
       if (Array.isArray(data)) {
@@ -175,18 +178,12 @@ const Properties = () => {
   const handleCreateUnit = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch(`/api/units`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...newUnit,
-          property_id: currentPropertyId
-        })
+      const data = await api.post('/api/units', {
+        ...newUnit,
+        property_id: currentPropertyId
       })
       
-      if (response.ok) {
+      if (data.success) {
         setNewUnit({
           unit_number: '', bedrooms: '', bathrooms: '', rent: '', square_feet: ''
         })

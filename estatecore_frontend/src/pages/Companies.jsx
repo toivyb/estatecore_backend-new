@@ -98,6 +98,26 @@ export default function Companies() {
     }
   };
 
+  const deleteCompany = async (company) => {
+    const confirmMessage = `Are you sure you want to delete "${company.name}"?\n\nThis will permanently delete:\n- The company\n- All users (${company.user_count || 0})\n- All properties (${company.property_count || 0})\n- All associated data\n\nThis action cannot be undone.`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      const response = await api.delete(`/api/companies/${company.id}`);
+      if (response.success) {
+        // Remove company from list
+        setCompanies(companies.filter(c => c.id !== company.id));
+        alert(`${response.message}\n\nDeleted:\n- ${response.deleted_users} users\n- ${response.deleted_properties} properties`);
+      }
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      alert('Error deleting company. Check console for details.');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -215,6 +235,12 @@ export default function Companies() {
                 className="bg-gray-600 text-white px-3 py-2 text-sm rounded hover:bg-gray-700"
               >
                 ✏️ Edit
+              </button>
+              <button 
+                onClick={() => deleteCompany(company)}
+                className="bg-red-600 text-white px-3 py-2 text-sm rounded hover:bg-red-700"
+              >
+                🗑️ Delete
               </button>
             </div>
           </div>

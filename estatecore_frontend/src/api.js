@@ -1,8 +1,8 @@
 // API Base URL Configuration
 const BASE = import.meta.env.VITE_API_BASE_URL || 
-  (window.location.hostname === 'app.myestatecore.com' 
-    ? 'https://api.myestatecore.com'  // Production API URL
-    : 'http://localhost:5001'         // Development URL (Flask default)
+  (window.location.hostname === 'estatecore-frontend.onrender.com' 
+    ? 'https://estatecore-backend-sujs.onrender.com'  // Render production API URL
+    : 'http://localhost:5002'         // Development URL (New Flask server with all endpoints)
   );
 
 export const authHeader = () => {
@@ -71,6 +71,12 @@ class ApiClient {
     const url = queryString ? `${endpoint}?${queryString}` : endpoint;
     
     const response = await this.request(url, { method: 'GET' });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      return errorData;
+    }
+    
     return response.json();
   }
 
@@ -81,6 +87,12 @@ class ApiClient {
       body: data ? JSON.stringify(data) : null,
       ...options,
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      return errorData;
+    }
+    
     return response.json();
   }
 
@@ -90,12 +102,25 @@ class ApiClient {
       method: 'PUT',
       body: data ? JSON.stringify(data) : null,
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      return errorData;
+    }
+    
     return response.json();
   }
 
   // DELETE request
   async delete(endpoint) {
     const response = await this.request(endpoint, { method: 'DELETE' });
+    
+    // Handle both success and error responses
+    if (!response.ok) {
+      const errorData = await response.json();
+      return errorData; // Return error data instead of throwing
+    }
+    
     return response.json();
   }
 

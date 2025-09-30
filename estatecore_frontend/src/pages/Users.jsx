@@ -13,6 +13,12 @@ export default function Users() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    userId: null,
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [filters, setFilters] = useState({
     role: '',
     company: '',
@@ -234,6 +240,50 @@ export default function Users() {
     }
   };
 
+  const openSetPasswordModal = (user) => {
+    setPasswordData({
+      userId: user.id,
+      userName: user.name,
+      newPassword: '',
+      confirmPassword: ''
+    });
+    setShowPasswordModal(true);
+  };
+
+  const setUserPassword = async () => {
+    if (!passwordData.newPassword || !passwordData.confirmPassword) {
+      alert('Please fill in both password fields');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/api/users/${passwordData.userId}/set-password`, {
+        password: passwordData.newPassword
+      });
+      
+      if (response.success) {
+        alert('Password set successfully');
+        setShowPasswordModal(false);
+        setPasswordData({ userId: null, newPassword: '', confirmPassword: '' });
+      } else {
+        setError(response.error || 'Failed to set password');
+      }
+    } catch (error) {
+      console.error('Error setting password:', error);
+      setError('Failed to set password');
+    }
+  };
+
   const toggleUserStatus = async (userId, currentStatus) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     try {
@@ -438,6 +488,12 @@ export default function Users() {
                         className="text-purple-600 hover:text-purple-900"
                       >
                         🔑 Reset Password
+                      </button>
+                      <button
+                        onClick={() => openSetPasswordModal(user)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        🔐 Set Password
                       </button>
                       <button
                         onClick={() => deleteUser(user.id)}
@@ -752,6 +808,85 @@ export default function Users() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Set Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black opacity-50" onClick={() => setShowPasswordModal(false)}></div>
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Set Password for {passwordData.userName}
+                </h3>
+              </div>
+              
+              <div className="px-6 py-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New Password *
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter new password (min 6 characters)"
+                    minLength="6"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm Password *
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Confirm new password"
+                    minLength="6"
+                  />
+                </div>
+
+                {passwordData.newPassword && passwordData.confirmPassword && 
+                 passwordData.newPassword !== passwordData.confirmPassword && (
+                  <div className="text-red-600 text-sm">
+                    Passwords do not match
+                  </div>
+                )}
+
+                {passwordData.newPassword && passwordData.newPassword.length < 6 && (
+                  <div className="text-orange-600 text-sm">
+                    Password must be at least 6 characters
+                  </div>
+                )}
+              </div>
+              
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={setUserPassword}
+                  disabled={!passwordData.newPassword || !passwordData.confirmPassword || 
+                           passwordData.newPassword !== passwordData.confirmPassword ||
+                           passwordData.newPassword.length < 6}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Set Password
+                </button>
+              </div>
             </div>
           </div>
         </div>
