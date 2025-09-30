@@ -1423,6 +1423,121 @@ def get_all_properties():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# =================== UNITS ENDPOINTS ===================
+
+@app.route('/api/units', methods=['GET'])
+def get_units():
+    """Get units for a specific property"""
+    try:
+        property_id = request.args.get('property_id')
+        
+        if not property_id:
+            return jsonify({'success': False, 'error': 'property_id is required'}), 400
+        
+        # Get units from database
+        units = DatabaseManager.get_units_by_property(int(property_id))
+        
+        return jsonify(units)
+    except Exception as e:
+        print(f"Error getting units: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/units', methods=['POST'])
+def create_unit():
+    """Create a new unit"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        # Validate required fields
+        required_fields = ['property_id', 'unit_number']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'{field} is required'}), 400
+        
+        # Create unit data
+        unit_data = {
+            'property_id': data['property_id'],
+            'unit_number': data['unit_number'],
+            'bedrooms': data.get('bedrooms', 1),
+            'bathrooms': data.get('bathrooms', 1),
+            'square_feet': data.get('square_feet', 0),
+            'rent': data.get('rent', 0),
+            'status': data.get('status', 'vacant'),
+            'description': data.get('description', ''),
+            'created_at': datetime.now().isoformat(),
+            'updated_at': datetime.now().isoformat()
+        }
+        
+        # Save to database
+        unit_id = DatabaseManager.create_unit(unit_data)
+        
+        if unit_id:
+            return jsonify({
+                'success': True,
+                'message': 'Unit created successfully',
+                'unit_id': unit_id
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to create unit'}), 500
+            
+    except Exception as e:
+        print(f"Error creating unit: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/units/<int:unit_id>', methods=['PUT'])
+def update_unit(unit_id):
+    """Update an existing unit"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        # Add updated timestamp
+        data['updated_at'] = datetime.now().isoformat()
+        
+        # Update unit in database
+        success = DatabaseManager.update_unit(unit_id, data)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Unit updated successfully'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to update unit'}), 500
+            
+    except Exception as e:
+        print(f"Error updating unit: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/units/<int:unit_id>', methods=['DELETE'])
+def delete_unit(unit_id):
+    """Delete a unit"""
+    try:
+        # Check if unit exists
+        unit = DatabaseManager.get_unit_by_id(unit_id)
+        if not unit:
+            return jsonify({'success': False, 'error': 'Unit not found'}), 404
+        
+        # Delete unit from database
+        success = DatabaseManager.delete_unit(unit_id)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Unit deleted successfully'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to delete unit'}), 500
+            
+    except Exception as e:
+        print(f"Error deleting unit: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     # Initialize database if it doesn't exist
     if not os.path.exists('estatecore.db'):

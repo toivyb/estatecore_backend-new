@@ -390,6 +390,77 @@ class DatabaseManager:
             maintenance_data.get('actual_cost')
         )
         return DatabaseManager.execute_query(query, params)
+    
+    # =================== UNITS METHODS ===================
+    
+    @staticmethod
+    def get_units_by_property(property_id: int) -> List[Dict]:
+        """Get all units for a specific property"""
+        query = """
+            SELECT * FROM units 
+            WHERE property_id = ? 
+            ORDER BY unit_number
+        """
+        return DatabaseManager.execute_query(query, (property_id,), fetch_all=True)
+    
+    @staticmethod
+    def get_unit_by_id(unit_id: int) -> Optional[Dict]:
+        """Get unit by ID"""
+        query = "SELECT * FROM units WHERE id = ?"
+        return DatabaseManager.execute_query(query, (unit_id,), fetch_one=True)
+    
+    @staticmethod
+    def create_unit(unit_data: Dict) -> int:
+        """Create a new unit"""
+        query = """
+            INSERT INTO units (property_id, unit_number, bedrooms, bathrooms, 
+                             square_feet, rent, status, description, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        params = (
+            unit_data['property_id'],
+            unit_data['unit_number'],
+            unit_data.get('bedrooms', 1),
+            unit_data.get('bathrooms', 1),
+            unit_data.get('square_feet', 0),
+            unit_data.get('rent', 0),
+            unit_data.get('status', 'vacant'),
+            unit_data.get('description', ''),
+            unit_data.get('created_at'),
+            unit_data.get('updated_at')
+        )
+        return DatabaseManager.execute_query(query, params)
+    
+    @staticmethod
+    def update_unit(unit_id: int, unit_data: Dict) -> bool:
+        """Update an existing unit"""
+        # Build dynamic update query based on provided fields
+        fields = []
+        params = []
+        
+        updateable_fields = ['unit_number', 'bedrooms', 'bathrooms', 'square_feet', 
+                           'rent', 'status', 'description', 'updated_at']
+        
+        for field in updateable_fields:
+            if field in unit_data:
+                fields.append(f"{field} = ?")
+                params.append(unit_data[field])
+        
+        if not fields:
+            return False
+        
+        params.append(unit_id)
+        query = f"UPDATE units SET {', '.join(fields)} WHERE id = ?"
+        
+        rows_affected = DatabaseManager.execute_query(query, params)
+        return rows_affected > 0
+    
+    @staticmethod
+    def delete_unit(unit_id: int) -> bool:
+        """Delete a unit"""
+        query = "DELETE FROM units WHERE id = ?"
+        rows_affected = DatabaseManager.execute_query(query, (unit_id,))
+        return rows_affected > 0
 
 # Data model classes that work with the database
 class Company:
