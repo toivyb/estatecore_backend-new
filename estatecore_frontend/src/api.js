@@ -1,6 +1,9 @@
-// API Base URL Configuration
+// API Base URL Configuration  
 const BASE = import.meta.env.VITE_API_BASE_URL || 
-  'https://estatecore-backend-sujs.onrender.com'  // Use production backend with all endpoints
+  (window.location.hostname === 'localhost' 
+    ? 'http://localhost:5004'         // Local development (fresh server)
+    : 'https://estatecore-backend-sujs.onrender.com'  // Production
+  )
 
 export const authHeader = () => {
   const token = localStorage.getItem('token');
