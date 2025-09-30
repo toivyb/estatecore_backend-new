@@ -385,7 +385,15 @@ const Tenants = () => {
               </label>
               <select
                 value={newTenant.unit_id}
-                onChange={(e) => setNewTenant({...newTenant, unit_id: e.target.value})}
+                onChange={(e) => {
+                  const selectedUnitId = e.target.value;
+                  const selectedUnit = availableUnits.find(unit => unit.id.toString() === selectedUnitId);
+                  setNewTenant({
+                    ...newTenant, 
+                    unit_id: selectedUnitId,
+                    rent_amount: selectedUnit ? selectedUnit.rent : ''
+                  });
+                }}
                 className="w-full p-2 border border-gray-300 rounded-md"
                 required
                 disabled={!newTenant.property_id}
@@ -432,17 +440,19 @@ const Tenants = () => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Monthly Rent *
+                Monthly Rent (from selected unit)
               </label>
               <input
                 type="number"
                 value={newTenant.rent_amount}
-                onChange={(e) => setNewTenant({...newTenant, rent_amount: e.target.value})}
-                className="w-full p-2 border border-gray-300 rounded-md"
-                placeholder="0.00"
+                className="w-full p-2 border border-gray-300 rounded-md bg-gray-50"
+                placeholder="Select a unit to auto-fill rent"
                 step="0.01"
-                required
+                readOnly
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Rent amount is automatically filled when you select a unit
+              </p>
             </div>
             
             <div>
