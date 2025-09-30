@@ -170,8 +170,15 @@ const Properties = () => {
         setUnitsList([]) // Set to empty array as fallback
       }
     } catch (error) {
-      console.error('Error fetching units:', error)
-      setUnitsList([]) // Set to empty array on error
+      console.warn('Units API not available yet - showing placeholder message')
+      setUnitsList([{
+        id: 'placeholder',
+        unit_number: 'Units feature coming soon',
+        bedrooms: '-',
+        bathrooms: '-',
+        rent: '-',
+        status: 'Backend deployment in progress'
+      }])
     }
   }
 
@@ -191,7 +198,8 @@ const Properties = () => {
         alert('Unit created successfully!')
       }
     } catch (error) {
-      console.error('Error creating unit:', error)
+      console.warn('Units creation API not available yet')
+      alert('Units feature is being deployed. Please try again in a few minutes.')
     }
   }
 

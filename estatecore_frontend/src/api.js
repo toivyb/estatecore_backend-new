@@ -1,9 +1,6 @@
 // API Base URL Configuration
 const BASE = import.meta.env.VITE_API_BASE_URL || 
-  (window.location.hostname === 'estatecore-frontend.onrender.com' 
-    ? 'https://estatecore-backend-sujs.onrender.com'  // Render production API URL
-    : 'http://localhost:5002'         // Development URL (New Flask server with all endpoints)
-  );
+  'https://estatecore-backend-sujs.onrender.com'  // Use production backend with all endpoints
 
 export const authHeader = () => {
   const token = localStorage.getItem('token');
