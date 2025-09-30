@@ -32,22 +32,26 @@ const Tenants = () => {
 
   const fetchTenants = async () => {
     try {
-      const response = await fetch(`${api.BASE}/api/tenants`)
-      const data = await response.json()
+      const data = await api.get('/api/tenants')
       
-      // Check if response is successful and data is an array
-      if (response.ok && Array.isArray(data)) {
+      // Check if data is an array
+      if (Array.isArray(data)) {
         setTenants(data)
         setError(null)
+        console.log('Tenants loaded:', data.length)
+      } else if (data.error) {
+        console.error('API Error:', data.error)
+        setTenants([])
+        setError(data.error)
       } else {
-        console.error('API Error:', data)
-        setTenants([]) // Set empty array as fallback
-        setError(data.error || 'Failed to load tenants')
+        console.error('Unexpected response format:', data)
+        setTenants([])
+        setError('Unexpected response format')
       }
     } catch (error) {
       console.error('Error fetching tenants:', error)
-      setTenants([]) // Set empty array as fallback
-      setError('Network error - unable to load tenants')
+      setTenants([])
+      setError('Failed to load tenants')
     } finally {
       setLoading(false)
     }
@@ -159,6 +163,20 @@ const Tenants = () => {
       // Check if tenant creation was successful
       if (!tenant.success) {
         throw new Error(tenant.error || 'Failed to create tenant')
+      }
+      
+      // Update the unit status to occupied if a unit was selected
+      if (newTenant.unit_id) {
+        try {
+          await api.put(`/api/units/${newTenant.unit_id}`, {
+            status: 'occupied',
+            // In a full implementation, you'd also store tenant_id here
+          })
+          console.log(`Unit ${newTenant.unit_id} marked as occupied`)
+        } catch (unitError) {
+          console.warn('Failed to update unit status:', unitError)
+          // Don't block tenant creation if unit update fails
+        }
       }
       
       // Send AI processing request for this tenant

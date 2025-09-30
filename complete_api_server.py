@@ -294,6 +294,44 @@ def create_unit():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/units/<int:unit_id>', methods=['PUT'])
+def update_unit(unit_id):
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Build update query
+        fields = []
+        params = []
+        
+        updateable_fields = ['unit_number', 'bedrooms', 'bathrooms', 'square_feet', 'rent', 'status', 'description']
+        
+        for field in updateable_fields:
+            if field in data:
+                fields.append(f'{field} = ?')
+                params.append(data[field])
+        
+        if not fields:
+            return jsonify({'error': 'No valid fields to update'}), 400
+        
+        fields.append('updated_at = ?')
+        params.append(datetime.now().isoformat())
+        params.append(unit_id)
+        
+        query = f"UPDATE units SET {', '.join(fields)} WHERE id = ?"
+        rows_affected = execute_query(query, params)
+        
+        if rows_affected > 0:
+            return jsonify({
+                'success': True,
+                'message': 'Unit updated successfully'
+            })
+        else:
+            return jsonify({'error': 'Unit not found or failed to update'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # =================== AI ENDPOINTS ===================
 @app.route('/api/ai/process-lease', methods=['POST'])
 def process_lease():
@@ -327,6 +365,7 @@ if __name__ == '__main__':
     print("  DELETE /api/tenants/{id}")
     print("  GET    /api/units?property_id=1")
     print("  POST   /api/units")
+    print("  PUT    /api/units/{id}")
     print("  POST   /api/ai/process-lease")
     print("All endpoints tested and working!")
     
