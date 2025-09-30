@@ -1,0 +1,31 @@
+# Ignore Python files and dependencies during frontend build
+requirements*.txt
+*.py
+__pycache__/
+*.pyc
+.python-version
+venv/
+env/
+.env
+
+# Ignore backend directories
+estatecore_backend/
+ai_modules/
+ai_services/
+services/
+models/
+routes/
+utils/
+migrations/
+instance/
+
+# Ignore large directories not needed for frontend
+node_modules/
+.git/
+.cache/
+dist/
+
+# Keep only frontend essentials
+!estatecore_frontend/
+!package.json
+!.nvmrc

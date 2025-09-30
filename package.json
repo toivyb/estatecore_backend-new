@@ -4,9 +4,10 @@
   "description": "EstateCore Property Management Platform",
   "main": "app.py",
   "scripts": {
-    "build": "cd estatecore_frontend && npm install && npm run build",
+    "build": "cd estatecore_frontend && npm ci && npm run build",
     "dev": "cd estatecore_frontend && npm run dev",
-    "install-frontend": "cd estatecore_frontend && npm install"
+    "install": "cd estatecore_frontend && npm install",
+    "start": "cd estatecore_frontend && npm run preview"
   },
   "engines": {
     "node": "18.x"

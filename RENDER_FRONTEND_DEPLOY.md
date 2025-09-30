@@ -14,7 +14,7 @@
 ```
 Name: estatecore-frontend
 Branch: master
-Build Command: bash build-frontend.sh
+Build Command: cd estatecore_frontend && npm ci && npm run build
 Publish Directory: estatecore_frontend/dist
 ```
 
