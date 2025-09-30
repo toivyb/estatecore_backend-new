@@ -1,7 +1,7 @@
 // API Base URL Configuration  
 const BASE = import.meta.env.VITE_API_BASE_URL || 
   (window.location.hostname === 'localhost' 
-    ? 'http://localhost:5004'         // Local development (fresh server)
+    ? 'http://localhost:5005'         // Local development (complete server)
     : 'https://estatecore-backend-sujs.onrender.com'  // Production
   )
 
