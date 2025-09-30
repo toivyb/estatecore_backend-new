@@ -364,7 +364,7 @@ const Tenants = () => {
                 value={newTenant.property_id}
                 onChange={(e) => {
                   const propertyId = e.target.value
-                  setNewTenant({...newTenant, property_id: propertyId, unit_id: ''})
+                  setNewTenant({...newTenant, property_id: propertyId, unit_id: '', rent_amount: ''})
                   fetchAvailableUnits(propertyId)
                 }}
                 className="w-full p-2 border border-gray-300 rounded-md"
