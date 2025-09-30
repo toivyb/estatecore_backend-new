@@ -146,32 +146,27 @@ const Tenants = () => {
       // Process lease document with AI
       const leaseData = await handleLeaseFileUpload(leaseFile)
       
-      // First create the user
-      const user = await api.post('/api/users', {
-        ...newTenant.user,
-        role: 'tenant'
+      // Create the tenant (which creates a user with role 'tenant')
+      const tenant = await api.post('/api/tenants', {
+        name: newTenant.user.username,
+        email: newTenant.user.email,
+        phone: newTenant.user.phone || '',
+        company_id: 1,  // Default company
+        // Note: Additional lease data would be stored in a separate lease table in a full implementation
+        // For now, we're just creating the basic tenant user record
       })
       
-      // Then create the tenant record with lease data
-      const tenant = await api.post('/api/tenants', {
-        user_id: user.id,
-        property_id: newTenant.property_id,
-        unit_id: newTenant.unit_id,
-        lease_start: newTenant.lease_start,
-        lease_end: newTenant.lease_end,
-        rent_amount: newTenant.rent_amount,
-        deposit: newTenant.deposit,
-        lease_document_name: leaseData.filename,
-        lease_document_path: leaseData.upload_path,
-        lease_parsed_data: JSON.stringify(leaseData.processed_data)
-      })
+      // Check if tenant creation was successful
+      if (!tenant.success) {
+        throw new Error(tenant.error || 'Failed to create tenant')
+      }
       
       // Send AI processing request for this tenant
       if (leaseData.processed_data) {
         try {
           await api.post('/api/ai/process-lease', {
             lease_content: leaseFile.name,
-            tenant_id: tenant.id
+            tenant_id: tenant.tenant_id || tenant.user_id
           })
         } catch (error) {
           console.error('AI processing error:', error)
