@@ -160,8 +160,10 @@ const Tenants = () => {
         // For now, we're just creating the basic tenant user record
       })
       
+      console.log('Tenant creation response:', tenant)
+      
       // Check if tenant creation was successful
-      if (!tenant.success) {
+      if (!tenant.success || tenant.error) {
         throw new Error(tenant.error || 'Failed to create tenant')
       }
       
@@ -205,7 +207,18 @@ const Tenants = () => {
       
     } catch (error) {
       console.error('Error creating tenant:', error)
-      alert(`Failed to create tenant: ${error.message}`)
+      
+      // Show specific error messages for common issues
+      let errorMessage = 'Failed to create tenant'
+      if (error.message && error.message.includes('UNIQUE constraint failed')) {
+        if (error.message.includes('email')) {
+          errorMessage = 'A tenant with this email address already exists. Please use a different email.'
+        }
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      alert(errorMessage)
     }
   }
 
