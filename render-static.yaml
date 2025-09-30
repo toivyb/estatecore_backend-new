@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: estatecore-frontend
+    env: static
+    buildCommand: |
+      echo "Starting frontend build..."
+      node --version
+      npm --version
+      cd estatecore_frontend
+      echo "Installing dependencies..."
+      npm ci --prefer-offline --no-audit
+      echo "Building application..."
+      npm run build
+      echo "Build complete!"
+    staticPublishPath: estatecore_frontend/dist
+    envVars:
+      - key: NODE_VERSION
+        value: "18"
+      - key: VITE_API_BASE_URL
+        value: https://estatecore-backend-sujs.onrender.com
+      - key: NODE_ENV
+        value: production
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

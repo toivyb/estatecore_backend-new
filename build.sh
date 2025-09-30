@@ -1,23 +1,32 @@
 #!/bin/bash
-# Force Node.js build for Netlify
+set -e
 
-echo "Starting build process..."
+echo "=== EstateCore Frontend Build Script ==="
+echo "Node version: $(node --version)"
+echo "NPM version: $(npm --version)"
 echo "Current directory: $(pwd)"
-echo "Directory contents: $(ls -la)"
 
-# Change to frontend directory
-cd estatecore_frontend || exit 1
+# Navigate to frontend directory
+echo "Changing to frontend directory..."
+cd estatecore_frontend
 
-echo "Frontend directory contents: $(ls -la)"
-
-# Install dependencies
 echo "Installing dependencies..."
-npm install
+npm ci --prefer-offline --no-audit
 
-# Build the application
-echo "Building application..."
+echo "Setting environment variables..."
+export NODE_ENV=production
+export VITE_API_BASE_URL=${VITE_API_BASE_URL:-"https://estatecore-backend-sujs.onrender.com"}
+
+echo "Building React application..."
 npm run build
 
-echo "Build completed!"
-echo "Build output directory:"
-ls -la dist/
+echo "Verifying build output..."
+if [ -d "dist" ]; then
+    echo "✅ Build successful! Output directory created."
+    ls -la dist/
+else
+    echo "❌ Build failed! No dist directory found."
+    exit 1
+fi
+
+echo "=== Build Complete ==="
