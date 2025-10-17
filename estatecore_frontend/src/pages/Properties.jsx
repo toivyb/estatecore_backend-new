@@ -29,6 +29,7 @@ const Properties = () => {
     square_feet: ''
   })
   const [currentPropertyId, setCurrentPropertyId] = useState(null)
+  const [editingUnit, setEditingUnit] = useState(null)
 
   useEffect(() => {
     fetchData()
@@ -201,6 +202,50 @@ const Properties = () => {
       console.warn('Units creation API not available yet')
       alert('Units feature is being deployed. Please try again in a few minutes.')
     }
+  }
+
+  const handleUpdateUnit = async (e) => {
+    e.preventDefault()
+    try {
+      const data = await api.put(`/api/units/${editingUnit.id}`, editingUnit)
+      
+      if (data.success) {
+        setEditingUnit(null)
+        fetchUnits(currentPropertyId)
+        alert('Unit updated successfully!')
+      } else {
+        alert(`Failed to update unit: ${data.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error updating unit:', error)
+      alert('Network error occurred while updating unit. Please try again.')
+    }
+  }
+
+  const handleDeleteUnit = async (unitId) => {
+    if (confirm('Are you sure you want to delete this unit? This action cannot be undone.')) {
+      try {
+        const data = await api.delete(`/api/units/${unitId}`)
+        
+        if (data.success) {
+          fetchUnits(currentPropertyId)
+          alert('Unit deleted successfully!')
+        } else {
+          alert(`Failed to delete unit: ${data.error || 'Unknown error'}`)
+        }
+      } catch (error) {
+        console.error('Error deleting unit:', error)
+        alert('Network error occurred while deleting unit. Please try again.')
+      }
+    }
+  }
+
+  const startEditUnit = (unit) => {
+    setEditingUnit({...unit})
+  }
+
+  const cancelEditUnit = () => {
+    setEditingUnit(null)
   }
 
   const showUnitsModal = (propertyId) => {
@@ -793,11 +838,29 @@ const Properties = () => {
                           {unit.is_available ? 'Available' : 'Occupied'}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-600 space-y-1">
+                      <div className="text-sm text-gray-600 space-y-1 mb-3">
                         <div>{unit.bedrooms}br / {unit.bathrooms}ba</div>
                         <div className="font-semibold text-gray-900">${unit.rent?.toLocaleString()}/month</div>
                         {unit.square_feet && <div>{unit.square_feet} sq ft</div>}
                       </div>
+                      
+                      {/* Action buttons for super admin */}
+                      {unit.id !== 'placeholder' && (
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => startEditUnit(unit)}
+                            className="bg-yellow-600 text-white px-2 py-1 text-xs rounded hover:bg-yellow-700"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUnit(unit.id)}
+                            className="bg-red-600 text-white px-2 py-1 text-xs rounded hover:bg-red-700"
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -816,12 +879,122 @@ const Properties = () => {
                   setShowUnitForm(false)
                   setCurrentPropertyId(null)
                   setUnitsList([])
+                  setEditingUnit(null)
                 }}
                 className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
               >
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Unit Modal */}
+      {editingUnit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                Edit Unit: {editingUnit.unit_number}
+              </h3>
+            </div>
+            
+            <form onSubmit={handleUpdateUnit} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Unit Number *
+                </label>
+                <input
+                  type="text"
+                  value={editingUnit.unit_number}
+                  onChange={(e) => setEditingUnit({...editingUnit, unit_number: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Monthly Rent *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editingUnit.rent}
+                  onChange={(e) => setEditingUnit({...editingUnit, rent: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Bedrooms
+                </label>
+                <input
+                  type="number"
+                  value={editingUnit.bedrooms}
+                  onChange={(e) => setEditingUnit({...editingUnit, bedrooms: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Bathrooms
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={editingUnit.bathrooms}
+                  onChange={(e) => setEditingUnit({...editingUnit, bathrooms: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Square Feet
+                </label>
+                <input
+                  type="number"
+                  value={editingUnit.square_feet}
+                  onChange={(e) => setEditingUnit({...editingUnit, square_feet: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Availability Status
+                </label>
+                <select
+                  value={editingUnit.is_available ? 'true' : 'false'}
+                  onChange={(e) => setEditingUnit({...editingUnit, is_available: e.target.value === 'true'})}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="true">Available</option>
+                  <option value="false">Occupied</option>
+                </select>
+              </div>
+              
+              <div className="md:col-span-2 flex gap-2">
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  ✅ Update Unit
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEditUnit}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

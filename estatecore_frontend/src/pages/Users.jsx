@@ -29,6 +29,8 @@ export default function Users() {
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     role: 'property_manager',
     company_id: '',
     property_access: [],
@@ -43,6 +45,8 @@ export default function Users() {
     { value: 'company_admin', label: 'Company Admin', description: 'Manage company and all properties' },
     { value: 'property_admin', label: 'Property Admin', description: 'Manage specific properties' },
     { value: 'property_manager', label: 'Property Manager', description: 'Day-to-day property operations' },
+    { value: 'maintenance_personnel', label: 'Maintenance Personnel', description: 'Handle assigned maintenance work orders' },
+    { value: 'maintenance_supervisor', label: 'Maintenance Supervisor', description: 'Supervise maintenance team and all work orders' },
     { value: 'tenant', label: 'Tenant', description: 'Tenant portal access' },
     { value: 'vendor', label: 'Vendor', description: 'Vendor/contractor access' }
   ];
@@ -86,12 +90,25 @@ export default function Users() {
       return;
     }
     try {
+      console.log('Loading properties for company:', companyId);
       const response = await api.get(`/api/properties?company_id=${companyId}`);
+      console.log('Properties response:', response);
       if (response.success) {
         setProperties(response.properties || []);
+      } else {
+        // If the API doesn't support filtering by company_id, filter client-side
+        const allPropsResponse = await api.get('/api/properties');
+        if (allPropsResponse.success) {
+          const filteredProps = (allPropsResponse.properties || []).filter(p => p.company_id === parseInt(companyId));
+          console.log('Filtered properties:', filteredProps);
+          setProperties(filteredProps);
+        }
       }
     } catch (error) {
       console.error('Error loading properties:', error);
+      // Fallback: try to filter from already loaded properties
+      const filteredProps = properties.filter(p => p.company_id === parseInt(companyId));
+      setProperties(filteredProps);
     }
   };
 
@@ -127,13 +144,16 @@ export default function Users() {
 
   // Handle company change for property roles
   const handleCompanyChange = (companyId) => {
+    console.log('Company changed to:', companyId);
     setNewUser({
       ...newUser,
       company_id: companyId,
       property_id: '',
-      property_access: []
+      property_access: [],
+      unit_number: ''
     });
-    if (['property_admin', 'property_manager'].includes(newUser.role)) {
+    setAvailableUnits([]);
+    if (['property_admin', 'property_manager', 'tenant'].includes(newUser.role)) {
       loadPropertiesForCompany(companyId);
     }
   };
@@ -161,14 +181,36 @@ export default function Users() {
 
   const createUser = async (e) => {
     e.preventDefault();
+    
+    // Validate password fields
+    if (!newUser.password) {
+      setError('Password is required');
+      return;
+    }
+    
+    if (newUser.password !== newUser.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    if (newUser.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+    
     try {
-      const response = await api.post('/api/users', newUser);
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...userData } = newUser;
+      
+      const response = await api.post('/api/users', userData);
       if (response.success) {
         await loadData();
         setShowCreateModal(false);
         setNewUser({
           name: '',
           email: '',
+          password: '',
+          confirmPassword: '',
           role: 'property_manager',
           company_id: '',
           property_access: [],
@@ -306,6 +348,8 @@ export default function Users() {
       company_admin: 'bg-purple-100 text-purple-800',
       property_admin: 'bg-blue-100 text-blue-800',
       property_manager: 'bg-green-100 text-green-800',
+      maintenance_personnel: 'bg-orange-100 text-orange-800',
+      maintenance_supervisor: 'bg-red-100 text-red-800',
       tenant: 'bg-yellow-100 text-yellow-800',
       vendor: 'bg-gray-100 text-gray-800'
     };
@@ -552,6 +596,40 @@ export default function Users() {
                       onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                    <input
+                      type="password"
+                      required
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter password (min 6 characters)"
+                      minLength="6"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+                    <input
+                      type="password"
+                      required
+                      value={newUser.confirmPassword}
+                      onChange={(e) => setNewUser({...newUser, confirmPassword: e.target.value})}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Confirm password"
+                      minLength="6"
+                      autoComplete="new-password"
+                    />
+                    {newUser.password && newUser.confirmPassword && newUser.password !== newUser.confirmPassword && (
+                      <p className="text-red-600 text-sm mt-1">Passwords do not match</p>
+                    )}
+                    {newUser.password && newUser.password.length > 0 && newUser.password.length < 6 && (
+                      <p className="text-orange-600 text-sm mt-1">Password must be at least 6 characters</p>
+                    )}
                   </div>
                   
                   <div>
@@ -837,6 +915,7 @@ export default function Users() {
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter new password (min 6 characters)"
                     minLength="6"
+                    autoComplete="new-password"
                   />
                 </div>
                 
@@ -851,6 +930,7 @@ export default function Users() {
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Confirm new password"
                     minLength="6"
+                    autoComplete="new-password"
                   />
                 </div>
 

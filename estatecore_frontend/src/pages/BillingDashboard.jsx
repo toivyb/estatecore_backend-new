@@ -18,55 +18,29 @@ export default function BillingDashboard() {
   const fetchBillingData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
       // Fetch subscription analytics
-      const subscriptionResponse = await fetch(`${api.BASE}/api/billing/analytics/subscriptions`, {
-        headers
-      });
-
-      if (subscriptionResponse.ok) {
-        const subscriptionResult = await subscriptionResponse.json();
-        if (subscriptionResult.success) {
-          setAnalytics(prev => ({ ...prev, subscriptions: subscriptionResult.data }));
-        }
+      const subscriptionResult = await api.get('/api/billing/analytics/subscriptions');
+      if (subscriptionResult.success) {
+        setAnalytics(prev => ({ ...prev, subscriptions: subscriptionResult.data }));
       }
 
       // Fetch payment analytics
-      const paymentResponse = await fetch(`${api.BASE}/api/billing/analytics/payments`, {
-        headers
-      });
-
-      if (paymentResponse.ok) {
-        const paymentResult = await paymentResponse.json();
-        if (paymentResult.success) {
-          setAnalytics(prev => ({ ...prev, payments: paymentResult.data }));
-        }
+      const paymentResult = await api.get('/api/billing/analytics/payments');
+      if (paymentResult.success) {
+        setAnalytics(prev => ({ ...prev, payments: paymentResult.data }));
       }
 
       // Fetch revenue analytics
-      const revenueResponse = await fetch(`${api.BASE}/api/billing/analytics/revenue`, {
-        headers
-      });
-
-      if (revenueResponse.ok) {
-        const revenueResult = await revenueResponse.json();
-        if (revenueResult.success) {
-          setAnalytics(prev => ({ ...prev, revenue: revenueResult.data }));
-        }
+      const revenueResult = await api.get('/api/billing/analytics/revenue');
+      if (revenueResult.success) {
+        setAnalytics(prev => ({ ...prev, revenue: revenueResult.data }));
       }
 
       // Fetch pricing tiers
-      const pricingResponse = await fetch(`${api.BASE}/api/billing/admin/pricing-tiers`, {
-        headers
-      });
-
-      if (pricingResponse.ok) {
-        const pricingResult = await pricingResponse.json();
-        if (pricingResult.success) {
-          setBillingData(prev => ({ ...prev, pricingTiers: pricingResult.data }));
-        }
+      const pricingResult = await api.get('/api/billing/admin/pricing-tiers');
+      if (pricingResult.success) {
+        setBillingData(prev => ({ ...prev, pricingTiers: pricingResult.data }));
       }
 
       setLoading(false);
@@ -80,22 +54,10 @@ export default function BillingDashboard() {
 
   const createSubscription = async (subscriptionData) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${api.BASE}/api/billing/subscriptions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(subscriptionData)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          alert('Subscription created successfully!');
-          fetchBillingData(); // Refresh data
-        }
+      const result = await api.post('/api/billing/subscriptions', subscriptionData);
+      if (result.success) {
+        alert('Subscription created successfully!');
+        fetchBillingData(); // Refresh data
       } else {
         alert('Failed to create subscription');
       }
@@ -107,21 +69,10 @@ export default function BillingDashboard() {
 
   const processScheduledPayments = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${api.BASE}/api/billing/admin/process-scheduled-payments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          alert(`Processed ${result.data.processed_count} scheduled payments`);
-          fetchBillingData(); // Refresh data
-        }
+      const result = await api.post('/api/billing/admin/process-scheduled-payments', {});
+      if (result.success) {
+        alert(`Processed ${result.data.processed_payments} scheduled payments`);
+        fetchBillingData(); // Refresh data
       } else {
         alert('Failed to process scheduled payments');
       }

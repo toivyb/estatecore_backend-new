@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import RoleProtectedRoute from './components/RoleProtectedRoute.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import { ThemeProvider } from './contexts/ThemeContext.jsx'
 import { PermissionProvider } from './components/PermissionGuard.jsx'
@@ -43,6 +44,7 @@ import PerformanceDashboard from './components/PerformanceDashboard.jsx'
 import TestingDashboard from './components/TestingDashboard.jsx'
 import TenantPortal from './pages/TenantPortal.jsx'
 import LiveCameraAnalysis from './pages/LiveCameraAnalysis.jsx'
+import CameraManagement from './pages/CameraManagement.jsx'
 import AIHub from './pages/AIHub.jsx'
 import ComputerVisionDashboard from './pages/ComputerVisionDashboard.jsx'
 import DocumentProcessingDashboard from './pages/DocumentProcessingDashboard.jsx'
@@ -65,11 +67,18 @@ import RevenueLeakage from './pages/RevenueLeakage.jsx'
 import RiskFlags from './pages/RiskFlags.jsx'
 import SecurityDashboard from './pages/SecurityDashboard.jsx'
 import AutomationDashboard from './pages/AutomationDashboard.jsx'
-import SmartMaintenanceDashboard from './pages/SmartMaintenanceDashboard.jsx'
+// Temporarily disabled due to Vite transform error
+// import SmartMaintenanceDashboard from './pages/SmartMaintenanceDashboard.jsx'
+import SmartMaintenanceTest from './components/SmartMaintenanceTest.jsx'
+import SimpleSmartMaintenance from './components/SimpleSmartMaintenance.jsx'
 import CollaborationDashboard from './pages/CollaborationDashboard.jsx'
 import BlockchainDashboard from './pages/BlockchainDashboard.jsx'
 import Companies from './pages/Companies.jsx'
 import Users from './pages/Users.jsx'
+import TenantDashboard from './pages/TenantDashboard.jsx'
+import PropertiesAdminDashboard from './pages/PropertiesAdminDashboard.jsx'
+import PropertyManagerDashboard from './pages/PropertyManagerDashboard.jsx'
+import MaintenancePersonnelDashboard from './pages/MaintenancePersonnelDashboard.jsx'
 
 // Using the enhanced Users component from pages/Users.jsx
 
@@ -144,17 +153,19 @@ export default function App(){
     <PermissionProvider>
       <ThemeProvider>
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-        {token && <Sidebar user={user} />}
+        {token && user.role !== 'tenant' && <Sidebar user={user} />}
         
         <div className="flex-1 flex flex-col">
         {token && (
           <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 px-6 py-4 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Property Management</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {user.role === 'tenant' ? 'Tenant Portal' : 'Property Management'}
+              </h1>
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {user.username || user.email}
+                    {user.name || user.username || user.email}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                     {user.role?.replace('_', ' ')}
@@ -185,23 +196,25 @@ export default function App(){
             <Route path="/invite-register" element={<InviteRegister />} />
             <Route path="/" element={
               <ProtectedRoute>
-                <Dashboard />
+                {user.role === 'tenant' ? <TenantPortal /> : 
+                 user.role === 'maintenance_supervisor' || user.role === 'maintenance_personnel' ? <MaintenancePersonnelDashboard /> : 
+                 <Dashboard />}
               </ProtectedRoute>
             } />
             <Route path="/properties" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager']}>
                 <Properties />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/users" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin']}>
                 <Users />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/tenants" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager']}>
                 <Tenants />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/tenant-screening" element={
               <ProtectedRoute>
@@ -214,24 +227,24 @@ export default function App(){
               </ProtectedRoute>
             } />
             <Route path="/rent" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager']}>
                 <RentCollection />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/lease-management" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager']}>
                 <LeaseManagement />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/maintenance" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
                 <Maintenance />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/maintenance-scheduling" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
                 <MaintenanceSchedulingDashboard />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/access" element={
               <ProtectedRoute>
@@ -239,14 +252,14 @@ export default function App(){
               </ProtectedRoute>
             } />
             <Route path="/financial-reports" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager']}>
                 <FinancialReports />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/financial" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager']}>
                 <FinancialDashboard />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/ai-dashboard" element={
               <ProtectedRoute>
@@ -274,9 +287,9 @@ export default function App(){
               </ProtectedRoute>
             } />
             <Route path="/payments" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager']}>
                 <Payments />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/setup-wizard" element={
               <ProtectedRoute>
@@ -284,9 +297,9 @@ export default function App(){
               </ProtectedRoute>
             } />
             <Route path="/maintenance-dispatch" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
                 <MaintenanceDispatch />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/ai-analytics" element={
               <ProtectedRoute>
@@ -378,6 +391,11 @@ export default function App(){
                 <LiveCameraAnalysis />
               </ProtectedRoute>
             } />
+            <Route path="/camera-management" element={
+              <ProtectedRoute>
+                <CameraManagement />
+              </ProtectedRoute>
+            } />
             <Route path="/ai-hub" element={
               <ProtectedRoute>
                 <AIHub />
@@ -429,29 +447,29 @@ export default function App(){
               </ProtectedRoute>
             } />
             <Route path="/work-orders" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
                 <WorkOrderList />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/work-orders/:id" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
                 <WorkOrderDetail />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/work-orders/new" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
                 <NewWorkOrder />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/maintenance-board" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
                 <MaintenanceBoard />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/maintenance-workflow" element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
                 <MaintenanceWorkflow />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } />
             <Route path="/reports" element={
               <ProtectedRoute>
@@ -489,8 +507,25 @@ export default function App(){
               </ProtectedRoute>
             } />
             <Route path="/smart-maintenance" element={
+              <RoleProtectedRoute allowedRoles={['admin', 'super_admin', 'company_admin', 'property_manager', 'maintenance_supervisor', 'maintenance_personnel']}>
+                <SimpleSmartMaintenance />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/smart-maintenance-full" element={
               <ProtectedRoute>
-                <SmartMaintenanceDashboard />
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold text-orange-600">SmartMaintenanceDashboard Under Maintenance</h1>
+                  <p className="text-gray-600 mt-2">This component is temporarily disabled due to a Vite transform error.</p>
+                  <p className="text-sm text-gray-500 mt-4">Please use <a href="/smart-maintenance" className="text-blue-600 underline">/smart-maintenance</a> for basic functionality.</p>
+                  <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                    <h3 className="font-semibold text-yellow-800">Alternative Options:</h3>
+                    <ul className="mt-2 space-y-1 text-sm text-yellow-700">
+                      <li>• <a href="/maintenance" className="underline">Basic Maintenance Page</a></li>
+                      <li>• <a href="/maintenance-dispatch" className="underline">Maintenance Dispatch</a></li>
+                      <li>• <a href="/predictive-maintenance" className="underline">Predictive Maintenance</a></li>
+                    </ul>
+                  </div>
+                </div>
               </ProtectedRoute>
             } />
             <Route path="/collaboration" element={
@@ -512,6 +547,31 @@ export default function App(){
               <ProtectedRoute>
                 <Users />
               </ProtectedRoute>
+            } />
+            <Route path="/tenant-dashboard" element={
+              <ProtectedRoute>
+                <TenantDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/properties-admin-dashboard" element={
+              <ProtectedRoute>
+                <PropertiesAdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/property-manager-dashboard" element={
+              <ProtectedRoute>
+                <PropertyManagerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/maintenance-personnel-dashboard" element={
+              <RoleProtectedRoute allowedRoles={['maintenance_supervisor', 'maintenance_personnel']}>
+                <MaintenancePersonnelDashboard />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/tenant-portal" element={
+              <RoleProtectedRoute allowedRoles={['tenant']}>
+                <TenantPortal />
+              </RoleProtectedRoute>
             } />
           </Routes>
         </main>

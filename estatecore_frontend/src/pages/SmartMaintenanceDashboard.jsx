@@ -1,4 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  Brain, 
+  RefreshCw, 
+  Settings, 
+  Wrench, 
+  Zap, 
+  Activity, 
+  Tool, 
+  TrendingUp, 
+  Clock, 
+  CheckCircle, 
+  DollarSign, 
+  AlertTriangle, 
+  BarChart3, 
+  PieChart, 
+  Plus, 
+  Alert, 
+  Calendar, 
+  Eye, 
+  Edit 
+} from 'lucide-react';
 
 const SmartMaintenanceDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -239,31 +260,49 @@ const SmartMaintenanceDashboard = () => {
     }
   };
 
-  const StatCard = ({ title, value, subtitle, icon: Icon, color = 'blue', trend = null, onClick = null }) => (
-    <div 
-      className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 ${onClick ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''}`}
-      onClick={onClick}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
-          {subtitle && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
-          )}
-          {trend && (
-            <div className={`flex items-center mt-2 ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              <TrendingUp className="w-4 h-4 mr-1" />
-              <span className="text-sm font-medium">{Math.abs(trend)}%</span>
-            </div>
-          )}
-        </div>
-        <div className={`p-3 rounded-full bg-${color}-100 dark:bg-${color}-900/20`}>
-          <Icon className={`w-6 h-6 text-${color}-600 dark:text-${color}-400`} />
+  const getColorClasses = (color) => {
+    const colorMap = {
+      blue: 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+      green: 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400',
+      yellow: 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400',
+      red: 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400',
+      purple: 'bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
+      orange: 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
+    };
+    return colorMap[color] || colorMap.blue;
+  };
+
+  const StatCard = ({ title, value, subtitle, icon: Icon, color = 'blue', trend = null, onClick = null }) => {
+    const colorClasses = getColorClasses(color);
+    const bgClass = colorClasses.split(' ')[0] + ' ' + colorClasses.split(' ')[1];
+    const textClass = colorClasses.split(' ')[2] + ' ' + colorClasses.split(' ')[3];
+    
+    return (
+      <div 
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 ${onClick ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''}`}
+        onClick={onClick}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+            {subtitle && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
+            )}
+            {trend && (
+              <div className={`flex items-center mt-2 ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <TrendingUp className="w-4 h-4 mr-1" />
+                <span className="text-sm font-medium">{Math.abs(trend)}%</span>
+              </div>
+            )}
+          </div>
+          <div className={`p-3 rounded-full ${bgClass}`}>
+            <Icon className={`w-6 h-6 ${textClass}`} />
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const MaintenanceCard = ({ item }) => (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">

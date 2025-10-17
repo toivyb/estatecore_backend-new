@@ -7,14 +7,15 @@ export default defineConfig({
   server: {
     port: 3006,
     host: true,
+    allowedHosts: ['localhost', '127.0.0.1', 'fssphq.fsspcctv.org'],
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
+        target: 'http://localhost:5009',
         changeOrigin: true,
         secure: false,
       },
       '/dashboard': {
-        target: 'http://localhost:5001',
+        target: 'http://localhost:5009',
         changeOrigin: true,
         secure: false,
       }

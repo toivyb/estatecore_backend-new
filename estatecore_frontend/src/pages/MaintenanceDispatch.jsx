@@ -22,8 +22,7 @@ const MaintenanceDispatch = () => {
 
   const fetchMaintenanceRequests = async () => {
     try {
-      const response = await fetch(`${api.BASE}/api/maintenance`)
-      const data = await response.json()
+      const data = await api.get('/api/maintenance')
       setRequests(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching maintenance requests:', error)
@@ -35,8 +34,7 @@ const MaintenanceDispatch = () => {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(`${api.BASE}/api/properties`)
-      const data = await response.json()
+      const data = await api.get('/api/properties')
       setProperties(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching properties:', error)
@@ -48,17 +46,9 @@ const MaintenanceDispatch = () => {
     try {
       setDispatching(requestId)
       
-      const response = await fetch(`${api.BASE}/api/maintenance/dispatch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ request_id: requestId })
-      })
+      const data = await api.post('/api/maintenance/dispatch', { request_id: requestId })
       
-      const data = await response.json()
-      
-      if (response.ok) {
+      if (data.success || data.contractor) {
         // Show success notification
         alert(`Request dispatched to ${data.contractor}. ETA: ${data.eta_hours} hours`)
         fetchMaintenanceRequests() // Refresh the list
@@ -74,15 +64,9 @@ const MaintenanceDispatch = () => {
   const handleCreateRequest = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch(`${api.BASE}/api/maintenance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newRequest)
-      })
+      const data = await api.post('/api/maintenance', newRequest)
       
-      if (response.ok) {
+      if (data.success || data.id) {
         setNewRequest({ property_id: '', title: '', description: '', priority: 'medium' })
         setShowCreateForm(false)
         fetchMaintenanceRequests()

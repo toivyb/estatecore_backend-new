@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../api';
 
 const TenantScreening = () => {
   const [applications, setApplications] = useState([]);
@@ -57,15 +58,14 @@ const TenantScreening = () => {
         queryParams.append('property_id', filters.property_id);
       }
 
-      const response = await fetch(`/api/tenant-screening/applications?${queryParams}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const data = await api.get('/api/tenant-screening/applications', {
+        ...Object.fromEntries(queryParams)
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setApplications(data.applications || []);
+      if (Array.isArray(data)) {
+        setApplications(data);
+      } else if (data.applications) {
+        setApplications(data.applications);
       } else {
         console.error('Failed to load applications');
         setApplications([]);
@@ -80,16 +80,8 @@ const TenantScreening = () => {
 
   const loadAnalytics = async () => {
     try {
-      const response = await fetch('/api/tenant-screening/analytics', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAnalytics(data);
-      }
+      const data = await api.get('/api/tenant-screening/analytics');
+      setAnalytics(data);
     } catch (error) {
       console.error('Error loading analytics:', error);
     }
@@ -98,16 +90,9 @@ const TenantScreening = () => {
   const handleCreateApplication = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/tenant-screening/applications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(newApplication)
-      });
+      const response = await api.post('/api/tenant-screening/applications', newApplication);
 
-      if (response.ok) {
+      if (response.success) {
         setShowNewApplicationDialog(false);
         setNewApplication({
           property_id: '',
@@ -136,27 +121,18 @@ const TenantScreening = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('/api/tenant-screening/screen', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          application_id: selectedApplication.application_id,
-          ...screeningRequest
-        })
+      const response = await api.post('/api/tenant-screening/screen', {
+        application_id: selectedApplication.application_id,
+        ...screeningRequest
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setScreeningResults(data);
+      if (response.success) {
+        setScreeningResults(response);
         setShowScreeningDialog(false);
         loadApplications();
         alert('Screening completed successfully!');
       } else {
-        const errorData = await response.json();
-        alert(`Failed to run screening: ${errorData.error || 'Unknown error'}`);
+        alert(`Failed to run screening: ${response.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error running screening:', error);
@@ -170,16 +146,9 @@ const TenantScreening = () => {
     if (!screeningResults) return;
 
     try {
-      const response = await fetch(`/api/tenant-screening/screenings/${screeningResults.screening_id}/decision`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(decision)
-      });
+      const response = await api.post(`/api/tenant-screening/screenings/${screeningResults.screening_id}/decision`, decision);
 
-      if (response.ok) {
+      if (response.success) {
         setShowDecisionDialog(false);
         setDecision({
           decision: '',
@@ -189,8 +158,7 @@ const TenantScreening = () => {
         loadApplications();
         alert('Decision recorded successfully!');
       } else {
-        const errorData = await response.json();
-        alert(`Failed to record decision: ${errorData.error || 'Unknown error'}`);
+        alert(`Failed to record decision: ${response.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error making decision:', error);

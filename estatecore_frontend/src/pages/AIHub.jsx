@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import api from '../api';
 
 const AIHub = () => {
   const [systemStatus, setSystemStatus] = useState({
@@ -14,27 +15,42 @@ const AIHub = () => {
   }, []);
 
   const checkSystemStatus = async () => {
-    const statusChecks = {
-      computer_vision: '/api/ai/status',
-      nlp: '/api/document/process',
-      predictive_maintenance: '/api/maintenance/predict',
-      live_cameras: '/api/camera/available'
-    };
-
     const newStatus = {};
 
-    for (const [system, endpoint] of Object.entries(statusChecks)) {
-      try {
-        const response = await fetch(endpoint, {
-          method: system === 'computer_vision' ? 'GET' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: system === 'computer_vision' ? undefined : JSON.stringify({ test: true })
-        });
-        
-        newStatus[system] = response.ok ? 'operational' : 'error';
-      } catch (error) {
-        newStatus[system] = 'error';
-      }
+    // Check Computer Vision (AI Status)
+    try {
+      const response = await api.get('/api/ai/status');
+      newStatus.computer_vision = response.success ? 'operational' : 'error';
+    } catch (error) {
+      console.error('Computer Vision check failed:', error);
+      newStatus.computer_vision = 'error';
+    }
+
+    // Check NLP (Document Processing)
+    try {
+      const response = await api.post('/api/document/process', { test: true });
+      newStatus.nlp = response.success ? 'operational' : 'error';
+    } catch (error) {
+      console.error('NLP check failed:', error);
+      newStatus.nlp = 'error';
+    }
+
+    // Check Predictive Maintenance
+    try {
+      const response = await api.post('/api/maintenance/predict', { test: true });
+      newStatus.predictive_maintenance = response.success ? 'operational' : 'error';
+    } catch (error) {
+      console.error('Predictive Maintenance check failed:', error);
+      newStatus.predictive_maintenance = 'error';
+    }
+
+    // Check Live Cameras
+    try {
+      const response = await api.post('/api/camera/available', { test: true });
+      newStatus.live_cameras = (response && Array.isArray(response)) ? 'operational' : 'error';
+    } catch (error) {
+      console.error('Live Cameras check failed:', error);
+      newStatus.live_cameras = 'error';
     }
 
     setSystemStatus(newStatus);

@@ -15,19 +15,8 @@ export default function RentCollection() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch(`${api.BASE}/api/rent/dashboard`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
-      } else {
-        setMessage('Failed to fetch dashboard data');
-        setMessageType('error');
-      }
+      const data = await api.get('/api/rent/dashboard');
+      setDashboardData(data);
     } catch (error) {
       console.error('Error fetching dashboard:', error);
       setMessage('Network error occurred');
@@ -44,19 +33,10 @@ export default function RentCollection() {
     try {
       const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
       
-      const response = await fetch(`${api.BASE}/api/rent/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ month: currentMonth })
-      });
+      const result = await api.post('/api/rent/generate', { month: currentMonth });
       
-      const result = await response.json();
-      
-      if (response.ok) {
-        setMessage(`Successfully generated ${result.generated_count} rent invoices for ${result.month}`);
+      if (result.success || result.generated_count !== undefined) {
+        setMessage(`Successfully generated ${result.generated_count || 0} rent invoices for ${result.month}`);
         setMessageType('success');
         fetchDashboardData(); // Refresh data
       } else {
@@ -76,22 +56,13 @@ export default function RentCollection() {
     setMessage('');
     
     try {
-      const response = await fetch(`${api.BASE}/api/rent/late-fees`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          late_fee_amount: 50.0,
-          grace_period_days: 5
-        })
+      const result = await api.post('/api/rent/late-fees', {
+        late_fee_amount: 50.0,
+        grace_period_days: 5
       });
       
-      const result = await response.json();
-      
-      if (response.ok) {
-        setMessage(`Applied late fees to ${result.updated_count} overdue payments`);
+      if (result.success || result.updated_count !== undefined) {
+        setMessage(`Applied late fees to ${result.updated_count || 0} overdue payments`);
         setMessageType('success');
         fetchDashboardData(); // Refresh data
       } else {
@@ -175,35 +146,35 @@ export default function RentCollection() {
             <div className="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
               <h3 className="text-sm font-medium text-gray-500 mb-2">Total Rent Due</h3>
               <p className="text-2xl font-bold text-blue-600">
-                {formatCurrency(dashboardData.metrics.total_rent_due)}
+                {formatCurrency(dashboardData.metrics?.total_rent_due || 0)}
               </p>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
               <h3 className="text-sm font-medium text-gray-500 mb-2">Total Collected</h3>
               <p className="text-2xl font-bold text-green-600">
-                {formatCurrency(dashboardData.metrics.total_collected)}
+                {formatCurrency(dashboardData.metrics?.total_collected || 0)}
               </p>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow border-l-4 border-purple-500">
               <h3 className="text-sm font-medium text-gray-500 mb-2">Collection Rate</h3>
               <p className="text-2xl font-bold text-purple-600">
-                {dashboardData.metrics.collection_rate}%
+                {dashboardData.metrics?.collection_rate || 0}%
               </p>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow border-l-4 border-red-500">
               <h3 className="text-sm font-medium text-gray-500 mb-2">Overdue Payments</h3>
               <p className="text-2xl font-bold text-red-600">
-                {dashboardData.metrics.overdue_count}
+                {dashboardData.metrics?.overdue_count || 0}
               </p>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow border-l-4 border-orange-500">
               <h3 className="text-sm font-medium text-gray-500 mb-2">Overdue Amount</h3>
               <p className="text-2xl font-bold text-orange-600">
-                {formatCurrency(dashboardData.metrics.overdue_amount)}
+                {formatCurrency(dashboardData.metrics?.overdue_amount || 0)}
               </p>
             </div>
           </div>

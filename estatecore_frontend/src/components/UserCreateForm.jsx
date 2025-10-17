@@ -56,9 +56,13 @@ export default function UserCreateForm({ companies, onUserCreated, onCancel }) {
   };
 
   const roleOptions = [
+    { value: 'super_admin', label: 'Super Admin', description: 'Full system access' },
     { value: 'company_admin', label: 'Company Admin', description: 'Full access to company data' },
     { value: 'property_admin', label: 'Property Admin', description: 'Manage assigned properties' },
     { value: 'property_manager', label: 'Property Manager', description: 'Day-to-day operations' },
+    { value: 'maintenance_personnel', label: 'Maintenance Personnel', description: 'Handle assigned maintenance work orders' },
+    { value: 'maintenance_supervisor', label: 'Maintenance Supervisor', description: 'Supervise maintenance team and all work orders' },
+    { value: 'tenant', label: 'Tenant', description: 'Tenant portal access' },
     { value: 'viewer', label: 'Viewer', description: 'Read-only access' }
   ];
 

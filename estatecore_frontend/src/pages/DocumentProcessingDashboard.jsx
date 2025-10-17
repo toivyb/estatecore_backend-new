@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import LeaseUploadProcessor from '../components/LeaseUploadProcessor';
 
 const DocumentProcessingDashboard = () => {
   const [activeTab, setActiveTab] = useState('single');
@@ -14,6 +15,7 @@ const DocumentProcessingDashboard = () => {
   const tabs = [
     { id: 'single', label: 'Document Analysis', icon: '📄' },
     { id: 'lease', label: 'Lease Analysis', icon: '📋' },
+    { id: 'ai-lease', label: 'AI Lease Processor', icon: '🤖' },
     { id: 'extract', label: 'Entity Extraction', icon: '🔍' },
     { id: 'risk', label: 'Risk Assessment', icon: '⚠️' },
     { id: 'batch', label: 'Batch Processing', icon: '📚' }
@@ -882,6 +884,7 @@ const DocumentProcessingDashboard = () => {
       <div>
         {activeTab === 'single' && renderSingleTab()}
         {activeTab === 'lease' && renderLeaseTab()}
+        {activeTab === 'ai-lease' && <LeaseUploadProcessor />}
         {activeTab === 'extract' && renderExtractTab()}
         {activeTab === 'risk' && renderRiskTab()}
         {activeTab === 'batch' && renderBatchTab()}

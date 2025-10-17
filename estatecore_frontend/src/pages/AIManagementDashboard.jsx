@@ -136,7 +136,7 @@ const AIManagementDashboard = () => {
         totalSystems: systems.length,
         healthySystems: systems.filter(s => s.status === 'healthy').length,
         totalAlerts: alerts.filter(a => a.status === 'active').length,
-        averageUptime: (systems.reduce((sum, s) => sum + parseFloat(s.uptime), 0) / systems.length).toFixed(1),
+        averageUptime: (systems.reduce((sum, s) => sum + parseFloat(s.uptime.replace('%', '')), 0) / systems.length).toFixed(1),
         totalDataPoints: systems.reduce((sum, s) => sum + s.metrics.dataPoints, 0),
         averageAccuracy: (systems.reduce((sum, s) => sum + s.performance.accuracy, 0) / systems.length).toFixed(1),
         systemLoad: {

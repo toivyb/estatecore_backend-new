@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import api from '../api'
 
 const Maintenance = () => {
   const [requests, setRequests] = useState([])
@@ -20,11 +21,20 @@ const Maintenance = () => {
 
   const fetchMaintenanceRequests = async () => {
     try {
-      const response = await fetch('/api/maintenance')
-      const data = await response.json()
-      setRequests(data)
+      const data = await api.get('/api/maintenance/requests')
+      
+      // Ensure data is always an array
+      if (Array.isArray(data)) {
+        setRequests(data)
+      } else if (data && Array.isArray(data.requests)) {
+        setRequests(data.requests)
+      } else {
+        console.warn('Maintenance requests API returned non-array data:', data)
+        setRequests([]) // Set empty array as fallback
+      }
     } catch (error) {
       console.error('Error fetching maintenance requests:', error)
+      setRequests([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -32,70 +42,78 @@ const Maintenance = () => {
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch('/api/properties')
-      const data = await response.json()
-      setProperties(data)
+      const response = await api.get('/api/properties')
+      
+      // Check if we have a successful response with properties array
+      if (response.success && Array.isArray(response.properties)) {
+        setProperties(response.properties)
+      } else if (Array.isArray(response)) {
+        // Fallback for direct array response
+        setProperties(response)
+      } else {
+        console.warn('Properties API returned unexpected data:', response)
+        setProperties([]) // Set empty array as fallback
+      }
     } catch (error) {
       console.error('Error fetching properties:', error)
+      setProperties([]) // Set empty array on error
     }
   }
 
   const handleCreateRequest = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch('/api/maintenance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newRequest)
-      })
+      const result = await api.post('/api/maintenance/requests', newRequest)
       
-      if (response.ok) {
+      if (result.success) {
         setNewRequest({ property_id: '', title: '', description: '', priority: 'medium' })
         setShowCreateForm(false)
         fetchMaintenanceRequests()
         alert('Maintenance request created successfully!')
+      } else {
+        console.error('Error creating request:', result.error)
+        alert('Failed to create maintenance request: ' + (result.error || 'Unknown error'))
       }
     } catch (error) {
       console.error('Error creating request:', error)
+      alert('Failed to create maintenance request')
     }
   }
 
   const handleUpdateRequest = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch(`/api/maintenance/${editingRequest.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editingRequest)
-      })
+      const result = await api.put(`/api/maintenance/requests/${editingRequest.id}`, editingRequest)
       
-      if (response.ok) {
+      if (result.success) {
         setEditingRequest(null)
         fetchMaintenanceRequests()
         alert('Maintenance request updated successfully!')
+      } else {
+        console.error('Error updating request:', result.error)
+        alert('Failed to update maintenance request: ' + (result.error || 'Unknown error'))
       }
     } catch (error) {
       console.error('Error updating request:', error)
+      alert('Failed to update maintenance request')
     }
   }
 
   const handleDeleteRequest = async (requestId) => {
     if (confirm('Are you sure you want to delete this maintenance request?')) {
       try {
-        const response = await fetch(`/api/maintenance/${requestId}`, {
-          method: 'DELETE'
-        })
+        const result = await api.delete(`/api/maintenance/requests/${requestId}`)
         
-        if (response.ok) {
+        if (result.success) {
           fetchMaintenanceRequests()
           alert('Maintenance request deleted successfully!')
+        } else {
+          console.error('Error deleting request:', result.error)
+          alert('Failed to delete maintenance request: ' + (result.error || 'Unknown error'))
         }
       } catch (error) {
         console.error('Error deleting request:', error)
+        alert('Failed to delete maintenance request')
       }
     }
   }
@@ -143,24 +161,24 @@ const Maintenance = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">Total Requests</h3>
-          <p className="text-2xl font-bold text-gray-900">{requests.length}</p>
+          <p className="text-2xl font-bold text-gray-900">{Array.isArray(requests) ? requests.length : 0}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">Open</h3>
           <p className="text-2xl font-bold text-blue-600">
-            {requests.filter(r => r.status === 'open').length}
+            {Array.isArray(requests) ? requests.filter(r => r.status === 'open').length : 0}
           </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">In Progress</h3>
           <p className="text-2xl font-bold text-orange-600">
-            {requests.filter(r => r.status === 'in_progress').length}
+            {Array.isArray(requests) ? requests.filter(r => r.status === 'in_progress').length : 0}
           </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">High Priority</h3>
           <p className="text-2xl font-bold text-red-600">
-            {requests.filter(r => r.priority === 'high').length}
+            {Array.isArray(requests) ? requests.filter(r => r.priority === 'high').length : 0}
           </p>
         </div>
       </div>
@@ -281,7 +299,7 @@ const Maintenance = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {requests.map((request) => (
+              {Array.isArray(requests) && requests.map((request) => (
                 <tr key={request.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
@@ -327,6 +345,13 @@ const Maintenance = () => {
                   </td>
                 </tr>
               ))}
+              {(!Array.isArray(requests) || requests.length === 0) && (
+                <tr>
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                    {!Array.isArray(requests) ? 'Error loading maintenance requests' : 'No maintenance requests found'}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

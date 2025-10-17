@@ -130,142 +130,203 @@ const Sidebar = ({ user, isCollapsed = false, onToggle }) => {
           </Link>
         </div>
 
-        {/* Property Management */}
-        <DropdownSection
-          title="Property Management"
-          icon="🏢"
-          menuKey="property"
-          paths={['/properties', '/tenants', '/tenant-screening', '/access', '/tenant-portal']}
-        >
-          <NavLink to="/properties" icon="🏢">Properties</NavLink>
-          <NavLink to="/tenants" icon="👤">Tenants</NavLink>
-          <NavLink to="/tenant-screening" icon="🔍">Tenant Screening</NavLink>
-          <NavLink to="/access" icon="🔐">Access Control</NavLink>
-          {user.role === 'tenant' && (
-            <NavLink to="/tenant-portal" icon="🏠">Tenant Portal</NavLink>
-          )}
-        </DropdownSection>
+        {/* Role-based navigation */}
+        {user.role === 'tenant' ? (
+          // Tenant-only navigation
+          <>
+            <div className="px-4 py-1">
+              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                My Unit
+              </div>
+            </div>
+            <div className="px-4 py-1">
+              <NavLink to="/tenant-dashboard" icon="🏠">My Dashboard</NavLink>
+              <NavLink to="/tenant-maintenance" icon="🔧">Maintenance Requests</NavLink>
+              <NavLink to="/tenant-payments" icon="💳">Rent & Payments</NavLink>
+              <NavLink to="/tenant-documents" icon="📄">Documents</NavLink>
+              <NavLink to="/tenant-messages" icon="💬">Messages</NavLink>
+            </div>
+          </>
+        ) : user.role === 'maintenance_supervisor' || user.role === 'maintenance_personnel' ? (
+          // Maintenance-only navigation
+          <>
+            <div className="px-4 py-1">
+              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                Maintenance Operations
+              </div>
+            </div>
+          </>
+        ) : (
+          // Admin navigation
+          <>
+            <DropdownSection
+              title="Property Management"
+              icon="🏢"
+              menuKey="property"
+              paths={['/properties', '/tenants', '/tenant-screening', '/access', '/camera-management']}
+            >
+              <NavLink to="/properties" icon="🏢">Properties</NavLink>
+              <NavLink to="/tenants" icon="👤">Tenants</NavLink>
+              <NavLink to="/tenant-screening" icon="🔍">Tenant Screening</NavLink>
+              <NavLink to="/access" icon="🔐">Access Control</NavLink>
+              <NavLink to="/camera-management" icon="📷">Camera Management</NavLink>
+            </DropdownSection>
+          </>
+        )}
 
-        {/* Maintenance & Operations */}
-        <DropdownSection
-          title="Maintenance & Operations"
-          icon="🔧"
-          menuKey="maintenance"
-          paths={['/maintenance', '/maintenance-scheduling', '/maintenance-dispatch', '/predictive-maintenance', '/work-orders', '/maintenance-board', '/maintenance-workflow', '/smart-maintenance']}
-        >
-          <NavLink to="/maintenance" icon="🔧">Maintenance</NavLink>
-          <NavLink to="/maintenance-scheduling" icon="🗓️">Scheduling</NavLink>
-          <NavLink to="/maintenance-dispatch" icon="🚀">Smart Dispatch</NavLink>
-          <NavLink to="/predictive-maintenance" icon="🔮">Predictive Maintenance</NavLink>
-          <NavLink to="/work-orders" icon="📋">Work Orders</NavLink>
-          <NavLink to="/maintenance-board" icon="📊">Maintenance Board</NavLink>
-          <NavLink to="/maintenance-workflow" icon="🔄">Workflow</NavLink>
-          <NavLink to="/smart-maintenance" icon="🤖">Smart Maintenance</NavLink>
-        </DropdownSection>
+        {/* Maintenance & Operations - Show for all non-tenant roles, but limit based on role */}
+        {user.role !== 'tenant' && (
+          <DropdownSection
+            title="Maintenance & Operations"
+            icon="🔧"
+            menuKey="maintenance"
+            paths={['/maintenance', '/maintenance-scheduling', '/maintenance-dispatch', '/predictive-maintenance', '/work-orders', '/maintenance-board', '/maintenance-workflow', '/smart-maintenance', '/maintenance-personnel-dashboard']}
+          >
+            <NavLink to="/maintenance" icon="🔧">Maintenance</NavLink>
+            <NavLink to="/maintenance-scheduling" icon="🗓️">Scheduling</NavLink>
+            <NavLink to="/maintenance-dispatch" icon="🚀">Smart Dispatch</NavLink>
+            <NavLink to="/predictive-maintenance" icon="🔮">Predictive Maintenance</NavLink>
+            <NavLink to="/work-orders" icon="📋">Work Orders</NavLink>
+            <NavLink to="/maintenance-board" icon="📊">Maintenance Board</NavLink>
+            <NavLink to="/maintenance-workflow" icon="🔄">Workflow</NavLink>
+            <NavLink to="/smart-maintenance" icon="🤖">Smart Maintenance</NavLink>
+            {(user.role === 'maintenance_supervisor' || user.role === 'maintenance_personnel') && (
+              <NavLink to="/maintenance-personnel-dashboard" icon="🏠">My Dashboard</NavLink>
+            )}
+          </DropdownSection>
+        )}
 
-        {/* Financial Management */}
-        <DropdownSection
-          title="Financial Management"
-          icon="💰"
-          menuKey="financial"
-          paths={['/rent', '/lease-management', '/payments', '/financial-reports', '/billing-dashboard', '/financial-analytics']}
-        >
-          <NavLink to="/rent" icon="💰">Rent Collection</NavLink>
-          <NavLink to="/lease-management" icon="📋">Lease Management</NavLink>
-          <NavLink to="/payments" icon="💳">Payments</NavLink>
-          <NavLink to="/financial-reports" icon="📊">Financial Reports</NavLink>
-          <NavLink to="/financial-analytics" icon="📈">Financial Analytics</NavLink>
-          <NavLink to="/billing-dashboard" icon="💳">SaaS Billing</NavLink>
-        </DropdownSection>
+        {/* Financial Management - Hide from maintenance roles */}
+        {user.role !== 'tenant' && user.role !== 'maintenance_supervisor' && user.role !== 'maintenance_personnel' && (
+          <DropdownSection
+            title="Financial Management"
+            icon="💰"
+            menuKey="financial"
+            paths={['/rent', '/lease-management', '/payments', '/financial-reports', '/billing-dashboard', '/financial-analytics']}
+          >
+            <NavLink to="/rent" icon="💰">Rent Collection</NavLink>
+            <NavLink to="/lease-management" icon="📋">Lease Management</NavLink>
+            <NavLink to="/payments" icon="💳">Payments</NavLink>
+            <NavLink to="/financial-reports" icon="📊">Financial Reports</NavLink>
+            <NavLink to="/financial-analytics" icon="📈">Financial Analytics</NavLink>
+            <NavLink to="/billing-dashboard" icon="💳">SaaS Billing</NavLink>
+          </DropdownSection>
+        )}
 
-        {/* AI Intelligence Hub */}
-        <DropdownSection
-          title="AI Intelligence Hub"
-          icon="🧠"
-          menuKey="ai"
-          paths={['/ai-hub', '/ai/computer-vision', '/ai/document-processing', '/ai/predictive-maintenance', '/ai/market-intelligence', '/ai/conversational-ai', '/ai/advanced-analytics', '/ai/voice-assistant', '/ai/property-valuation', '/live-camera-analysis', '/ai-management-dashboard', '/ai-dashboard', '/ai-analytics']}
-        >
-          <NavLink to="/ai-hub" icon="🧠">AI Hub</NavLink>
-          <NavLink to="/ai/property-valuation" icon="💰">Property Valuation</NavLink>
-          <NavLink to="/ai/computer-vision" icon="👁️">Computer Vision</NavLink>
-          <NavLink to="/ai/document-processing" icon="📄">Document Processing</NavLink>
-          <NavLink to="/ai/predictive-maintenance" icon="🔧">Predictive Maintenance</NavLink>
-          <NavLink to="/ai/market-intelligence" icon="📊">Market Intelligence</NavLink>
-          <NavLink to="/ai/conversational-ai" icon="🤖">Conversational AI</NavLink>
-          <NavLink to="/ai/advanced-analytics" icon="📊">Advanced Analytics</NavLink>
-          <NavLink to="/ai/voice-assistant" icon="🎤">Voice Assistant</NavLink>
-          <NavLink to="/live-camera-analysis" icon="📹">Live Camera Analysis</NavLink>
-          <NavLink to="/ai-management-dashboard" icon="🎛️">AI Management</NavLink>
-          <NavLink to="/ai-dashboard" icon="📊">AI Analytics</NavLink>
-          {user.role === 'super_admin' && (
-            <NavLink to="/ai-analytics" icon="🤖">Advanced AI</NavLink>
-          )}
-        </DropdownSection>
+        {/* AI Intelligence Hub - Limited for maintenance roles */}
+        {user.role !== 'tenant' && user.role !== 'maintenance_supervisor' && user.role !== 'maintenance_personnel' && (
+          <DropdownSection
+            title="AI Intelligence Hub"
+            icon="🧠"
+            menuKey="ai"
+            paths={['/ai-hub', '/ai/computer-vision', '/ai/document-processing', '/ai/predictive-maintenance', '/ai/market-intelligence', '/ai/conversational-ai', '/ai/advanced-analytics', '/ai/voice-assistant', '/ai/property-valuation', '/live-camera-analysis', '/ai-management-dashboard', '/ai-dashboard', '/ai-analytics']}
+          >
+            <NavLink to="/ai-hub" icon="🧠">AI Hub</NavLink>
+            <NavLink to="/ai/property-valuation" icon="💰">Property Valuation</NavLink>
+            <NavLink to="/ai/computer-vision" icon="👁️">Computer Vision</NavLink>
+            <NavLink to="/ai/document-processing" icon="📄">Document Processing</NavLink>
+            <NavLink to="/ai/predictive-maintenance" icon="🔧">Predictive Maintenance</NavLink>
+            <NavLink to="/ai/market-intelligence" icon="📊">Market Intelligence</NavLink>
+            <NavLink to="/ai/conversational-ai" icon="🤖">Conversational AI</NavLink>
+            <NavLink to="/ai/advanced-analytics" icon="📊">Advanced Analytics</NavLink>
+            <NavLink to="/ai/voice-assistant" icon="🎤">Voice Assistant</NavLink>
+            <NavLink to="/live-camera-analysis" icon="📹">Live Camera Analysis</NavLink>
+            <NavLink to="/ai-management-dashboard" icon="🎛️">AI Management</NavLink>
+            <NavLink to="/ai-dashboard" icon="📊">AI Analytics</NavLink>
+            {user.role === 'super_admin' && (
+              <NavLink to="/ai-analytics" icon="🤖">Advanced AI</NavLink>
+            )}
+          </DropdownSection>
+        )}
 
-        {/* Reports & Analytics */}
-        <DropdownSection
-          title="Reports & Analytics"
-          icon="📈"
-          menuKey="reports"
-          paths={['/reports', '/forecasts', '/asset-health', '/revenue-leakage', '/risk-flags']}
-        >
-          <NavLink to="/reports" icon="📊">Reports</NavLink>
-          <NavLink to="/forecasts" icon="🔮">Forecasts</NavLink>
-          <NavLink to="/asset-health" icon="🏥">Asset Health</NavLink>
-          <NavLink to="/revenue-leakage" icon="💸">Revenue Leakage</NavLink>
-          <NavLink to="/risk-flags" icon="⚠️">Risk Flags</NavLink>
-        </DropdownSection>
+        {/* AI Predictive Maintenance - Only for maintenance roles */}
+        {(user.role === 'maintenance_supervisor' || user.role === 'maintenance_personnel') && (
+          <DropdownSection
+            title="AI Tools"
+            icon="🧠"
+            menuKey="ai-maintenance"
+            paths={['/ai/predictive-maintenance']}
+          >
+            <NavLink to="/ai/predictive-maintenance" icon="🔧">Predictive Maintenance</NavLink>
+          </DropdownSection>
+        )}
 
-        {/* Analytics & Monitoring */}
-        <DropdownSection
-          title="Analytics & Monitoring"
-          icon="📊"
-          menuKey="analytics"
-          paths={['/occupancy-analytics', '/environmental-dashboard', '/iot-dashboard', '/energy-management']}
-        >
-          <NavLink to="/energy-management" icon="⚡">Smart Energy Management</NavLink>
-          <NavLink to="/occupancy-analytics" icon="📊">Occupancy Analytics</NavLink>
-          <NavLink to="/environmental-dashboard" icon="🌍">Environmental Monitoring</NavLink>
-          <NavLink to="/iot-dashboard" icon="📡">IoT Dashboard</NavLink>
-        </DropdownSection>
+        {/* Reports & Analytics - Hide from maintenance roles */}
+        {user.role !== 'tenant' && user.role !== 'maintenance_supervisor' && user.role !== 'maintenance_personnel' && (
+          <DropdownSection
+            title="Reports & Analytics"
+            icon="📈"
+            menuKey="reports"
+            paths={['/reports', '/forecasts', '/asset-health', '/revenue-leakage', '/risk-flags']}
+          >
+            <NavLink to="/reports" icon="📊">Reports</NavLink>
+            <NavLink to="/forecasts" icon="🔮">Forecasts</NavLink>
+            <NavLink to="/asset-health" icon="🏥">Asset Health</NavLink>
+            <NavLink to="/revenue-leakage" icon="💸">Revenue Leakage</NavLink>
+            <NavLink to="/risk-flags" icon="⚠️">Risk Flags</NavLink>
+          </DropdownSection>
+        )}
 
-        {/* Security & Access */}
-        <DropdownSection
-          title="Security & Access"
-          icon="🔒"
-          menuKey="security"
-          paths={['/lpr-dashboard', '/lpr-companies', '/security-dashboard']}
-        >
-          <NavLink to="/security-dashboard" icon="🔒">Security Dashboard</NavLink>
-          <NavLink to="/lpr-dashboard" icon="📷">License Plate Recognition</NavLink>
-          <NavLink to="/lpr-companies" icon="🏢">LPR Companies</NavLink>
-        </DropdownSection>
+        {/* Analytics & Monitoring - Hide from maintenance roles */}
+        {user.role !== 'tenant' && user.role !== 'maintenance_supervisor' && user.role !== 'maintenance_personnel' && (
+          <DropdownSection
+            title="Analytics & Monitoring"
+            icon="📊"
+            menuKey="analytics"
+            paths={['/occupancy-analytics', '/environmental-dashboard', '/iot-dashboard', '/energy-management']}
+          >
+            <NavLink to="/energy-management" icon="⚡">Smart Energy Management</NavLink>
+            <NavLink to="/occupancy-analytics" icon="📊">Occupancy Analytics</NavLink>
+            <NavLink to="/environmental-dashboard" icon="🌍">Environmental Monitoring</NavLink>
+            <NavLink to="/iot-dashboard" icon="📡">IoT Dashboard</NavLink>
+          </DropdownSection>
+        )}
 
-        {/* Communication & Documents */}
-        <DropdownSection
-          title="Communication & Docs"
-          icon="💬"
-          menuKey="communication"
-          paths={['/messages', '/documents', '/collaboration']}
-        >
-          <NavLink to="/messages" icon="💬">Messages</NavLink>
-          <NavLink to="/documents" icon="📁">Documents</NavLink>
-          <NavLink to="/collaboration" icon="🤝">Collaboration</NavLink>
-        </DropdownSection>
+        {/* Security & Access - Hide from maintenance roles */}
+        {user.role !== 'tenant' && user.role !== 'maintenance_supervisor' && user.role !== 'maintenance_personnel' && (
+          <DropdownSection
+            title="Security & Access"
+            icon="🔒"
+            menuKey="security"
+            paths={['/lpr-dashboard', '/lpr-companies', '/security-dashboard']}
+          >
+            <NavLink to="/security-dashboard" icon="🔒">Security Dashboard</NavLink>
+            <NavLink to="/lpr-dashboard" icon="📷">License Plate Recognition</NavLink>
+            <NavLink to="/lpr-companies" icon="🏢">LPR Companies</NavLink>
+          </DropdownSection>
+        )}
 
-        {/* User Administration */}
-        <DropdownSection
-          title="User Administration"
-          icon="👥"
-          menuKey="users"
-          paths={['/users', '/companies', '/invite-user', '/bulk-operations', '/forms-wizards']}
-        >
-          <NavLink to="/users" icon="👥">Users</NavLink>
-          <NavLink to="/companies" icon="🏢">Companies</NavLink>
-          <NavLink to="/invite-user" icon="✉️">Invite User</NavLink>
-          <NavLink to="/bulk-operations" icon="📋">Bulk Operations</NavLink>
-          <NavLink to="/forms-wizards" icon="🧙‍♂️">Forms & Wizards</NavLink>
-        </DropdownSection>
+        {/* Communication & Documents - Limited for maintenance roles */}
+        {user.role !== 'tenant' && (
+          <DropdownSection
+            title="Communication & Docs"
+            icon="💬"
+            menuKey="communication"
+            paths={['/messages', '/documents', '/collaboration']}
+          >
+            <NavLink to="/messages" icon="💬">Messages</NavLink>
+            <NavLink to="/documents" icon="📁">Documents</NavLink>
+            {(user.role !== 'maintenance_supervisor' && user.role !== 'maintenance_personnel') && (
+              <NavLink to="/collaboration" icon="🤝">Collaboration</NavLink>
+            )}
+          </DropdownSection>
+        )}
+
+        {/* User Administration - Hide from maintenance roles */}
+        {user.role !== 'tenant' && user.role !== 'maintenance_supervisor' && user.role !== 'maintenance_personnel' && (
+          <DropdownSection
+            title="User Administration"
+            icon="👥"
+            menuKey="users"
+            paths={['/users', '/companies', '/invite-user', '/bulk-operations', '/forms-wizards']}
+          >
+            <NavLink to="/users" icon="👥">Users</NavLink>
+            <NavLink to="/companies" icon="🏢">Companies</NavLink>
+            <NavLink to="/invite-user" icon="✉️">Invite User</NavLink>
+            <NavLink to="/bulk-operations" icon="📋">Bulk Operations</NavLink>
+            <NavLink to="/forms-wizards" icon="🧙‍♂️">Forms & Wizards</NavLink>
+          </DropdownSection>
+        )}
 
         {/* System Administration - Super Admin Only */}
         {user.role === 'super_admin' && (

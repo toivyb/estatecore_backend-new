@@ -1,4 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  CircleStackIcon, 
+  HashtagIcon, 
+  ArrowTrendingUpIcon, 
+  ChartBarIcon,
+  DocumentTextIcon,
+  ShieldCheckIcon,
+  ClockIcon,
+  KeyIcon,
+  EyeIcon,
+  CheckCircleIcon
+} from '@heroicons/react/24/outline';
 
 const BlockchainDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -139,12 +151,12 @@ const BlockchainDashboard = () => {
 
   const getRecordTypeIcon = (type) => {
     switch (type) {
-      case 'property_deed': return <FileText className="w-4 h-4" />;
-      case 'lease_agreement': return <Shield className="w-4 h-4" />;
-      case 'payment_record': return <BarChart3 className="w-4 h-4" />;
-      case 'maintenance_log': return <Clock className="w-4 h-4" />;
-      case 'ownership_transfer': return <Key className="w-4 h-4" />;
-      default: return <Database className="w-4 h-4" />;
+      case 'property_deed': return <DocumentTextIcon className="w-4 h-4" />;
+      case 'lease_agreement': return <ShieldCheckIcon className="w-4 h-4" />;
+      case 'payment_record': return <ChartBarIcon className="w-4 h-4" />;
+      case 'maintenance_log': return <ClockIcon className="w-4 h-4" />;
+      case 'ownership_transfer': return <KeyIcon className="w-4 h-4" />;
+      default: return <CircleStackIcon className="w-4 h-4" />;
     }
   };
 
@@ -249,7 +261,7 @@ const BlockchainDashboard = () => {
           onClick={() => setSelectedRecord(transaction)}
           className="flex items-center px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          <Eye className="w-3 h-3 mr-1" />
+          <EyeIcon className="w-3 h-3 mr-1" />
           View Details
         </button>
       </div>
@@ -274,8 +286,8 @@ const BlockchainDashboard = () => {
         </div>
         
         <div className="flex items-center space-x-1">
-          {record.blockchain_tx_id && <CheckCircle className="w-4 h-4 text-green-500" />}
-          {record.ipfs_hash && <Database className="w-4 h-4 text-blue-500" />}
+          {record.blockchain_tx_id && <CheckCircleIcon className="w-4 h-4 text-green-500" />}
+          {record.ipfs_hash && <CircleStackIcon className="w-4 h-4 text-blue-500" />}
         </div>
       </div>
       
@@ -300,14 +312,14 @@ const BlockchainDashboard = () => {
           onClick={() => verifyRecord(record.hash)}
           className="flex items-center px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
         >
-          <Shield className="w-3 h-3 mr-1" />
+          <ShieldCheckIcon className="w-3 h-3 mr-1" />
           Verify
         </button>
         <button
           onClick={() => setSelectedRecord(record)}
           className="flex items-center px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          <Eye className="w-3 h-3 mr-1" />
+          <EyeIcon className="w-3 h-3 mr-1" />
           View
         </button>
       </div>
@@ -351,28 +363,28 @@ const BlockchainDashboard = () => {
           <StatCard
             title="Total Records"
             value={dashboardData.statistics.total_records.toLocaleString()}
-            icon={Database}
+            icon={CircleStackIcon}
             color="blue"
             subtitle="Stored on blockchain"
           />
           <StatCard
             title="Transactions"
             value={dashboardData.statistics.total_transactions.toLocaleString()}
-            icon={Hash}
+            icon={HashtagIcon}
             color="green"
             subtitle={`${dashboardData.statistics.transaction_status.pending} pending`}
           />
           <StatCard
             title="Success Rate"
             value={`${(dashboardData.statistics.success_rate * 100).toFixed(1)}%`}
-            icon={TrendingUp}
+            icon={ArrowTrendingUpIcon}
             color="purple"
             subtitle="Transaction success"
           />
           <StatCard
             title="Gas Cost"
             value={`${dashboardData.statistics.gas_analytics.estimated_cost_eth.toFixed(4)} ETH`}
-            icon={BarChart3}
+            icon={ChartBarIcon}
             color="orange"
             subtitle="Total spent"
           />
@@ -443,10 +455,10 @@ const BlockchainDashboard = () => {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex space-x-8 px-6">
               {[
-                { id: 'overview', label: 'Overview', icon: BarChart3 },
-                { id: 'transactions', label: 'Transactions', icon: Hash },
-                { id: 'records', label: 'Records', icon: FileText },
-                { id: 'analytics', label: 'Analytics', icon: TrendingUp }
+                { id: 'overview', label: 'Overview', icon: ChartBarIcon },
+                { id: 'transactions', label: 'Transactions', icon: HashtagIcon },
+                { id: 'records', label: 'Records', icon: DocumentTextIcon },
+                { id: 'analytics', label: 'Analytics', icon: ArrowTrendingUpIcon }
               ].map(tab => {
                 const Icon = tab.icon;
                 return (
@@ -532,8 +544,8 @@ const BlockchainDashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-1">
-                      {record.blockchain_tx_id && <CheckCircle className="w-4 h-4 text-green-500" />}
-                      {record.ipfs_hash && <Database className="w-4 h-4 text-blue-500" />}
+                      {record.blockchain_tx_id && <CheckCircleIcon className="w-4 h-4 text-green-500" />}
+                      {record.ipfs_hash && <CircleStackIcon className="w-4 h-4 text-blue-500" />}
                     </div>
                   </div>
                 ))}

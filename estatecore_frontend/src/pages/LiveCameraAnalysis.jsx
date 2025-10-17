@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import api from '../api';
 
 const LiveCameraAnalysis = () => {
   const [cameraData, setCameraData] = useState({
@@ -12,6 +13,21 @@ const LiveCameraAnalysis = () => {
   const [analysisResults, setAnalysisResults] = useState({});
   const [streamStats, setStreamStats] = useState({});
   const [alerts, setAlerts] = useState([]);
+  const [showAddCameraModal, setShowAddCameraModal] = useState(false);
+  const [faultDetection, setFaultDetection] = useState({
+    enabled: true,
+    detectedFaults: [],
+    lastChecked: null
+  });
+  const [newCameraForm, setNewCameraForm] = useState({
+    name: '',
+    ip_address: '',
+    port: '8080',
+    username: '',
+    password: '',
+    camera_type: 'ip_camera',
+    quality: 'medium'
+  });
 
   const videoRefs = useRef({});
 
@@ -23,6 +39,9 @@ const LiveCameraAnalysis = () => {
     const interval = setInterval(() => {
       updateCameraStatuses();
       updateAnalysisResults();
+      if (faultDetection.enabled) {
+        performFaultDetection();
+      }
     }, 5000);
     
     return () => clearInterval(interval);
@@ -32,17 +51,16 @@ const LiveCameraAnalysis = () => {
     try {
       setCameraData(prev => ({ ...prev, loading: true }));
       
-      const response = await fetch('/api/camera/available');
-      const data = await response.json();
+      const response = await api.get('/api/camera/available');
       
-      if (data.success) {
+      if (response.success) {
         setCameraData(prev => ({
           ...prev,
-          availableCameras: data.cameras,
+          availableCameras: response.cameras,
           loading: false
         }));
       } else {
-        console.error('Failed to load cameras:', data.error);
+        console.error('Failed to load cameras:', response.error);
         setCameraData(prev => ({ ...prev, loading: false }));
       }
     } catch (error) {
@@ -59,23 +77,15 @@ const LiveCameraAnalysis = () => {
 
   const addCamera = async (camera, propertyId) => {
     try {
-      const response = await fetch('/api/camera/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          camera_id: `camera_${camera.id}`,
-          source: camera.source,
-          property_id: propertyId,
-          camera_type: camera.type,
-          quality: 'medium'
-        })
+      const response = await api.post('/api/camera/add', {
+        camera_id: `camera_${camera.id}`,
+        source: camera.source,
+        property_id: propertyId,
+        camera_type: camera.type,
+        quality: 'medium'
       });
-
-      const data = await response.json();
       
-      if (data.success) {
+      if (response.success) {
         const newActiveCamera = {
           ...camera,
           camera_id: `camera_${camera.id}`,
@@ -95,7 +105,7 @@ const LiveCameraAnalysis = () => {
         
         addAlert('success', `Camera ${camera.id} added successfully`);
       } else {
-        addAlert('error', `Failed to add camera: ${data.error}`);
+        addAlert('error', `Failed to add camera: ${response.error}`);
       }
     } catch (error) {
       console.error('Error adding camera:', error);
@@ -105,19 +115,11 @@ const LiveCameraAnalysis = () => {
 
   const startCameraAnalysis = async (cameraId, analysisMode = 'interval') => {
     try {
-      const response = await fetch(`/api/camera/${cameraId}/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          analysis_mode: analysisMode
-        })
+      const response = await api.post(`/api/camera/${cameraId}/start`, {
+        analysis_mode: analysisMode
       });
-
-      const data = await response.json();
       
-      if (data.success) {
+      if (response.success) {
         setCameraData(prev => ({
           ...prev,
           activeCameras: prev.activeCameras.map(camera => 
@@ -129,7 +131,7 @@ const LiveCameraAnalysis = () => {
         
         addAlert('success', `Live analysis started for ${cameraId}`);
       } else {
-        addAlert('error', `Failed to start analysis: ${data.error}`);
+        addAlert('error', `Failed to start analysis: ${response.error}`);
       }
     } catch (error) {
       console.error('Error starting analysis:', error);
@@ -139,13 +141,9 @@ const LiveCameraAnalysis = () => {
 
   const stopCameraAnalysis = async (cameraId) => {
     try {
-      const response = await fetch(`/api/camera/${cameraId}/stop`, {
-        method: 'POST'
-      });
-
-      const data = await response.json();
+      const response = await api.post(`/api/camera/${cameraId}/stop`);
       
-      if (data.success) {
+      if (response.success) {
         setCameraData(prev => ({
           ...prev,
           activeCameras: prev.activeCameras.map(camera => 
@@ -157,7 +155,7 @@ const LiveCameraAnalysis = () => {
         
         addAlert('success', `Analysis stopped for ${cameraId}`);
       } else {
-        addAlert('error', `Failed to stop analysis: ${data.error}`);
+        addAlert('error', `Failed to stop analysis: ${response.error}`);
       }
     } catch (error) {
       console.error('Error stopping analysis:', error);
@@ -167,28 +165,20 @@ const LiveCameraAnalysis = () => {
 
   const captureAndAnalyze = async (cameraId, propertyId) => {
     try {
-      const response = await fetch(`/api/camera/${cameraId}/capture`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          property_id: propertyId,
-          description: 'Manual capture from live camera interface'
-        })
+      const response = await api.post(`/api/camera/${cameraId}/capture`, {
+        property_id: propertyId,
+        description: 'Manual capture from live camera interface'
       });
-
-      const data = await response.json();
       
-      if (data.success) {
+      if (response.success) {
         setAnalysisResults(prev => ({
           ...prev,
-          [cameraId]: data.analysis
+          [cameraId]: response.analysis
         }));
         
         addAlert('success', `Frame captured and analyzed for ${cameraId}`);
       } else {
-        addAlert('error', `Failed to capture frame: ${data.error}`);
+        addAlert('error', `Failed to capture frame: ${response.error}`);
       }
     } catch (error) {
       console.error('Error capturing frame:', error);
@@ -198,13 +188,9 @@ const LiveCameraAnalysis = () => {
 
   const removeCamera = async (cameraId) => {
     try {
-      const response = await fetch(`/api/camera/${cameraId}/remove`, {
-        method: 'DELETE'
-      });
-
-      const data = await response.json();
+      const response = await api.delete(`/api/camera/${cameraId}/remove`);
       
-      if (data.success) {
+      if (response.success) {
         setCameraData(prev => ({
           ...prev,
           activeCameras: prev.activeCameras.filter(camera => camera.camera_id !== cameraId)
@@ -222,7 +208,7 @@ const LiveCameraAnalysis = () => {
         
         addAlert('success', `Camera ${cameraId} removed`);
       } else {
-        addAlert('error', `Failed to remove camera: ${data.error}`);
+        addAlert('error', `Failed to remove camera: ${response.error}`);
       }
     } catch (error) {
       console.error('Error removing camera:', error);
@@ -234,13 +220,12 @@ const LiveCameraAnalysis = () => {
     // Update status for each active camera
     for (const camera of cameraData.activeCameras) {
       try {
-        const response = await fetch(`/api/camera/${camera.camera_id}/status`);
-        const data = await response.json();
+        const response = await api.get(`/api/camera/${camera.camera_id}/status`);
         
-        if (data.success) {
+        if (response.success) {
           setStreamStats(prev => ({
             ...prev,
-            [camera.camera_id]: data.stream_data
+            [camera.camera_id]: response.stream_data
           }));
         }
       } catch (error) {
@@ -252,6 +237,92 @@ const LiveCameraAnalysis = () => {
   const updateAnalysisResults = () => {
     // This function would be called by the periodic update
     // In a real implementation, you might use WebSockets for real-time updates
+  };
+
+  const performFaultDetection = async () => {
+    try {
+      const faults = [];
+      
+      // Check each active camera for faults
+      for (const camera of cameraData.activeCameras) {
+        const response = await api.post('/api/camera/fault-detection', {
+          camera_id: camera.camera_id,
+          property_id: camera.property_id
+        });
+        
+        if (response.success && response.faults && response.faults.length > 0) {
+          faults.push(...response.faults.map(fault => ({
+            ...fault,
+            camera_id: camera.camera_id,
+            camera_name: camera.name || camera.camera_id,
+            detected_at: new Date(),
+            severity: fault.severity || 'medium'
+          })));
+        }
+      }
+      
+      // Update fault detection state
+      setFaultDetection(prev => ({
+        ...prev,
+        detectedFaults: faults,
+        lastChecked: new Date()
+      }));
+      
+      // Create alerts for new high-severity faults
+      const highSeverityFaults = faults.filter(fault => fault.severity === 'high');
+      highSeverityFaults.forEach(fault => {
+        addAlert('error', `🚨 Critical fault detected: ${fault.description} on ${fault.camera_name}`);
+      });
+      
+    } catch (error) {
+      console.error('Error performing fault detection:', error);
+    }
+  };
+
+  const toggleFaultDetection = () => {
+    setFaultDetection(prev => ({
+      ...prev,
+      enabled: !prev.enabled
+    }));
+  };
+
+  const addCustomCamera = async () => {
+    if (!newCameraForm.name || !newCameraForm.ip_address || !cameraData.selectedProperty) {
+      addAlert('error', 'Please fill in camera name, IP address, and select a property');
+      return;
+    }
+
+    try {
+      const customCamera = {
+        id: `custom_${Date.now()}`,
+        name: newCameraForm.name,
+        type: newCameraForm.camera_type,
+        source: `http://${newCameraForm.ip_address}:${newCameraForm.port}`,
+        resolution: [1920, 1080],
+        fps: 30,
+        status: 'available',
+        ip_address: newCameraForm.ip_address,
+        port: newCameraForm.port,
+        credentials: {
+          username: newCameraForm.username,
+          password: newCameraForm.password
+        }
+      };
+
+      await addCamera(customCamera, cameraData.selectedProperty);
+      setShowAddCameraModal(false);
+      setNewCameraForm({
+        name: '',
+        ip_address: '',
+        port: '8080',
+        username: '',
+        password: '',
+        camera_type: 'ip_camera',
+        quality: 'medium'
+      });
+    } catch (error) {
+      addAlert('error', 'Failed to add custom camera');
+    }
   };
 
   const addAlert = (type, message) => {
@@ -311,13 +382,33 @@ const LiveCameraAnalysis = () => {
             onClick={loadAvailableCameras}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            Detect Cameras
+            📹 Detect Cameras
           </button>
-          <select className="px-3 py-2 border border-gray-300 rounded-md">
+          <button 
+            onClick={() => setShowAddCameraModal(true)}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            ➕ Add Camera
+          </button>
+          <button 
+            onClick={toggleFaultDetection}
+            className={`px-4 py-2 rounded-md ${
+              faultDetection.enabled 
+                ? 'bg-red-600 text-white hover:bg-red-700' 
+                : 'bg-gray-600 text-white hover:bg-gray-700'
+            }`}
+          >
+            {faultDetection.enabled ? '🚨 Fault Detection ON' : '⚠️ Fault Detection OFF'}
+          </button>
+          <select 
+            value={cameraData.selectedProperty || ''}
+            onChange={(e) => setCameraData(prev => ({ ...prev, selectedProperty: e.target.value }))}
+            className="px-3 py-2 border border-gray-300 rounded-md"
+          >
             <option value="">Select Property</option>
-            <option value="1">Property 1</option>
-            <option value="2">Property 2</option>
-            <option value="3">Property 3</option>
+            <option value="1">Sunset Apartments</option>
+            <option value="2">Oak Ridge Complex</option>
+            <option value="3">Green Valley Homes</option>
           </select>
         </div>
       </div>
@@ -341,6 +432,80 @@ const LiveCameraAnalysis = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Fault Detection Status */}
+      {faultDetection.enabled && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center">
+                🚨 Real-Time Fault Detection 
+                <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                  faultDetection.detectedFaults.length > 0 
+                    ? 'bg-red-100 text-red-800' 
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {faultDetection.detectedFaults.length === 0 
+                    ? 'All Clear' 
+                    : `${faultDetection.detectedFaults.length} Fault${faultDetection.detectedFaults.length > 1 ? 's' : ''}`
+                  }
+                </span>
+              </CardTitle>
+              {faultDetection.lastChecked && (
+                <span className="text-sm text-gray-500">
+                  Last checked: {formatTimestamp(faultDetection.lastChecked)}
+                </span>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {faultDetection.detectedFaults.length === 0 ? (
+              <div className="text-center py-4">
+                <div className="text-2xl mb-2">✅</div>
+                <p className="text-gray-600">No faults detected across all active cameras</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {faultDetection.detectedFaults.map((fault, index) => (
+                  <div key={index} className={`p-3 rounded-lg border ${
+                    fault.severity === 'high' 
+                      ? 'bg-red-50 border-red-200' 
+                      : fault.severity === 'medium' 
+                        ? 'bg-yellow-50 border-yellow-200' 
+                        : 'bg-blue-50 border-blue-200'
+                  }`}>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            fault.severity === 'high' 
+                              ? 'bg-red-100 text-red-800' 
+                              : fault.severity === 'medium' 
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {fault.severity.toUpperCase()}
+                          </span>
+                          <span className="font-medium">{fault.camera_name}</span>
+                        </div>
+                        <p className="text-sm text-gray-700 mt-1">{fault.description}</p>
+                        {fault.recommendation && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            <strong>Recommendation:</strong> {fault.recommendation}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {formatTimestamp(fault.detected_at)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Available Cameras */}
@@ -551,7 +716,7 @@ const LiveCameraAnalysis = () => {
           <CardTitle>Live Camera Analysis Tips</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
               <h4 className="font-medium mb-2">🎯 Best Practices:</h4>
               <ul className="space-y-1 text-gray-600">
@@ -570,9 +735,148 @@ const LiveCameraAnalysis = () => {
                 <li>• <strong>Manual:</strong> Analyze only on button press</li>
               </ul>
             </div>
+            <div>
+              <h4 className="font-medium mb-2">🚨 Fault Detection:</h4>
+              <ul className="space-y-1 text-gray-600">
+                <li>• <strong>Real-time:</strong> Checks every 5 seconds automatically</li>
+                <li>• <strong>Camera offline:</strong> Detects disconnected cameras</li>
+                <li>• <strong>Poor image quality:</strong> Identifies blurry or dark feeds</li>
+                <li>• <strong>Motion anomalies:</strong> Unusual movement patterns</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Add Camera Modal */}
+      {showAddCameraModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black opacity-50" onClick={() => setShowAddCameraModal(false)}></div>
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Add New Camera</h3>
+                  <button
+                    onClick={() => setShowAddCameraModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              
+              <div className="px-6 py-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Camera Name</label>
+                  <input
+                    type="text"
+                    value={newCameraForm.name}
+                    onChange={(e) => setNewCameraForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Front Entrance Camera"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
+                  <input
+                    type="text"
+                    value={newCameraForm.ip_address}
+                    onChange={(e) => setNewCameraForm(prev => ({ ...prev, ip_address: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="192.168.1.100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Port</label>
+                  <input
+                    type="text"
+                    value={newCameraForm.port}
+                    onChange={(e) => setNewCameraForm(prev => ({ ...prev, port: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="8080"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input
+                      type="text"
+                      value={newCameraForm.username}
+                      onChange={(e) => setNewCameraForm(prev => ({ ...prev, username: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="admin"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input
+                      type="password"
+                      value={newCameraForm.password}
+                      onChange={(e) => setNewCameraForm(prev => ({ ...prev, password: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Camera Type</label>
+                  <select
+                    value={newCameraForm.camera_type}
+                    onChange={(e) => setNewCameraForm(prev => ({ ...prev, camera_type: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="ip_camera">IP Camera</option>
+                    <option value="webcam">Webcam</option>
+                    <option value="security_camera">Security Camera</option>
+                    <option value="ptz_camera">PTZ Camera</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quality</label>
+                  <select
+                    value={newCameraForm.quality}
+                    onChange={(e) => setNewCameraForm(prev => ({ ...prev, quality: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="low">Low (480p)</option>
+                    <option value="medium">Medium (720p)</option>
+                    <option value="high">High (1080p)</option>
+                    <option value="ultra">Ultra (4K)</option>
+                  </select>
+                </div>
+
+                {!cameraData.selectedProperty && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-800">Please select a property first</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowAddCameraModal(false)}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={addCustomCamera}
+                  disabled={!newCameraForm.name || !newCameraForm.ip_address || !cameraData.selectedProperty}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  Add Camera
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

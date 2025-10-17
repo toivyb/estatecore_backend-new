@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api'; // ✅ default import
+import QuickLogin from '../components/QuickLogin';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -106,6 +107,7 @@ export default function Login() {
           className="border p-2 w-full mb-3 rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="username"
           required
         />
 
@@ -115,6 +117,7 @@ export default function Login() {
           className="border p-2 w-full mb-4 rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           required
         />
 
@@ -125,6 +128,8 @@ export default function Login() {
           Login
         </button>
       </form>
+      
+      <QuickLogin />
     </div>
   );
 }

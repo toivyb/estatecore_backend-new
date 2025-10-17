@@ -1,7 +1,7 @@
 // API Base URL Configuration  
 const BASE = import.meta.env.VITE_API_BASE_URL || 
-  (window.location.hostname === 'localhost' 
-    ? 'http://localhost:5005'         // Local development (complete server)
+  (window.location.hostname === 'localhost' || window.location.hostname.includes('fssphq.fsspcctv.org')
+    ? ''         // Use relative path for proxy in development
     : 'https://estatecore-backend-sujs.onrender.com'  // Production
   )
 
@@ -18,9 +18,11 @@ class ApiClient {
 
   // Get complete headers with authentication and content type
   getHeaders(isUpload = false) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const headers = {
       ...authHeader(),
-      ...(isUpload ? {} : { 'Content-Type': 'application/json' })
+      ...(isUpload ? {} : { 'Content-Type': 'application/json' }),
+      ...(user.email ? { 'X-User-Email': user.email } : {})
     };
     return headers;
   }
@@ -131,6 +133,12 @@ class ApiClient {
       body: formData,
       isUpload: true,
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      return errorData;
+    }
+    
     return response.json();
   }
 }

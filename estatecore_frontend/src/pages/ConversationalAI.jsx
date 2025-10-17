@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import api from '../api';
 
 const ConversationalAI = () => {
   const [messages, setMessages] = useState([]);
@@ -42,11 +43,9 @@ const ConversationalAI = () => {
   // Load quick actions
   const loadQuickActions = async () => {
     try {
-      const response = await fetch('/api/chatbot/quick-actions');
-      const result = await response.json();
-      
+      const result = await api.get('/api/chatbot/quick-actions');
       if (result.success) {
-        setQuickActions(result.actions);
+        setQuickActions(result.data);
       }
     } catch (error) {
       console.error('Failed to load quick actions:', error);
@@ -57,13 +56,11 @@ const ConversationalAI = () => {
   const loadUserSessions = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const userId = user.id || 'anonymous';
+      const userId = user.id || 1;
       
-      const response = await fetch(`/api/chatbot/sessions?user_id=${userId}`);
-      const result = await response.json();
-      
+      const result = await api.get(`/api/chatbot/sessions?user_id=${userId}`);
       if (result.success) {
-        setUserSessions(result.sessions);
+        setUserSessions(result.data);
       }
     } catch (error) {
       console.error('Failed to load user sessions:', error);
@@ -90,19 +87,11 @@ const ConversationalAI = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chatbot/message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: messageText,
-          user_id: userId,
-          session_id: sessionId
-        })
+      const result = await api.post('/api/chatbot/message', {
+        message: messageText,
+        user_id: userId,
+        session_id: sessionId
       });
-
-      const result = await response.json();
 
       if (result.success) {
         const botData = result.data;
@@ -169,11 +158,9 @@ const ConversationalAI = () => {
   // Load conversation history
   const loadConversationHistory = async (sessionId) => {
     try {
-      const response = await fetch(`/api/chatbot/conversation/${sessionId}`);
-      const result = await response.json();
-      
+      const result = await api.get(`/api/chatbot/conversation/${sessionId}`);
       if (result.success) {
-        setConversationHistory(result.history);
+        setConversationHistory(result.data);
       }
     } catch (error) {
       console.error('Failed to load conversation history:', error);

@@ -13,9 +13,18 @@ app = Flask(__name__)
 
 # Enable CORS for all routes and methods
 CORS(app, 
-     origins=['http://localhost:3021', 'http://localhost:3020', 'http://localhost:3019'], 
+     origins=["*"], 
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-     allow_headers=['Content-Type', 'Authorization'])
+     allow_headers=['Content-Type', 'Authorization', 'X-User-Email'],
+     supports_credentials=True)
+
+# Additional manual CORS handling
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-User-Email')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 @app.route('/')
 def home():
@@ -28,6 +37,39 @@ def home():
 @app.route('/health')
 def health():
     return jsonify({'status': 'healthy', 'server': 'fresh'})
+
+@app.route('/test')
+def test():
+    return jsonify({'message': 'test endpoint working'})
+
+@app.route('/api/auth/user', methods=['GET'])
+def get_auth_user():
+    # Return mock user data for now
+    return jsonify({
+        'id': 1,
+        'email': 'admin@example.com',
+        'name': 'Admin User',
+        'role': 'admin'
+    })
+
+@app.route('/api/dashboard', methods=['GET'])
+def get_dashboard():
+    # Return mock dashboard data
+    return jsonify({
+        'totalProperties': 9,
+        'totalTenants': 45,
+        'totalRevenue': 125000,
+        'occupancyRate': 0.85
+    })
+
+# Handle preflight requests for all API routes
+@app.route('/api/<path:path>', methods=['OPTIONS'])
+def handle_preflight(path):
+    response = jsonify({'status': 'ok'})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-User-Email')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 # =================== PROPERTIES ===================
 @app.route('/api/properties', methods=['GET'])
@@ -89,6 +131,72 @@ def get_tenants():
     try:
         tenants = DatabaseManager.get_tenants()
         return jsonify(tenants)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/tenants', methods=['POST'])
+def create_tenant():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Create tenant as a user with role 'tenant'
+        user_data = {
+            'name': data.get('name', ''),
+            'email': data.get('email', ''),
+            'phone': data.get('phone', ''),
+            'role': 'tenant',
+            'company_id': data.get('company_id', 1),
+            'status': 'active',
+            'is_first_login': True,
+            'created_at': datetime.now().isoformat(),
+            'updated_at': datetime.now().isoformat()
+        }
+        
+        user_id = DatabaseManager.create_user(user_data)
+        return jsonify({
+            'success': True,
+            'message': 'Tenant created successfully',
+            'tenant_id': user_id
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/tenants/<int:tenant_id>', methods=['DELETE'])
+def delete_tenant(tenant_id):
+    try:
+        # Delete tenant (which is a user with role 'tenant')
+        success = DatabaseManager.delete_user(tenant_id)
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Tenant deleted successfully'
+            })
+        else:
+            return jsonify({'error': 'Failed to delete tenant'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/tenants/<int:tenant_id>', methods=['PUT'])
+def update_tenant(tenant_id):
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Add updated timestamp
+        data['updated_at'] = datetime.now().isoformat()
+        
+        # Update tenant (user) in database
+        success = DatabaseManager.update_user(tenant_id, data)
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Tenant updated successfully'
+            })
+        else:
+            return jsonify({'error': 'Failed to update tenant'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -161,6 +269,9 @@ if __name__ == '__main__':
     print("   GET  /api/users")
     print("   POST /api/users")
     print("   GET  /api/tenants")
+    print("   POST /api/tenants")
+    print("   PUT  /api/tenants/{id}")
+    print("   DELETE /api/tenants/{id}")
     print("   GET  /api/units?property_id=1")
     print("   POST /api/units")
     print("   POST /api/ai/process-lease")
