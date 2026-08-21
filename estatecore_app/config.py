@@ -14,6 +14,7 @@ class Config:
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", SECRET_KEY)
     SQLALCHEMY_DATABASE_URI = _database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    LPR_INTEGRATION_KEY = os.environ.get("LPR_INTEGRATION_KEY", "")
     CORS_ORIGINS = [
         origin.strip()
         for origin in os.environ.get(
