@@ -82,7 +82,31 @@ def admin_leases(admin):
         db.session.add(item); db.session.commit()
         return jsonify(id=item.id), 201
     items = Lease.query.filter_by(company_id=admin.company_id).all()
-    return jsonify([{"id": x.id, "tenant_id": x.tenant_id, "property": x.property_name, "rent": float(x.monthly_rent), "status": x.status} for x in items])
+    users = {u.id: u for u in User.query.filter_by(company_id=admin.company_id).all()}
+    return jsonify([{"id": x.id, "tenant_id": x.tenant_id, "tenant": users.get(x.tenant_id).name if users.get(x.tenant_id) else "Unknown", "property": x.property_name, "property_id": x.property_id, "rent": float(x.monthly_rent), "status": x.status} for x in items])
+
+@api.get("/admin/setup")
+@admin_required
+def admin_setup(admin):
+    tenants = User.query.filter_by(company_id=admin.company_id, role="tenant").order_by(User.name).all()
+    properties = Property.query.filter_by(company_id=admin.company_id).order_by(Property.name).all()
+    return jsonify(
+        tenants=[{"id": x.id, "name": x.name, "email": x.email} for x in tenants],
+        properties=[{"id": x.id, "name": x.name, "address": x.address} for x in properties],
+    )
+
+@api.get("/admin/payments")
+@admin_required
+def admin_payments(admin):
+    items = Payment.query.filter_by(company_id=admin.company_id).order_by(Payment.due_date.desc()).all()
+    leases = {x.id: x for x in Lease.query.filter_by(company_id=admin.company_id).all()}
+    users = {x.id: x for x in User.query.filter_by(company_id=admin.company_id).all()}
+    result = []
+    for item in items:
+        lease = leases.get(item.lease_id)
+        tenant = users.get(lease.tenant_id) if lease else None
+        result.append({"id": item.id, "lease_id": item.lease_id, "tenant": tenant.name if tenant else "Unknown", "property": lease.property_name if lease else "Unknown", "amount": float(item.amount), "due_date": item.due_date.isoformat(), "status": item.status})
+    return jsonify(result)
 
 @api.post("/admin/leases/<int:lease_id>/charges")
 @admin_required
@@ -119,7 +143,8 @@ def update_payment(admin, payment_id):
 @admin_required
 def admin_maintenance(admin):
     items = MaintenanceRequest.query.filter_by(company_id=admin.company_id).order_by(MaintenanceRequest.created_at.desc()).all()
-    return jsonify([{"id": m.id, "description": m.description, "priority": m.priority, "status": m.status, "assigned_to": m.assigned_to} for m in items])
+    users = {u.id: u for u in User.query.filter_by(company_id=admin.company_id).all()}
+    return jsonify([{"id": m.id, "tenant": users.get(m.tenant_id).name if users.get(m.tenant_id) else "Unknown", "description": m.description, "priority": m.priority, "status": m.status, "assigned_to": m.assigned_to} for m in items])
 
 @api.patch("/admin/maintenance/<int:item_id>")
 @admin_required
@@ -147,6 +172,43 @@ def company_bills(admin):
         return jsonify(id=item.id, status=item.status), 201
     items = CompanyBill.query.filter_by(company_id=admin.company_id).order_by(CompanyBill.due_date.desc()).all()
     return jsonify([{"id": b.id, "vendor": b.vendor, "category": b.category, "amount": float(b.amount), "due_date": b.due_date.isoformat(), "status": b.status} for b in items])
+
+@api.patch("/admin/bills/<int:item_id>")
+@admin_required
+def update_bill(admin, item_id):
+    item = CompanyBill.query.filter_by(id=item_id, company_id=admin.company_id).first()
+    if not item:
+        return jsonify(error="bill not found"), 404
+    status = (request.get_json(silent=True) or {}).get("status")
+    if status not in {"unpaid", "paid", "overdue"}:
+        return jsonify(error="invalid bill status"), 400
+    item.status = status
+    db.session.commit()
+    return jsonify(id=item.id, status=item.status)
+
+@api.get("/admin/access/events")
+@admin_required
+def access_events(admin):
+    items = AccessEvent.query.filter_by(company_id=admin.company_id).order_by(AccessEvent.created_at.desc()).limit(100).all()
+    return jsonify([{"id": x.id, "plate": x.plate, "result": x.result, "reason": x.reason, "created_at": x.created_at.isoformat(), "override_note": x.override_note} for x in items])
+
+@api.patch("/admin/access/events/<int:event_id>/override")
+@admin_required
+def override_access_event(admin, event_id):
+    item = AccessEvent.query.filter_by(id=event_id, company_id=admin.company_id).first()
+    payload = request.get_json(silent=True) or {}
+    result = payload.get("result")
+    note = payload.get("note", "").strip()
+    if not item:
+        return jsonify(error="access event not found"), 404
+    if result not in {"granted", "denied"} or not note:
+        return jsonify(error="result and override note are required"), 400
+    item.result = result
+    item.reason = "manual administrative override"
+    item.overridden_by = admin.id
+    item.override_note = note
+    db.session.commit()
+    return jsonify(id=item.id, result=item.result, override_note=item.override_note)
 
 @api.post("/access/check")
 def access_check():
