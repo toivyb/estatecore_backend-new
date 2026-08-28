@@ -57,3 +57,20 @@ def test_lpr_requires_key_and_is_idempotent(app):
     second = client.post("/api/access/check", headers=headers, json={"plate": "ABC123", "event_id": "evt-1"})
     assert first.status_code == 200
     assert second.get_json()["duplicate"] is True
+
+def test_admin_demo_surfaces_and_access_override(app):
+    client = app.test_client(); admin = login(client, "admin@example.com", "safe-admin-password")
+    setup = client.get("/api/admin/setup", headers=admin)
+    assert setup.status_code == 200 and setup.get_json()["tenants"]
+    assert client.get("/api/admin/payments", headers=admin).status_code == 200
+    created = client.post("/api/access/check", headers={"X-Integration-Key": "lpr-test-key"}, json={"plate": "ABC123", "event_id": "override-me"})
+    assert created.status_code == 200
+    event = client.get("/api/admin/access/events", headers=admin).get_json()[0]
+    changed = client.patch(f"/api/admin/access/events/{event['id']}/override", headers=admin, json={"result": "denied", "note": "Manual safety hold"})
+    assert changed.status_code == 200 and changed.get_json()["result"] == "denied"
+
+def test_bill_status(app):
+    client = app.test_client(); admin = login(client, "admin@example.com", "safe-admin-password")
+    bill = client.post("/api/admin/bills", headers=admin, json={"vendor": "Electric", "category": "utilities", "amount": 100, "due_date": date.today().isoformat()})
+    changed = client.patch(f"/api/admin/bills/{bill.get_json()['id']}", headers=admin, json={"status": "paid"})
+    assert changed.status_code == 200 and changed.get_json()["status"] == "paid"
