@@ -76,6 +76,8 @@ class AccessEvent(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey("company.id"), nullable=False, index=True)
     property_id = db.Column(db.Integer, db.ForeignKey("property.id"), nullable=False, index=True)
     event_key = db.Column(db.String(128), unique=True, nullable=False)
+    overridden_by = db.Column(db.Integer, db.ForeignKey("user.id"), index=True)
+    override_note = db.Column(db.String(500))
 
 
 class Company(db.Model):
