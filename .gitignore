@@ -77,7 +77,6 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 instance/
-migrations/versions/*.py
 
 # Logs
 *.log
