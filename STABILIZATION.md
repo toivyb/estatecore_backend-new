@@ -13,6 +13,13 @@ experimental until their integrations have automated end-to-end tests.
 5. Run `pytest -q`.
 6. Run `gunicorn wsgi:app`.
 
+## Demo administrator
+
+The seeded system administrator email defaults to `toivybraun@gmail.com`.
+Set `ESTATECORE_ADMIN_PASSWORD` in the hosting environment before running
+`flask --app wsgi:app seed-demo`. The password is intentionally never stored
+in the repository.
+
 Production startup intentionally fails when `SECRET_KEY`, `JWT_SECRET_KEY`,
 or `DATABASE_URL` is missing. Set `CORS_ORIGINS` to the exact frontend
 origin; never use a wildcard with credentials.
