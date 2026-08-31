@@ -33,7 +33,12 @@ def create_app(test_config=None):
     @app.cli.command("seed-demo")
     def seed_demo():
         from datetime import date
+        import click
         from .models import AccessCredential, Company, Lease, Payment, Property, User
+        admin_email = os.environ.get("ESTATECORE_ADMIN_EMAIL", "toivybraun@gmail.com").strip().lower()
+        admin_password = os.environ.get("ESTATECORE_ADMIN_PASSWORD")
+        if not admin_password:
+            raise click.ClickException("ESTATECORE_ADMIN_PASSWORD must be set before seeding")
         company = Company.query.filter_by(name="EstateCore Demo").first()
         if not company:
             company = Company(name="EstateCore Demo")
@@ -44,14 +49,17 @@ def create_app(test_config=None):
             db.session.add(prop); db.session.flush()
         users = {}
         for email, name, role, password in (
-            ("admin@demo.estatecore.local", "Demo Admin", "company_admin", "DemoAdmin-ChangeMe-2026"),
+            (admin_email, "Toivy Braun", "super_admin", admin_password),
             ("tenant@demo.estatecore.local", "Demo Tenant", "tenant", "DemoTenant-ChangeMe-2026"),
         ):
             user = User.query.filter_by(email=email).first()
             if not user:
                 user = User(email=email, name=name, role=role, company_id=company.id)
-                user.set_password(password)
                 db.session.add(user); db.session.flush()
+            user.name = name
+            user.role = role
+            user.company_id = company.id
+            user.set_password(password)
             users[role] = user
         lease = Lease.query.filter_by(tenant_id=users["tenant"].id, status="active").first()
         if not lease:
@@ -62,5 +70,5 @@ def create_app(test_config=None):
         if not AccessCredential.query.filter_by(plate="DEMO123").first():
             db.session.add(AccessCredential(tenant_id=users["tenant"].id, company_id=company.id, property_id=prop.id, plate="DEMO123", active=True))
         db.session.commit()
-        print("Demo data ready. Change both demo passwords before public deployment.")
+        print(f"Demo data ready. System admin: {admin_email}")
     return app
